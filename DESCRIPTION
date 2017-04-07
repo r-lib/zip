@@ -1,0 +1,13 @@
+Package: zip
+Title: Cross-Platform 'zip' Compression Library
+Version: 0.0.0.9000
+Author: Gábor Csárdi
+Maintainer: Gábor Csárdi <csardi.gabor@gmail.com>
+Description: Cross-Platform 'zip' Compression Library
+License: Other
+LazyData: true
+URL: https://github.com/gaborcsardi/zip
+BugReports: https://github.com/gaborcsardi/zip/issues
+RoxygenNote: 6.0.1
+Suggests: 
+    testthat
