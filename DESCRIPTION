@@ -1,13 +1,16 @@
 Package: zip
 Title: Cross-Platform 'zip' Compression Library
 Version: 0.0.0.9000
-Author: Gábor Csárdi
+Author: Gábor Csárdi, Kuba Podgórski
 Maintainer: Gábor Csárdi <csardi.gabor@gmail.com>
-Description: Cross-Platform 'zip' Compression Library
-License: Other
+Description: Cross-Platform 'zip' Compression Library. A replacement
+    for the 'zip' and 'unzip' functions, that does not require any
+    additional external tools on any platform.
+License: CC0
 LazyData: true
 URL: https://github.com/gaborcsardi/zip
 BugReports: https://github.com/gaborcsardi/zip/issues
 RoxygenNote: 6.0.1
 Suggests: 
     testthat
+Encoding: UTF-8
