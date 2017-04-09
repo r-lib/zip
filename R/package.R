@@ -5,4 +5,5 @@
 #'
 #' @docType package
 #' @name zip
+#' @useDynLib zip
 NULL
