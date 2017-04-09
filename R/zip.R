@@ -48,6 +48,8 @@ zip_append <- function(zipfile, files, recurse = TRUE,
 zip_internal <- function(zipfile, files, recurse, compression_level,
                          append) {
 
+  if (any(! file.exists(files))) stop("Some files do not exist")
+
   if (recurse) {
     files <- dir_all(files)
   } else {
