@@ -1,5 +1,7 @@
 
 dir_all <- function(files) {
+  if (! length(files)) return(files)
+
   info <- file.info(files)
 
   unlist(lapply(
