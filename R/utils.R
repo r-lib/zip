@@ -8,7 +8,7 @@ dir_all <- function(files) {
     seq_along(files),
     function(i) {
       if (info$isdir[i]) {
-        dir(files, recursive = TRUE, full.names = TRUE)
+        dir(files[i], recursive = TRUE, full.names = TRUE)
       } else {
         files[i]
       }
