@@ -13,5 +13,6 @@ BugReports: https://github.com/gaborcsardi/zip/issues
 RoxygenNote: 6.0.1
 Roxygen: list(markdown = TRUE)
 Suggests: 
-    testthat
+    testthat,
+    withr
 Encoding: UTF-8
