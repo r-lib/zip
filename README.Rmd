@@ -31,15 +31,35 @@ library(zip)
 
 ### Creating ZIP files
 
-TODO
+`zip()` creates a new ZIP archive. (It overwrites the output file if it
+exists.) Simply supply all directories and files that you want to include
+in the archive.
+
+It makes sense to change to the top-level directory of the files before
+archiving them, so that the files are stored using a relative path name.
+
+```{r}
+zip("sources.zip", c("R", "src"))
+file.info("sources.zip")
+```
+
+Directories are added recursively by default.
+
+`zip_append()` is similar to `zip()`, but it appends files to an existing
+ZIP archive.
 
 ### Listing ZIP files
 
-TODO
+`zip_list()` lists files in a ZIP archive. It returns a data frame:
+
+```{r}
+zip_list("sources.zip")
+```
 
 ### Uncompressing ZIP files
 
-TODO
+This is currently not supported by the `zip` package, but available from
+base R, via `utils::unzip()`.
 
 ## License
 
