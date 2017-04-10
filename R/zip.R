@@ -1,4 +1,7 @@
 
+#' @useDynLib zip
+NULL
+
 #' Compress Files into 'zip' Archives
 #'
 #' `zip` creates a new zip archive file.
