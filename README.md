@@ -9,6 +9,7 @@
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/gaborcsardi/zip?svg=true)](https://ci.appveyor.com/project/gaborcsardi/zip)
 [![](http://www.r-pkg.org/badges/version/zip)](http://www.r-pkg.org/pkg/zip)
 [![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/zip)](http://www.r-pkg.org/pkg/zip)
+[![Coverage Status](https://img.shields.io/codecov/c/github/gaborcsardi/zip/master.svg)](https://codecov.io/github/gaborcsardi/zip?branch=master)
 
 ## Installation
 
