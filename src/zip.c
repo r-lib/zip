@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <string.h>
 
 #if defined _WIN32 || defined __WIN32__
 /* Win32, DOS */
