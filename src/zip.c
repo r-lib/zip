@@ -14,7 +14,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <time.h>
-#include <string.h>
 
 #if defined _WIN32 || defined __WIN32__
 /* Win32, DOS */
@@ -644,11 +643,17 @@ int zip_list(const char *zipname, size_t *num, char ***files,
     }
 
     for (i = 0; i < n; ++i) {
+        size_t l;
         if (!mz_zip_reader_file_stat(&zip_archive, i, &info)) {
 	    // Cannot get information about zip archive;
 	    status = -1; goto out;
 	}
-	(*files)[i] = strndup(info.m_filename, MAX_PATH);
+
+	l = strlen(info.m_filename);
+	if (l >= MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE) {
+	  info.m_filename[MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE - 1] = '0';
+	}
+	(*files)[i] = strdup(info.m_filename);
 	if (!(*files)[i]) { status = -1; goto out; }
 	(*compressed_size)[i] = info.m_comp_size;
 	(*uncompressed_size)[i] = info.m_uncomp_size;
