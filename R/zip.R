@@ -1,5 +1,5 @@
 
-#' @useDynLib zip
+#' @useDynLib zip, .registration = TRUE, .fixes = "c_"
 NULL
 
 #' Compress Files into 'zip' Archives
@@ -59,7 +59,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
     files <- ignore_dirs_with_warning(files)
   }
 
-  .Call("R_zip_zip", zipfile, files, as.integer(compression_level),
+  .Call(c_R_zip_zip, zipfile, files, as.integer(compression_level),
         append, PACKAGE = "zip")
 
   invisible(zipfile)
@@ -75,7 +75,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 #' @export
 
 zip_list <- function(zipfile) {
-  res <- .Call("R_zip_list", zipfile, PACKAGE = "zip")
+  res <- .Call(c_R_zip_list, zipfile, PACKAGE = "zip")
   data.frame(
     stringsAsFactors = FALSE,
     filename = res[[1]],

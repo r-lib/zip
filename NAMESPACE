@@ -3,4 +3,4 @@
 export(zip)
 export(zip_append)
 export(zip_list)
-useDynLib(zip)
+useDynLib(zip, .registration = TRUE, .fixes = "c_")
