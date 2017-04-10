@@ -49,6 +49,8 @@ test_that("appending non-existant file", {
 
 test_that("non readable file", {
 
+  skip_on_os("windows")
+
   on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)))
   cat("compress this if you can!", file = tmp <- tempfile())
   Sys.chmod(tmp, "0000")
