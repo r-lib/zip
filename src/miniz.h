@@ -2865,9 +2865,7 @@ void *tdefl_write_image_to_png_file_in_memory(const void *pImage, int w, int h, 
     }
     static FILE *mz_freopen(const char *pPath, const char *pMode, FILE *pStream)
     {
-      FILE* pFile = NULL;
-      if (freopen_s(&pFile, pPath, pMode, pStream))
-        return NULL;
+      FILE* pFile = freopen(pPath, pMode, pStream);
       return pFile;
     }
     #ifndef MINIZ_NO_TIME
