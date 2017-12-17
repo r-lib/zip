@@ -21,7 +21,7 @@ test_that("can list a zip file", {
   list <- zip_list(zipfile)
   expect_equal(
     basename(list$filename),
-    c("file1", "file2")
+    c(basename(tmp), "file1", "file2")
   )
 
   expect_equal(
