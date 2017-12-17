@@ -95,8 +95,8 @@ test_that("single empty directory", {
   expect_true(file.exists(zipfile))
 
   list <- zip_list(zipfile)
-  expect_equal(nrow(list), 0)
-  expect_equal(list$filename, character())
+  expect_equal(nrow(list), 1)
+  expect_equal(list$filename, basename(tmp))
 })
 
 test_that("single empty directory, non-recursive", {
@@ -142,7 +142,7 @@ test_that("appending single empty directory", {
   list <- zip_list(zipfile)
   expect_equal(
     basename(list$filename),
-    c("file1", "file2")
+    c(basename(tmp), "file1", "file2")
   )
   
   dir.create(tmp2 <- tempfile())
@@ -159,7 +159,7 @@ test_that("appending single empty directory", {
   list <- zip_list(zipfile)
   expect_equal(
     basename(list$filename),
-    c("file1", "file2")
+    c(basename(tmp), "file1", "file2", basename(tmp2))
   )
 })
 
@@ -185,7 +185,7 @@ test_that("appending single empty directory, non-recursive", {
   list <- zip_list(zipfile)
   expect_equal(
     basename(list$filename),
-    c("file1", "file2")
+    c(basename(tmp), "file1", "file2")
   )
   
   dir.create(tmp2 <- tempfile())
@@ -203,6 +203,6 @@ test_that("appending single empty directory, non-recursive", {
   list <- zip_list(zipfile)
   expect_equal(
     basename(list$filename),
-    c("file1", "file2")
+    c(basename(tmp), "file1", "file2")
   )
 })
