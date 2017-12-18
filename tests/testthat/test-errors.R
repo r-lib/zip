@@ -4,8 +4,7 @@ context("errors")
 test_that("non-existant file", {
 
   on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)))
-  
-  tmp <- tempfile()  
+  tmp <- tempfile()
 
   zipfile <- tempfile(fileext = ".zip")
 
@@ -150,7 +149,7 @@ test_that("appending single empty directory", {
     basename(list$filename),
     c(basename(tmp), "file1", "file2")
   )
-  
+
   dir.create(tmp2 <- tempfile())
 
   expect_silent(
@@ -193,7 +192,7 @@ test_that("appending single empty directory, non-recursive", {
     basename(list$filename),
     c(basename(tmp), "file1", "file2")
   )
-  
+
   dir.create(tmp2 <- tempfile())
 
   expect_warning(
@@ -201,7 +200,7 @@ test_that("appending single empty directory, non-recursive", {
       dirname(tmp),
       zip_append(zipfile, basename(tmp2), recurse = FALSE)
     ),
-    "directories ignored"    
+    "directories ignored"
   )
 
   expect_true(file.exists(zipfile))

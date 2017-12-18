@@ -53,17 +53,10 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 
   if (any(! file.exists(files))) stop("Some files do not exist")
 
-  if (recurse) {
-    files <- dir_all(files)
-    dirs <- file.info(files)$isdir
-    files[dirs] <- paste0(files[dirs], "/")
-  } else {
-    files <- ignore_dirs_with_warning(files)
-    dirs <- rep(FALSE, length(files))
-  }
+  data <- get_zip_data(files, recurse)
 
-  .Call(c_R_zip_zip, zipfile, files, dirs, as.integer(compression_level),
-        append, PACKAGE = "zip")
+  .Call(c_R_zip_zip, zipfile, data$key, data$file, data$dir,
+        as.integer(compression_level), append, PACKAGE = "zip")
 
   invisible(zipfile)
 }

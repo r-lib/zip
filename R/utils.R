@@ -1,22 +1,20 @@
 
-dir_all <- function(files) {
-  if (! length(files)) return(files)
+get_zip_data <- function(files, recurse) {
+  if (recurse && length(files)) {
+    data <- do.call(rbind, lapply(files, get_zip_data_recursive))
+    dup <- duplicated(data$files)
+    if (any(dup)) data <- data[ !dup, drop = FALSE ]
+    data
 
-  info <- file.info(files)
-
-  unlist(lapply(
-    seq_along(files),
-    function(i) {
-      if (info$isdir[i]) {
-        c(files[i],
-          dir(files[i], recursive = TRUE, full.names = TRUE,
-              include.dirs = TRUE)
-          )
-      } else {
-        files[i]
-      }
-    }
-  ))
+  } else {
+    files <- ignore_dirs_with_warning(files)
+    data.frame(
+      stringsAsFactors = FALSE,
+      key = basename(files),
+      file = files,
+      dir = rep(FALSE, length(files))
+    )
+  }
 }
 
 ignore_dirs_with_warning <- function(files) {
@@ -26,4 +24,32 @@ ignore_dirs_with_warning <- function(files) {
     files <- files[!info$isdir]
   }
   files
+}
+
+get_zip_data_recursive <- function(x) {
+  x <- normalizePath(x)
+  wd <- getwd()
+  on.exit(setwd(wd))
+  setwd(dirname(x))
+  bnx <- basename(x)
+
+  files <- dir(
+    bnx,
+    recursive = TRUE,
+    all.files = TRUE,
+    include.dirs = TRUE,
+    no.. = TRUE
+  )
+
+  key <- c(bnx, file.path(bnx, files))
+  files <- c(x, file.path(dirname(x), bnx, files))
+  dir <- file.info(files)$isdir
+  key <- ifelse(dir, paste0(key, "/"), key)
+
+  data.frame(
+    stringsAsFactors = FALSE,
+    key = key,
+    file = files,
+    dir = dir
+  )
 }

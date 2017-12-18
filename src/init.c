@@ -10,7 +10,7 @@ extern SEXP R_zip_zip(SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
   {"R_zip_list", (DL_FUNC) &R_zip_list, 1},
-  {"R_zip_zip",  (DL_FUNC) &R_zip_zip,  5},
+  {"R_zip_zip",  (DL_FUNC) &R_zip_zip,  6},
   {NULL, NULL, 0}
 };
 
