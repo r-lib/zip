@@ -45,13 +45,13 @@ SEXP R_zip_list(SEXP zipfile) {
 
   result = PROTECT(allocVector(VECSXP, 3));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP, num_files));
-  SET_VECTOR_ELT(result, 1, allocVector(INTSXP, num_files));
-  SET_VECTOR_ELT(result, 2, allocVector(INTSXP, num_files));
+  SET_VECTOR_ELT(result, 1, allocVector(REALSXP, num_files));
+  SET_VECTOR_ELT(result, 2, allocVector(REALSXP, num_files));
 
   for (i = 0; i < num_files; ++i) {
     SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkChar(files[i]));
-    INTEGER(VECTOR_ELT(result, 1))[i] = compressed_size[i];
-    INTEGER(VECTOR_ELT(result, 2))[i] = uncompressed_size[i];
+    REAL(VECTOR_ELT(result, 1))[i] = compressed_size[i];
+    REAL(VECTOR_ELT(result, 2))[i] = uncompressed_size[i];
     free(files[i]);
   }
   free(files);
@@ -60,4 +60,79 @@ SEXP R_zip_list(SEXP zipfile) {
 
   UNPROTECT(1);
   return result;
+}
+
+#ifdef _WIN32
+#include <windows.h>
+
+int zip__utf8_to_utf16_alloc(const char* s, WCHAR** ws_ptr) {
+  int ws_len, r;
+  WCHAR* ws;
+
+  ws_len = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ s,
+    /* cbMultiByte =    */ -1,
+    /* lpWideCharStr =  */ NULL,
+    /* cchWideChar =    */ 0);
+
+  if (ws_len <= 0) { return GetLastError(); }
+
+  ws = (WCHAR*) R_alloc(ws_len,  sizeof(WCHAR));
+  if (ws == NULL) { return ERROR_OUTOFMEMORY; }
+
+  r = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ s,
+    /* cbMultiBytes =   */ -1,
+    /* lpWideCharStr =  */ ws,
+    /* cchWideChar =    */ ws_len);
+
+  if (r != ws_len) {
+    error("processx error interpreting UTF8 command or arguments");
+  }
+
+  *ws_ptr = ws;
+  return 0;
+}
+
+#endif
+
+SEXP R_make_big_file(SEXP filename, SEXP mb) {
+
+#ifdef _WIN32
+
+  const char *cfilename = CHAR(STRING_ELT(filename, 1));
+  WCHAR *wfilename = NULL;
+  LARGE_INTEGER li;
+
+  if (zip__utf8_to_utf16_alloc(cfilename, &wfilename)) {
+    error("utf8 -> utf16 conversion");
+  }
+  HANDLE h = CreateFileW(
+    wfilename,
+    GENERIC_WRITE,
+    FILE_SHARE_DELETE,
+    NULL,
+    CREATE_NEW,
+    FILE_ATTRIBUTE_NORMAL,
+    NULL);
+  if (h == INVALID_HANDLE_VALUE) error("Cannot create big file");
+
+  li.QuadPart = INTEGER(mb)[0] * 1000.0 * 1000.0;
+  li.LowPart = SetFilePointer(h, li.LowPart, &li.HighPart, FILE_BEGIN);
+  
+  if (0xffffffff == li.LowPart && (err = GetLastError()) != NO_ERROR) {
+    error("Cannot create big file");
+  }
+  
+#else
+
+  error("only implemented for windows");
+  
+#endif
+  
+  return R_NilValue;
 }

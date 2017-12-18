@@ -7,3 +7,27 @@ df <- function(key, file, dir = FALSE) {
     dir = dir
   )
 }
+
+make_big_file <- function(file, mb) {
+  tryCatch(
+    make_big_file1(file, mb),
+    error = function(e) skip("cannot create big files")
+  )
+}
+
+make_big_file1 <- function(file, mb) {
+  if (.Platform$OS.type == "windows") {
+    .Call(c_R_make_big_file, file, as.integer(mb))
+
+  } else if (nzchar(Sys.which("fallocate"))) {
+    status <- system2("fallocate", c("-l", paste0(mb, "m"), shQuote(file)))
+    if (status != 0) stop("Cannot create big files")
+
+  } else if (nzchar(Sys.which("mkfile"))) {
+    status <- system2("mkfile", c(paste0(mb, "m"), shQuote(file)))
+    if (status != 0) stop("Cannot create big files")
+
+  } else {
+    stop("Cannot create big files")
+  }
+}
