@@ -104,13 +104,14 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
 
 #ifdef _WIN32
 
-  const char *cfilename = CHAR(STRING_ELT(filename, 1));
+  const char *cfilename = CHAR(STRING_ELT(filename, 0));
   WCHAR *wfilename = NULL;
   LARGE_INTEGER li;
 
   if (zip__utf8_to_utf16_alloc(cfilename, &wfilename)) {
     error("utf8 -> utf16 conversion");
   }
+
   HANDLE h = CreateFileW(
     wfilename,
     GENERIC_WRITE,
@@ -121,12 +122,20 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
     NULL);
   if (h == INVALID_HANDLE_VALUE) error("Cannot create big file");
 
-  li.QuadPart = INTEGER(mb)[0] * 1000.0 * 1000.0;
+  li.QuadPart = INTEGER(mb)[0] * 1024.0 * 1024.0;
   li.LowPart = SetFilePointer(h, li.LowPart, &li.HighPart, FILE_BEGIN);
   
-  if (0xffffffff == li.LowPart && (err = GetLastError()) != NO_ERROR) {
+  if (0xffffffff == li.LowPart && GetLastError() != NO_ERROR) {
+    CloseHandle(h);
     error("Cannot create big file");
   }
+
+  if (!SetEndOfFile(h)) {
+    CloseHandle(h);
+    error("cannot create big file");
+  }
+
+  CloseHandle(h);
   
 #else
 

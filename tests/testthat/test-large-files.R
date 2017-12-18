@@ -11,9 +11,8 @@ test_that("can compress large files", {
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
   dir.create(tmp <- tempfile())
   file1 <- file.path(tmp, "file1")
-  file2 <- file.path(tmp, "file2")
   make_big_file(file1, 4000)
-  file.copy(file1, file2)
+  size <- file.info(file1)$size
 
   zipfile <- tempfile(fileext = ".zip")
   on.exit(unlink(zipfile), add = TRUE)
@@ -22,11 +21,12 @@ test_that("can compress large files", {
   expect_true(file.exists(zipfile))
   list <- zip_list(zipfile)
   expect_equal(list$filename, "file1")
-  expect_equal(list$uncompressed_size, file.info(file1)$size)
+  expect_equal(list$uncompressed_size, size)
 
   on.exit(unlink(tmp2, recursive = TRUE), add = TRUE)
   dir.create(tmp2 <- tempfile())
 
+  unlink(file1)
   utils::unzip(zipfile, exdir = tmp2)
-  
+
 })

@@ -11,7 +11,10 @@ df <- function(key, file, dir = FALSE) {
 make_big_file <- function(file, mb) {
   tryCatch(
     make_big_file1(file, mb),
-    error = function(e) skip("cannot create big files")
+    error = function(e) {
+      try(unlink(file, recursive = TRUE), silent = TRUE)
+      skip("cannot create big files")
+    }
   )
 }
 
