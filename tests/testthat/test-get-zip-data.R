@@ -47,8 +47,8 @@ test_that("get_zip_data", {
 
   data <- df(
     c(paste0(basename(tmp), "/"),
-      file.path(basename(tmp), "empty/"),
-      file.path(basename(tmp), "foo/"),
+      paste0(file.path(basename(tmp), "empty"), "/"),
+      paste0(file.path(basename(tmp), "foo"), "/"),
       file.path(basename(tmp), "foo", "bar"),
       file.path(basename(tmp), "foobar")),
     normalizePath(c(

@@ -49,7 +49,7 @@ get_zip_data_recursive <- function(x) {
   data.frame(
     stringsAsFactors = FALSE,
     key = key,
-    file = files,
+    file = normalizePath(files),
     dir = dir
   )
 }
