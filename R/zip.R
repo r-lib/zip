@@ -55,11 +55,14 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 
   if (recurse) {
     files <- dir_all(files)
+    dirs <- file.info(files)$isdir
+    files[dirs] <- paste0(files[dirs], "/")
   } else {
     files <- ignore_dirs_with_warning(files)
+    dirs <- rep(FALSE, length(files))
   }
 
-  .Call(c_R_zip_zip, zipfile, files, as.integer(compression_level),
+  .Call(c_R_zip_zip, zipfile, files, dirs, as.integer(compression_level),
         append, PACKAGE = "zip")
 
   invisible(zipfile)
@@ -78,7 +81,7 @@ zip_list <- function(zipfile) {
   res <- .Call(c_R_zip_list, zipfile, PACKAGE = "zip")
   data.frame(
     stringsAsFactors = FALSE,
-    filename = res[[1]],
+    filename = sub("[\\\\/]$", "", res[[1]]),
     compressed_size = res[[2]],
     uncompressed_size = res[[3]]
   )

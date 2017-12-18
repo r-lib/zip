@@ -173,7 +173,7 @@ void zip_close(struct zip_t *zip) {
     }
 }
 
-int zip_entry_open(struct zip_t *zip, const char *entryname) {
+int zip_entry_open(struct zip_t *zip, const char *entryname, int directory) {
     size_t entrylen = 0;
     mz_zip_archive *pzip = NULL;
     mz_uint num_alignment_padding_bytes, level;
@@ -388,7 +388,7 @@ int zip_entry_write(struct zip_t *zip, const void *buf, size_t bufsize) {
     return 0;
 }
 
-int zip_entry_fwrite(struct zip_t *zip, const char *filename) {
+int zip_entry_fwrite(struct zip_t *zip, const char *filename, int directory) {
     int status = 0;
     size_t n = 0;
     FILE *stream = NULL;
@@ -399,20 +399,27 @@ int zip_entry_fwrite(struct zip_t *zip, const char *filename) {
         return -1;
     }
 
-    stream = fopen(filename, "rb");
-    if (!stream) {
-        // Cannot open filename
-        return -1;
-    }
+    if (directory) {
+        if (zip_entry_write(zip, 0, 0) < 0) {
+	    status = -1;
+	}
 
-    while ((n = fread(buf, sizeof(mz_uint8), MZ_ZIP_MAX_IO_BUF_SIZE, stream)) >
-           0) {
-        if (zip_entry_write(zip, buf, n) < 0) {
-            status = -1;
-            break;
-        }
+    } else {
+        stream = fopen(filename, "rb");
+	if (!stream) {
+	    // Cannot open filename
+	    return -1;
+	}
+
+	while ((n = fread(buf, sizeof(mz_uint8), MZ_ZIP_MAX_IO_BUF_SIZE, stream)) >
+	       0) {
+	  if (zip_entry_write(zip, buf, n) < 0) {
+              status = -1;
+	      break;
+	  }
+	}
+	fclose(stream);
     }
-    fclose(stream);
 
     return status;
 }

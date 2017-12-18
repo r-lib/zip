@@ -97,6 +97,12 @@ test_that("single empty directory", {
   list <- zip_list(zipfile)
   expect_equal(nrow(list), 1)
   expect_equal(list$filename, basename(tmp))
+
+  dir.create(tmp2 <- tempfile())
+  on.exit(try(unlink(tmp2, recursive = TRUE)))
+  utils::unzip(zipfile, exdir = tmp2)
+  expect_equal(dir(tmp2), basename(tmp))
+  expect_true(file.info(file.path(tmp2, dir(tmp2)))$isdir)
 })
 
 test_that("single empty directory, non-recursive", {
