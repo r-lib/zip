@@ -36,4 +36,6 @@ make_big_file1 <- function(file, mb) {
   } else {
     stop("Cannot create big files")
   }
+
+  Sys.chmod(file, "0644")
 }

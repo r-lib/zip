@@ -17,7 +17,7 @@ test_that("can compress large files", {
   zipfile <- tempfile(fileext = ".zip")
   on.exit(unlink(zipfile), add = TRUE)
 
-  zip(zipfile, file1)
+  zip(zipfile, file1, compression_level = 1)
   expect_true(file.exists(zipfile))
   list <- zip_list(zipfile)
   expect_equal(list$filename, "file1")
