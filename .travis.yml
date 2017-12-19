@@ -9,3 +9,8 @@ r:
 
 after_success:
   - test $TRAVIS_R_VERSION_STRING = "release" && Rscript -e 'covr::codecov(line_exclusions = list("src/miniz.h", "src/zip.h", "src/zip.c"))'
+
+env:
+  global:
+    - NOT_CRAN=true
+    - ZIP_LONG_TESTS=true

@@ -15,6 +15,10 @@ install:
 build_script:
   - travis-tool.sh install_deps
 
+environment:
+  NOT_CRAN: true
+  ZIP_LONG_TESTS: true
+
 test_script:
   - travis-tool.sh run_tests
 

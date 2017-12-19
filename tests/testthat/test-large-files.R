@@ -4,6 +4,7 @@ context("large files")
 test_that("can compress large files", {
 
   skip_on_cran()
+  if (! nzchar(Sys.getenv("ZIP_LONG_TESTS"))) skip("takes long")
 
   ## Note: it will be also skipped if we cannot find a reasonable quick
   ## way to create a 4GB file.
@@ -17,7 +18,7 @@ test_that("can compress large files", {
   zipfile <- tempfile(fileext = ".zip")
   on.exit(unlink(zipfile), add = TRUE)
 
-  zip(zipfile, file1, compression_level = 1)
+  zipr(zipfile, file1, compression_level = 1)
   expect_true(file.exists(zipfile))
   list <- zip_list(zipfile)
   expect_equal(list$filename, "file1")

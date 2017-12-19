@@ -2,12 +2,18 @@
 % Please edit documentation in R/zip.R
 \name{zip}
 \alias{zip}
+\alias{zipr}
 \alias{zip_append}
+\alias{zipr_append}
 \title{Compress Files into 'zip' Archives}
 \usage{
 zip(zipfile, files, recurse = TRUE, compression_level = 9)
 
+zipr(zipfile, files, recurse = TRUE, compression_level = 9)
+
 zip_append(zipfile, files, recurse = TRUE, compression_level = 9)
+
+zipr_append(zipfile, files, recurse = TRUE, compression_level = 9)
 }
 \arguments{
 \item{zipfile}{The zip file to create. If the file exists, \code{zip}
@@ -26,10 +32,54 @@ but it also takes the longest.}
 The name of the created zip file, invisibly.
 }
 \description{
-\code{zip} creates a new zip archive file.
+\code{zipr} and \code{zip} both create a new zip archive file.
 }
 \details{
-\code{zip_append} appends compressed files to an existing 'zip' file.
+\code{zipr_append} and \code{zip_append} append compressed files to an
+existing 'zip' file.
+
+The different between \code{zipr} and \code{zip} is how they handle the relative
+paths of the input files.
+
+For \code{zip} (and \code{zip_append}), the root of the archive is supposed to
+be the current working directory. The paths of the files are fully kept
+in the archive. Absolute paths are also kept. Note that this might result
+non-portable archives: some zip tools do not handle zip archives that
+contain absolute file names, or file names that start with \code{..//} or
+\code{./}. This behavior is kept for compatibility, and we suggest that you
+use \code{zipr} and \code{zipr_append} for new code.
+
+E.g. for the following directory structure:\preformatted{foo
+  bar
+    file1
+  bar2
+    file2
+foo2
+  file3
+}
+
+Assuming the current working directory is \code{foo}, the following zip
+entries are created by \code{zip}:\preformatted{zip("x.zip", c("bar/file1", "bar2", "../foo2"))
+zip_list("x.zip")$filename
+#> bar/file1
+#> bar2
+#> bar2/file2
+#> ../foo2
+#> ../foo2/file3
+}
+
+For \code{zipr} (and \code{zipr_append}), each specified file or directory in
+\code{files} is created as a top-level entry in the zip archive.
+We suggest that you use \code{zip} and \code{zip_append} for new code, as they
+don't create non-portable archives. For the same directory structure,
+these zip entries are created:\preformatted{zipr("x.zip", c("bar/file1", "bar2", "../foo2"))
+zip_list("x.zip")$filename
+#> file1
+#> bar2
+#> bar2/file2
+#> foo2
+#> foo2/file3
+}
 }
 \examples{
 ## Some files to zip up
@@ -38,13 +88,13 @@ cat("first file", file = file.path(tmp, "file1"))
 cat("second file", file = file.path(tmp, "file2"))
 
 zipfile <- tempfile(fileext = ".zip")
-zip(zipfile, tmp)
+zipr(zipfile, tmp)
 
 ## List contents
 zip_list(zipfile)
 
 ## Add another file
 cat("third file", file = file.path(tmp, "file3"))
-zip_append(zipfile, file.path(tmp, "file3"))
+zipr_append(zipfile, file.path(tmp, "file3"))
 zip_list(zipfile)
 }

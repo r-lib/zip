@@ -1,5 +1,5 @@
 
-context("zip")
+context("zipr")
 
 test_that("can compress single directory", {
 
@@ -14,7 +14,7 @@ test_that("can compress single directory", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(tmp))
+      zipr(zipfile, basename(tmp))
     )
   )
 
@@ -39,7 +39,7 @@ test_that("can compress single file", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(tmp))
+      zipr(zipfile, basename(tmp))
     )
   )
 
@@ -61,7 +61,7 @@ test_that("can compress multiple files", {
   expect_silent(
     withr::with_dir(
       dirname(tmp1),
-      zip(zipfile, basename(c(tmp1, tmp2)))
+      zipr(zipfile, basename(c(tmp1, tmp2)))
     )
   )
 
@@ -73,21 +73,21 @@ test_that("can compress multiple files", {
 
 test_that("can compress multiple directories", {
 
-  on.exit(try(unlink(c(zipfile, tmp1, tmp2), recursive = TRUE)), add = TRUE)
+  on.exit(try(unlink(c(zipfile, tmp1, tmp2), recursive = TRUE)))
 
   dir.create(tmp1 <- tempfile())
   dir.create(tmp2 <- tempfile())
-  cat("first file\n", file = file.path(tmp1, "file1"))
-  cat("second file\n", file = file.path(tmp1, "file2"))
-  cat("third file\n", file = file.path(tmp2, "file3"))
-  cat("fourth file\n", file = file.path(tmp2, "file4"))
+  cat("first file", file = file.path(tmp1, "file1"))
+  cat("second file", file = file.path(tmp1, "file2"))
+  cat("third file", file = file.path(tmp2, "file3"))
+  cat("fourth file", file = file.path(tmp2, "file4"))
 
   zipfile <- tempfile(fileext = ".zip")
 
   expect_silent(
     withr::with_dir(
       dirname(tmp1),
-      zip(zipfile, basename(c(tmp1, tmp2)))
+      zipr(zipfile, basename(c(tmp1, tmp2)))
     )
   )
 
@@ -99,20 +99,6 @@ test_that("can compress multiple directories", {
     c(basename(tmp1), file.path(basename(tmp1), c("file1", "file2")),
       basename(tmp2), file.path(basename(tmp2), c("file3", "file4")))
   )
-
-  on.exit(try(unlink(c(tmp3), recursive = TRUE)), add = TRUE)
-  dir.create(tmp3 <- tempfile())
-  utils::unzip(zipfile, exdir = tmp3)
-  expect_true(file.info(file.path(tmp3, basename(tmp1)))$isdir)
-  expect_true(file.info(file.path(tmp3, basename(tmp2)))$isdir)
-  expect_equal(readLines(file.path(tmp1, "file1")),
-               readLines(file.path(tmp3, basename(tmp1), "file1")))
-  expect_equal(readLines(file.path(tmp1, "file2")),
-               readLines(file.path(tmp3, basename(tmp1), "file2")))
-  expect_equal(readLines(file.path(tmp2, "file3")),
-               readLines(file.path(tmp3, basename(tmp2), "file3")))
-  expect_equal(readLines(file.path(tmp2, "file4")),
-               readLines(file.path(tmp3, basename(tmp2), "file4")))
 })
 
 test_that("can compress files and directories", {
@@ -130,7 +116,7 @@ test_that("can compress files and directories", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(c(file1, tmp, file2)))
+      zipr(zipfile, basename(c(file1, tmp, file2)))
     )
   )
 
@@ -160,7 +146,7 @@ test_that("warning for directories in non-recursive mode", {
   expect_warning(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(c(file1, tmp, file2)), recurse = FALSE)
+      zipr(zipfile, basename(c(file1, tmp, file2)), recurse = FALSE)
     ),
     "directories ignored"
   )
@@ -187,14 +173,14 @@ test_that("compression level is used", {
   expect_silent(
     withr::with_dir(
       dirname(file),
-      zip(zipfile1, basename(file), compression_level = 1)
+      zipr(zipfile1, basename(file), compression_level = 1)
     )
   )
 
   expect_silent(
     withr::with_dir(
       dirname(file),
-      zip(zipfile2, basename(file), compression_level = 9)
+      zipr(zipfile2, basename(file), compression_level = 9)
     )
   )
 
@@ -223,7 +209,7 @@ test_that("can append a directory to an archive", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(tmp))
+      zipr(zipfile, basename(tmp))
     )
   )
 
@@ -242,7 +228,7 @@ test_that("can append a directory to an archive", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip_append(zipfile, basename(tmp2))
+      zipr_append(zipfile, basename(tmp2))
     )
   )
 
@@ -267,7 +253,7 @@ test_that("can append a file to an archive", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(tmp))
+      zipr(zipfile, basename(tmp))
     )
   )
 
@@ -284,7 +270,7 @@ test_that("can append a file to an archive", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip_append(zipfile, basename(file1))
+      zipr_append(zipfile, basename(file1))
     )
   )
 
@@ -309,7 +295,7 @@ test_that("can append files and directories to an archive", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(tmp))
+      zipr(zipfile, basename(tmp))
     )
   )
 
@@ -329,7 +315,7 @@ test_that("can append files and directories to an archive", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip_append(zipfile, basename(c(file1, tmp2)))
+      zipr_append(zipfile, basename(c(file1, tmp2)))
     )
   )
 
@@ -355,7 +341,7 @@ test_that("empty directories are archived as directories", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(tmp))
+      zipr(zipfile, basename(tmp))
     )
   )
 
@@ -381,65 +367,4 @@ test_that("empty directories are archived as directories", {
                c(TRUE, TRUE, TRUE, TRUE, FALSE))
 
   expect_equal(readLines(file.path(tmp2, bt, "foo", "file1")), "contents")
-})
-
-test_that("warn for relative paths", {
-  on.exit(try(unlink(tmp, recursive = TRUE)), add = TRUE)
-  dir.create(tmp <- tempfile())
-
-  dir.create(file.path(tmp, "foo"))
-  dir.create(file.path(tmp, "foo", "bar"))
-
-  on.exit(unlink(zipfile), add = TRUE)
-  zipfile <- tempfile(fileext = ".zip")
-
-  withr::with_dir(
-    file.path(tmp, "foo"),
-    expect_warning(zip(zipfile, file.path("..", "foo")))
-  )
-
-  withr::with_dir(
-    file.path(tmp, "foo"),
-    expect_warning(zip(zipfile, file.path("..", "foo", "bar")))
-  )
-
-  withr::with_dir(
-    file.path(tmp, "foo"),
-    expect_warning(zip(zipfile, "."))
-  )
-})
-
-test_that("example", {
-  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
-  dir.create(tmp <- tempfile())
-
-  withr::with_dir(
-    tmp,
-    {
-      dir.create("foo")
-      dir.create(file.path("foo", "bar"))
-      dir.create(file.path("foo", "bar2"))
-      dir.create("foo2")
-
-      cat("contents\n", file = file.path("foo", "bar", "file1"))
-      cat("contents\n", file = file.path("foo", "bar2", "file2"))
-      cat("contents\n", file = file.path("foo2", "file3"))
-
-      setwd("foo")
-      tz <- c(file.path("bar", "file1"), "bar2", file.path("..", "foo2"))
-      expect_warning(zip("x.zip", tz))
-      expect_equal(
-        zip_list("x.zip")$filename,
-        c(file.path("bar", "file1"), "bar2", file.path("bar2", "file2"),
-          file.path("..", "foo2"), file.path("..", "foo2", "file3"))
-      )
-
-      zipr("xr.zip", tz)
-      expect_equal(
-        zip_list("xr.zip")$filename,
-        c("file1", "bar2", file.path("bar2", "file2"), "foo2",
-          file.path("foo2", "file3"))
-      )
-    }
-  )
 })

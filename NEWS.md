@@ -1,14 +1,10 @@
 
 # 1.0.0.9000
 
-* Add empty directories to the archive
+* New functions: `zipr()` and `zipr_append()`, that always store
+  relative file names in the archive
 
-* Include directories in the file list
-
-* Always store relative file names in the archive
-
-* Strip leading `.` and `..` paths from the beginning of the
-  files in the archive
+* Include directories in the archives, empty ones as well
 
 * Fix reporting the size of large files in the archive
 

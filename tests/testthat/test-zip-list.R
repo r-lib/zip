@@ -12,7 +12,7 @@ test_that("can list a zip file", {
   expect_silent(
     withr::with_dir(
       dirname(tmp),
-      zip(zipfile, basename(tmp))
+      zipr(zipfile, basename(tmp))
     )
   )
 
