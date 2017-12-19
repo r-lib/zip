@@ -26,7 +26,7 @@ get_zip_data_path <- function(files, recurse) {
 }
 
 warn_for_dotdot <- function(files) {
-  if (any(grepl("^.[/\\\\]", files))) {
+  if (any(grepl("^[.][/\\\\]", files))) {
     warning("Some paths start with `./`, creating non-portable zip file")
   }
   if (any(grepl("^[.][.][/\\\\]", files))) {
