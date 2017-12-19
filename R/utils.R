@@ -29,7 +29,7 @@ warn_for_dotdot <- function(files) {
   if (any(grepl("^.[/\\\\]", files))) {
     warning("Some paths start with `./`, creating non-portable zip file")
   }
-  if (any(grepl("^..[/\\\\]", files))) {
+  if (any(grepl("^[.][.][/\\\\]", files))) {
     warning("Some paths reference parent directory, ",
             "creating non-portable zip file")
   }
