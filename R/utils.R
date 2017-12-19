@@ -31,7 +31,7 @@ warn_for_dotdot <- function(files) {
   }
   if (any(grepl("^..[/\\\\]", files))) {
     warning("Some paths reference parent directory, ",
-            "creating nop-portable zip file")
+            "creating non-portable zip file")
   }
   files
 }
