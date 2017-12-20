@@ -39,3 +39,7 @@ make_big_file1 <- function(file, mb) {
 
   Sys.chmod(file, "0644")
 }
+
+bns <- function(x) {
+  paste0(basename(x), "/")
+}

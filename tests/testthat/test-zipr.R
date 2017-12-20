@@ -23,7 +23,7 @@ test_that("can compress single directory", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(tmp), file.path(basename(tmp), c("file1", "file2")))
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")))
   )
 })
 
@@ -96,8 +96,8 @@ test_that("can compress multiple directories", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(tmp1), file.path(basename(tmp1), c("file1", "file2")),
-      basename(tmp2), file.path(basename(tmp2), c("file3", "file4")))
+    c(bns(tmp1), file.path(basename(tmp1), c("file1", "file2")),
+      bns(tmp2), file.path(basename(tmp2), c("file3", "file4")))
   )
 })
 
@@ -125,7 +125,7 @@ test_that("can compress files and directories", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(file1), basename(tmp),
+    c(basename(file1), bns(tmp),
       file.path(basename(tmp), c("file1", "file2")),
       basename(file2))
   )
@@ -218,7 +218,7 @@ test_that("can append a directory to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(tmp), file.path(basename(tmp), c("file1", "file2")))
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")))
   )
 
   dir.create(tmp2 <- tempfile())
@@ -235,8 +235,8 @@ test_that("can append a directory to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(tmp), file.path(basename(tmp), c("file1", "file2")),
-      basename(tmp2), file.path(basename(tmp2), c("file3", "file4")))
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")),
+      bns(tmp2), file.path(basename(tmp2), c("file3", "file4")))
   )
 })
 
@@ -262,7 +262,7 @@ test_that("can append a file to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(tmp), file.path(basename(tmp), c("file1", "file2")))
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")))
   )
 
   cat("first file2", file = file1 <- tempfile())
@@ -277,7 +277,7 @@ test_that("can append a file to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(tmp), file.path(basename(tmp), c("file1", "file2")),
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")),
       basename(file1))
   )
 })
@@ -304,7 +304,7 @@ test_that("can append files and directories to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(tmp), file.path(basename(tmp), c("file1", "file2")))
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")))
   )
 
   cat("first file2", file = file1 <- tempfile())
@@ -322,9 +322,9 @@ test_that("can append files and directories to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(tmp), file.path(basename(tmp), c("file1", "file2")),
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")),
       basename(file1),
-      basename(tmp2), file.path(basename(tmp2), c("file3", "file4")))
+      bns(tmp2), file.path(basename(tmp2), c("file3", "file4")))
   )
 })
 
@@ -349,8 +349,8 @@ test_that("empty directories are archived as directories", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(bt, file.path(bt, "foo"), file.path(bt, "foo", "bar"),
-      file.path(bt, "foo", "bar2"), file.path(bt, "foo", "file1"))
+    c(paste0(bt, "/"), file.path(bt, "foo/"), file.path(bt, "foo", "bar/"),
+      file.path(bt, "foo", "bar2/"), file.path(bt, "foo", "file1"))
   )
 
   on.exit(unlink(tmp2, recursive = TRUE), add = TRUE)

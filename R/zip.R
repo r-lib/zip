@@ -145,7 +145,7 @@ zip_list <- function(zipfile) {
   res <- .Call(c_R_zip_list, zipfile)
   data.frame(
     stringsAsFactors = FALSE,
-    filename = sub("[\\\\/]$", "", res[[1]]),
+    filename = res[[1]],
     compressed_size = res[[2]],
     uncompressed_size = res[[3]],
     timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")

@@ -95,7 +95,7 @@ test_that("single empty directory", {
 
   list <- zip_list(zipfile)
   expect_equal(nrow(list), 1)
-  expect_equal(list$filename, basename(tmp))
+  expect_equal(list$filename, bns(tmp))
 
   dir.create(tmp2 <- tempfile())
   on.exit(try(unlink(tmp2, recursive = TRUE)))
