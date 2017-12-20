@@ -82,6 +82,21 @@ static int mkpath(const char *path) {
     return 0;
 }
 
+static char *strrpl(const char *str, char oldchar, char newchar) {
+    char *rpl = (char *)malloc(sizeof(char) * (1 + strlen(str)));
+    char *begin = rpl;
+    char c;
+    while((c = *str++)) {
+        if (c == oldchar) {
+            c = newchar;
+        }
+        *rpl++ = c;
+    }
+    *rpl = '\0';
+
+    return begin;
+}
+
 struct zip_entry_t {
     int index;
     const char *name;
@@ -173,7 +188,8 @@ void zip_close(struct zip_t *zip) {
     }
 }
 
-int zip_entry_open(struct zip_t *zip, const char *entryname, int directory) {
+int zip_entry_open(struct zip_t *zip, const char *entryname) {
+    char *locname = NULL;
     size_t entrylen = 0;
     mz_zip_archive *pzip = NULL;
     mz_uint num_alignment_padding_bytes, level;
@@ -188,14 +204,27 @@ int zip_entry_open(struct zip_t *zip, const char *entryname, int directory) {
     }
 
     pzip = &(zip->archive);
+    /*
+      .ZIP File Format Specification Version: 6.3.3
+
+      4.4.17.1 The name of the file, with optional relative path.
+      The path stored MUST not contain a drive or
+      device letter, or a leading slash.  All slashes
+      MUST be forward slashes '/' as opposed to
+      backwards slashes '\' for compatibility with Amiga
+      and UNIX file systems etc.  If input came from standard
+      input, there is no file name field.
+    */
+    locname = strrpl(entryname, '\\', '/');
 
     if (zip->mode == 'r') {
-        zip->entry.index = mz_zip_reader_locate_file(pzip, entryname, NULL, 0);
+        zip->entry.index = mz_zip_reader_locate_file(pzip, locname, NULL, 0);
+        CLEANUP(locname);
         return (zip->entry.index < 0) ? -1 : 0;
     }
 
     zip->entry.index = zip->archive.m_total_files;
-    zip->entry.name = STRCLONE(entryname);
+    zip->entry.name = locname;
     if (!zip->entry.name) {
         // Cannot parse zip entry name
         return -1;
@@ -590,9 +619,11 @@ int zip_extract(const char *zipname, const char *dir,
             goto out;
         }
 
-        if (!mz_zip_reader_extract_to_file(&zip_archive, i, path, 0)) {
-            // Cannot extract zip archive to file
-            goto out;
+        if (!mz_zip_reader_is_file_a_directory(&zip_archive, i)) {
+            if (!mz_zip_reader_extract_to_file(&zip_archive, i, path, 0)) {
+                // Cannot extract zip archive to file
+                goto out;
+            }
         }
 
         if (on_extract) {

@@ -65,7 +65,7 @@ extern void zip_close(struct zip_t *zip);
   Returns:
     The return code - 0 on success, negative number (< 0) on error.
 */
-  extern int zip_entry_open(struct zip_t *zip, const char *entryname, int directory);
+  extern int zip_entry_open(struct zip_t *zip, const char *entryname);
 
 /*
   Closes a zip entry, flushes buffer and releases resources.

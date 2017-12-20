@@ -22,7 +22,7 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
     const char *filename = CHAR(STRING_ELT(files, i));
     int directory = LOGICAL(dirs)[i];
     time_t cmtime = REAL(mtime)[i];
-    if (zip_entry_open(zip, key, directory)) error("Can't create zip file entry");
+    if (zip_entry_open(zip, key)) error("Can't create zip file entry");
     if (zip_entry_fwrite(zip, filename, directory)) error("Can't write zip file entry");
     if (zip_entry_close(zip, cmtime)) error("Can't close zip file entry");
   }

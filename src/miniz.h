@@ -2865,7 +2865,9 @@ void *tdefl_write_image_to_png_file_in_memory(const void *pImage, int w, int h, 
     }
     static FILE *mz_freopen(const char *pPath, const char *pMode, FILE *pStream)
     {
-      FILE* pFile = freopen(pPath, pMode, pStream);
+      FILE* pFile = NULL;
+      if (freopen_s(&pFile, pPath, pMode, pStream))
+        return NULL;
       return pFile;
     }
     #ifndef MINIZ_NO_TIME
@@ -3028,6 +3030,7 @@ static MZ_FORCEINLINE mz_bool mz_zip_array_ensure_room(mz_zip_archive *pZip, mz_
 
 static MZ_FORCEINLINE mz_bool mz_zip_array_push_back(mz_zip_archive *pZip, mz_zip_array *pArray, const void *pElements, size_t n)
 {
+  if( 0 == n ) return MZ_TRUE;
   size_t orig_size = pArray->m_size; if (!mz_zip_array_resize(pZip, pArray, orig_size + n, MZ_TRUE)) return MZ_FALSE;
   memcpy((mz_uint8*)pArray->m_p + orig_size * pArray->m_element_size, pElements, n * pArray->m_element_size);
   return MZ_TRUE;
@@ -4268,7 +4271,7 @@ mz_bool mz_zip_writer_add_mem_ex(mz_zip_archive *pZip, const char *pArchive_name
 {
   mz_uint16 method = 0, dos_time = 0, dos_date = 0;
   mz_uint level, ext_attributes = 0, num_alignment_padding_bytes;
-  mz_uint64 local_dir_header_ofs = pZip->m_archive_size, cur_archive_file_ofs = pZip->m_archive_size, comp_size = 0;
+  mz_uint64 local_dir_header_ofs, cur_archive_file_ofs, comp_size = 0;
   size_t archive_name_size;
   mz_uint8 local_dir_header[MZ_ZIP_LOCAL_DIR_HEADER_SIZE];
   tdefl_compressor *pComp = NULL;
@@ -4283,6 +4286,7 @@ mz_bool mz_zip_writer_add_mem_ex(mz_zip_archive *pZip, const char *pArchive_name
   if ((!pZip) || (!pZip->m_pState) || (pZip->m_zip_mode != MZ_ZIP_MODE_WRITING) || ((buf_size) && (!pBuf)) || (!pArchive_name) || ((comment_size) && (!pComment)) || (pZip->m_total_files == 0xFFFF) || (level > MZ_UBER_COMPRESSION))
     return MZ_FALSE;
 
+  local_dir_header_ofs = cur_archive_file_ofs = pZip->m_archive_size;
   pState = pZip->m_pState;
 
   if ((!(level_and_flags & MZ_ZIP_FLAG_COMPRESSED_DATA)) && (uncomp_size))
@@ -4419,17 +4423,21 @@ mz_bool mz_zip_writer_add_file(mz_zip_archive *pZip, const char *pArchive_name, 
 {
   mz_uint uncomp_crc32 = MZ_CRC32_INIT, level, num_alignment_padding_bytes;
   mz_uint16 method = 0, dos_time = 0, dos_date = 0, ext_attributes = 0;
-  mz_uint64 local_dir_header_ofs = pZip->m_archive_size, cur_archive_file_ofs = pZip->m_archive_size, uncomp_size = 0, comp_size = 0;
+  mz_uint64 local_dir_header_ofs, cur_archive_file_ofs, uncomp_size = 0, comp_size = 0;
   size_t archive_name_size;
   mz_uint8 local_dir_header[MZ_ZIP_LOCAL_DIR_HEADER_SIZE];
   MZ_FILE *pSrc_file = NULL;
 
-  if ((int)level_and_flags < 0)
-    level_and_flags = MZ_DEFAULT_LEVEL;
   level = level_and_flags & 0xF;
 
   if ((!pZip) || (!pZip->m_pState) || (pZip->m_zip_mode != MZ_ZIP_MODE_WRITING) || (!pArchive_name) || ((comment_size) && (!pComment)) || (level > MZ_UBER_COMPRESSION))
     return MZ_FALSE;
+
+  local_dir_header_ofs = cur_archive_file_ofs = pZip->m_archive_size;
+
+  if ((int)level_and_flags < 0)
+    level_and_flags = MZ_DEFAULT_LEVEL;
+
   if (level_and_flags & MZ_ZIP_FLAG_COMPRESSED_DATA)
     return MZ_FALSE;
   if (!mz_zip_writer_validate_archive_name(pArchive_name))
