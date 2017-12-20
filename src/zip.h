@@ -13,6 +13,7 @@
 #define ZIP_H
 
 #include <string.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,7 +76,7 @@ extern void zip_close(struct zip_t *zip);
   Returns:
     The return code - 0 on success, negative number (< 0) on error.
 */
-extern int zip_entry_close(struct zip_t *zip);
+  extern int zip_entry_close(struct zip_t *zip, time_t timestamp);
 
 /*
   Compresses an input buffer for the current zip entry.
@@ -187,7 +188,8 @@ extern int zip_extract(const char *zipname, const char *dir,
                        void *arg);
 
 extern int zip_list(const char *zipname, size_t *num, char ***files,
-		    size_t **compressed_size, size_t **uncompressed_size);
+		    size_t **compressed_size, size_t **uncompressed_size,
+		    time_t **timestamps);
 
 #ifdef __cplusplus
 }

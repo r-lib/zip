@@ -1,11 +1,12 @@
 
 #include <stdlib.h>
+#include <time.h>
 
 #include <Rinternals.h>
 
 #include "zip.h"
 
-SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs,
+SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 	       SEXP compression_level, SEXP append) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   int ccompression_level = INTEGER(compression_level)[0];
@@ -20,9 +21,10 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs,
     const char *key = CHAR(STRING_ELT(keys, i));
     const char *filename = CHAR(STRING_ELT(files, i));
     int directory = LOGICAL(dirs)[i];
+    time_t cmtime = REAL(mtime)[i];
     if (zip_entry_open(zip, key, directory)) error("Can't create zip file entry");
     if (zip_entry_fwrite(zip, filename, directory)) error("Can't write zip file entry");
-    if (zip_entry_close(zip)) error("Can't close zip file entry");
+    if (zip_entry_close(zip, cmtime)) error("Can't close zip file entry");
   }
 
   zip_close(zip);
@@ -35,28 +37,32 @@ SEXP R_zip_list(SEXP zipfile) {
   char **files;
   size_t *compressed_size;
   size_t *uncompressed_size;
+  time_t *timestamps;
   size_t i, num_files;
   SEXP result = R_NilValue;
 
   int status = zip_list(czipfile, &num_files, &files, &compressed_size,
-			&uncompressed_size);
+			&uncompressed_size, &timestamps);
 
   if (status) error("Cannot list zip file contents");
 
-  result = PROTECT(allocVector(VECSXP, 3));
+  result = PROTECT(allocVector(VECSXP, 4));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP, num_files));
   SET_VECTOR_ELT(result, 1, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 2, allocVector(REALSXP, num_files));
+  SET_VECTOR_ELT(result, 3, allocVector(INTSXP, num_files));
 
   for (i = 0; i < num_files; ++i) {
     SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkChar(files[i]));
     REAL(VECTOR_ELT(result, 1))[i] = compressed_size[i];
     REAL(VECTOR_ELT(result, 2))[i] = uncompressed_size[i];
+    INTEGER(VECTOR_ELT(result, 3))[i] = timestamps[i];
     free(files[i]);
   }
   free(files);
   free(compressed_size);
   free(uncompressed_size);
+  free(timestamps);
 
   UNPROTECT(1);
   return result;

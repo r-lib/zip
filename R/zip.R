@@ -126,7 +126,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
   warn_for_dotdot(data$key)
 
   .Call(c_R_zip_zip, zipfile, data$key, data$file, data$dir,
-        as.integer(compression_level), append, PACKAGE = "zip")
+        file.info(data$file)$mtime, as.integer(compression_level), append)
 
   invisible(zipfile)
 }
@@ -142,11 +142,12 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 
 zip_list <- function(zipfile) {
   zipfile <- normalizePath(zipfile)
-  res <- .Call(c_R_zip_list, zipfile, PACKAGE = "zip")
+  res <- .Call(c_R_zip_list, zipfile)
   data.frame(
     stringsAsFactors = FALSE,
     filename = sub("[\\\\/]$", "", res[[1]]),
     compressed_size = res[[2]],
-    uncompressed_size = res[[3]]
+    uncompressed_size = res[[3]],
+    timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
   )
 }

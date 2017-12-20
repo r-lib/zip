@@ -270,12 +270,11 @@ int zip_entry_open(struct zip_t *zip, const char *entryname, int directory) {
     return 0;
 }
 
-int zip_entry_close(struct zip_t *zip) {
+int zip_entry_close(struct zip_t *zip, time_t timestamp) {
     mz_zip_archive *pzip = NULL;
     mz_uint level;
     tdefl_status done;
     mz_uint16 entrylen;
-    time_t t;
     struct tm *tm;
     mz_uint16 dos_time, dos_date;
     int status = -1;
@@ -303,8 +302,7 @@ int zip_entry_close(struct zip_t *zip) {
     }
 
     entrylen = (mz_uint16)strlen(zip->entry.name);
-    t = time(NULL);
-    tm = localtime(&t);
+    tm = localtime(&timestamp);
     dos_time = (mz_uint16)(((tm->tm_hour) << 11) + ((tm->tm_min) << 5) +
                            ((tm->tm_sec) >> 1));
     dos_date = (mz_uint16)(((tm->tm_year + 1900 - 1980) << 9) +
@@ -616,7 +614,8 @@ out:
 }
 
 int zip_list(const char *zipname, size_t *num, char ***files,
-	     size_t **compressed_size, size_t **uncompressed_size) {
+	     size_t **compressed_size, size_t **uncompressed_size,
+	     time_t **timestamps) {
 
     mz_uint i, n = 0;
     mz_zip_archive zip_archive;
@@ -642,9 +641,11 @@ int zip_list(const char *zipname, size_t *num, char ***files,
     *files = 0;
     *compressed_size = 0;
     *uncompressed_size = 0;
+    *timestamps = 0;
     *files = calloc(n, sizeof(char *));
     *compressed_size = calloc(n, sizeof(size_t));
     *uncompressed_size = calloc(n, sizeof(size_t));
+    *timestamps = calloc(n, sizeof(time_t));
     if (!*files || !*compressed_size || !*uncompressed_size) {
         status = -1; goto out;
     }
@@ -664,6 +665,7 @@ int zip_list(const char *zipname, size_t *num, char ***files,
 	if (!(*files)[i]) { status = -1; goto out; }
 	(*compressed_size)[i] = info.m_comp_size;
 	(*uncompressed_size)[i] = info.m_uncomp_size;
+	(*timestamps)[i] = info.m_time;
     }
 
  out:
