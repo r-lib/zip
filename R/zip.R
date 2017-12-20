@@ -141,6 +141,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 #' @export
 
 zip_list <- function(zipfile) {
+  zipfile <- normalizePath(zipfile)
   res <- .Call(c_R_zip_list, zipfile, PACKAGE = "zip")
   data.frame(
     stringsAsFactors = FALSE,
