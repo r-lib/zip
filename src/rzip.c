@@ -6,32 +6,6 @@
 
 #include "zip.h"
 
-SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
-	       SEXP compression_level, SEXP append) {
-  const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
-  int ccompression_level = INTEGER(compression_level)[0];
-  int cappend = LOGICAL(append)[0];
-  int i, n = LENGTH(files);
-
-  struct zip_t *zip = zip_open(czipfile, ccompression_level,
-			       cappend ? 'a' : 'w');
-  if (!zip) error("Can't open zip file");
-
-  for (i = 0; i < n; i++) {
-    const char *key = CHAR(STRING_ELT(keys, i));
-    const char *filename = CHAR(STRING_ELT(files, i));
-    int directory = LOGICAL(dirs)[i];
-    time_t cmtime = REAL(mtime)[i];
-    if (zip_entry_open(zip, key)) error("Can't create zip file entry");
-    if (zip_entry_fwrite(zip, filename, directory)) error("Can't write zip file entry");
-    if (zip_entry_close(zip, cmtime)) error("Can't close zip file entry");
-  }
-
-  zip_close(zip);
-
-  return R_NilValue;
-}
-
 SEXP R_zip_list(SEXP zipfile) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   char **files;
