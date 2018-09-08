@@ -5,17 +5,15 @@
 
 > Cross-Platform 'zip' Compression
 
-[![Linux Build Status](https://travis-ci.org/r-lib/zip.svg?branch=master)](https://travis-ci.org/r-lib/zip)
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/github/r-lib/zip?svg=true)](https://ci.appveyor.com/project/gaborcsardi/zip)
-[![](https://www.r-pkg.org/badges/version/zip)](https://www.r-pkg.org/pkg/zip)
-[![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/zip)](https://www.r-pkg.org/pkg/zip)
-[![Coverage Status](https://img.shields.io/codecov/c/github/r-lib/zip/master.svg)](https://codecov.io/github/r-lib/zip?branch=master)
+[![Linux Build Status](https://travis-ci.org/jeffreis/zip.svg?branch=master)](https://travis-ci.org/jefferis/zip)
 
 ## Installation
 
 
 ```r
-source("https://install-github.me/jefferis/zip")
+# install devtools if required
+if (!requireNamespace("devtools")) install.packages("devtools")
+devtools::install_github("jefferis/zip@ziplistonly")
 ```
 
 ## Usage
