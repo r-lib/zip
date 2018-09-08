@@ -48,55 +48,6 @@
         }                      \
     } while (0)
 
-static char *basename(const char *name) {
-    char const *p;
-    char const *base = name += FILESYSTEM_PREFIX_LEN(name);
-    int all_slashes = 1;
-
-    for (p = name; *p; p++) {
-        if (ISSLASH(*p))
-            base = p + 1;
-        else
-            all_slashes = 0;
-    }
-
-    /* If NAME is all slashes, arrange to return `/'. */
-    if (*base == '\0' && ISSLASH(*name) && all_slashes) --base;
-
-    return (char *)base;
-}
-
-static int mkpath(const char *path) {
-    char const *p;
-    char npath[MAX_PATH + 1] = {0};
-    int len = 0;
-
-    for (p = path; *p && len < MAX_PATH; p++) {
-        if (ISSLASH(*p) && len > 0) {
-            if (MKDIR(npath) == -1)
-                if (errno != EEXIST) return -1;
-        }
-        npath[len++] = *p;
-    }
-
-    return 0;
-}
-
-static char *strrpl(const char *str, char oldchar, char newchar) {
-    char *rpl = (char *)malloc(sizeof(char) * (1 + strlen(str)));
-    char *begin = rpl;
-    char c;
-    while((c = *str++)) {
-        if (c == oldchar) {
-            c = newchar;
-        }
-        *rpl++ = c;
-    }
-    *rpl = '\0';
-
-    return begin;
-}
-
 struct zip_entry_t {
     int index;
     const char *name;
