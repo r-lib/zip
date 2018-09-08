@@ -15,53 +15,15 @@
 
 
 ```r
-source("https://install-github.me/r-lib/zip")
+source("https://install-github.me/jefferis/zip")
 ```
 
 ## Usage
 
 
 ```r
-library(zip)
+library(ziplist64)
 ```
-
-```
-#> 
-#> Attaching package: 'zip'
-```
-
-```
-#> The following object is masked from 'package:utils':
-#> 
-#>     zip
-```
-
-### Creating ZIP files
-
-`zip()` creates a new ZIP archive. (It overwrites the output file if it
-exists.) Simply supply all directories and files that you want to include
-in the archive.
-
-It makes sense to change to the top-level directory of the files before
-archiving them, so that the files are stored using a relative path name.
-
-
-```r
-zip("sources.zip", c("R", "src"))
-file.info("sources.zip")
-```
-
-```
-#>               size isdir mode               mtime               ctime
-#> sources.zip 203203 FALSE  644 2017-04-10 09:36:35 2017-04-10 09:36:35
-#>                           atime uid gid       uname grname
-#> sources.zip 2017-04-10 09:35:22 501  20 gaborcsardi  staff
-```
-
-Directories are added recursively by default.
-
-`zip_append()` is similar to `zip()`, but it appends files to an existing
-ZIP archive.
 
 ### Listing ZIP files
 
@@ -69,22 +31,23 @@ ZIP archive.
 
 
 ```r
+utils::zip("sources.zip", dir("src", full.names = TRUE))
 zip_list("sources.zip")
 ```
 
 ```
-#>       filename compressed_size uncompressed_size
-#> 1    R/utils.R             251               508
-#> 2      R/zip.R             926              2412
-#> 3   src/init.c             285               510
-#> 4   src/init.o            1406              3388
-#> 5  src/miniz.h           49202            226019
-#> 6   src/rzip.c             624              1751
-#> 7   src/rzip.o            2516              6132
-#> 8    src/zip.c            4370             18582
-#> 9    src/zip.h            1658              5389
-#> 10   src/zip.o          100255            254228
-#> 11  src/zip.so           40644             96680
+#>            filename compressed_size uncompressed_size           timestamp
+#> 1        src/init.c             272               439 2018-09-08 10:22:06
+#> 2        src/init.o            1359              3256 2018-09-08 10:30:50
+#> 3       src/miniz.c           54348            313433 2018-02-20 18:04:52
+#> 4       src/miniz.h           18004             66933 2018-02-20 18:04:52
+#> 5       src/miniz.o          121051            310264 2018-09-08 10:30:50
+#> 6        src/rzip.c             452              1191 2018-09-08 08:45:04
+#> 7        src/rzip.o            2141              5248 2018-09-08 10:30:50
+#> 8         src/zip.c            1305              3584 2018-09-08 10:07:52
+#> 9         src/zip.h             617              1041 2018-09-08 08:12:34
+#> 10        src/zip.o            4143              9028 2018-09-08 10:30:50
+#> 11 src/ziplist64.so           45928            110588 2018-09-08 10:30:50
 ```
 
 ### Uncompressing ZIP files

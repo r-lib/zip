@@ -1,15 +1,14 @@
-Title: Cross-Platform 'zip' Compression
-Version: 1.0.0.9000
-Author: Gábor Csárdi, Kuba Podgórski, Rich Geldreich
-Maintainer: Gábor Csárdi <csardi.gabor@gmail.com>
-Description: Cross-Platform 'zip' Compression Library. A replacement
-    for the 'zip' function, that does not require any additional
-    external tools on any platform.
 Package: ziplist64
+Title: Cross-Platform listing of contents of 64 bit 'zip' files
+Version: 0.1
+Author: Gábor Csárdi, Kuba Podgórski, Rich Geldreich, Gregory Jefferis
+Maintainer: Gregory Jefferis <jefferis@gmail.com>
+Description: Can list the contents of 'zip64' files using the 'miniz' library.
+    This is just a stripped down version of the 'zip' package with all 
+    functionality other than listing of zip files removed.
 License: CC0
 LazyData: true
-URL: https://github.com/r-lib/zip#readme
-BugReports: https://github.com/r-lib/zip/issues
+URL: https://github.com/jefferis/zip#readme
 RoxygenNote: 6.0.1
 Roxygen: list(markdown = TRUE)
 Suggests:
