@@ -48,24 +48,10 @@
         }                      \
     } while (0)
 
-struct zip_entry_t {
-    int index;
-    const char *name;
-    mz_uint64 uncomp_size;
-    mz_uint64 comp_size;
-    mz_uint32 uncomp_crc32;
-    mz_uint64 offset;
-    mz_uint8 header[MZ_ZIP_LOCAL_DIR_HEADER_SIZE];
-    mz_uint64 header_offset;
-    mz_uint16 method;
-    mz_zip_writer_add_state state;
-    tdefl_compressor comp;
-};
 
 struct zip_t {
     mz_zip_archive archive;
     mz_uint level;
-    struct zip_entry_t entry;
     char mode;
 };
 
