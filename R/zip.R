@@ -1,5 +1,5 @@
 
-#' @useDynLib zip, .registration = TRUE, .fixes = "c_"
+#' @useDynLib ziplist64, .registration = TRUE, .fixes = "c_"
 NULL
 
 #' List Files in a 'zip' Archive

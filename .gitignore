@@ -2,5 +2,5 @@
 .Rhistory
 .RData
 /src/*.o
-/src/zip.so
+/src/ziplist64.so
 /revdep
