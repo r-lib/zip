@@ -6,11 +6,9 @@
 
 /* .Call calls */
 extern SEXP R_zip_list(SEXP);
-extern SEXP R_make_big_file(SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
   { "R_zip_list",      (DL_FUNC) &R_zip_list,      1 },
-  { "R_make_big_file", (DL_FUNC) &R_make_big_file, 2 },
   { NULL, NULL, 0 }
 };
 
