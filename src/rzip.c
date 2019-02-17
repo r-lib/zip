@@ -184,7 +184,7 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
   const char *cfilename = CHAR(STRING_ELT(filename, 0));
   int fd = open(cfilename, O_WRONLY | O_CREAT);
   double sz = INTEGER(mb)[0] * 1024.0 * 1024.0;
-  fstore_t store = { F_ALLOCATECONTIG, F_PEOFPOSMODE, 0, sz };
+  fstore_t store = { F_ALLOCATECONTIG, F_PEOFPOSMODE, 0, (off_t) sz };
   // Try to get a continous chunk of disk space
   int ret = fcntl(fd, F_PREALLOCATE, &store);
   if (-1 == ret) {
@@ -194,7 +194,7 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
     if (-1 == ret) error("Cannot create big file");
   }
 
-  if (ftruncate(fd, sz)) {
+  if (ftruncate(fd, (off_t) sz)) {
     close(fd);
     error("Cannot create big file");
   }
