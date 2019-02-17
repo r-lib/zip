@@ -53,9 +53,9 @@ file.info("sources.zip")
 
 ```
 #>               size isdir mode               mtime               ctime
-#> sources.zip 203203 FALSE  644 2017-04-10 09:36:35 2017-04-10 09:36:35
+#> sources.zip 273855 FALSE  644 2019-02-17 23:56:43 2019-02-17 23:56:43
 #>                           atime uid gid       uname grname
-#> sources.zip 2017-04-10 09:35:22 501  20 gaborcsardi  staff
+#> sources.zip 2019-02-17 23:56:43 501  20 gaborcsardi  staff
 ```
 
 Directories are added recursively by default.
@@ -74,17 +74,16 @@ zip_list("sources.zip")
 
 ```
 #>       filename compressed_size uncompressed_size
-#> 1    R/utils.R             251               508
-#> 2      R/zip.R             926              2412
-#> 3   src/init.c             285               510
-#> 4   src/init.o            1406              3388
-#> 5  src/miniz.h           49202            226019
-#> 6   src/rzip.c             624              1751
-#> 7   src/rzip.o            2516              6132
-#> 8    src/zip.c            4370             18582
-#> 9    src/zip.h            1658              5389
-#> 10   src/zip.o          100255            254228
-#> 11  src/zip.so           40644             96680
+#> 1    R/utils.R             738              2698
+#> 2      R/zip.R            1535              4574
+#> 3   src/init.c             316               633
+#> 4   src/init.o            1441              3516
+#> 5  src/miniz.c           54994            313426
+#> 6  src/miniz.h           18060             66464
+#> 7  src/miniz.o          123757            331616
+#> 8   src/rzip.c            1836              5614
+#> 9   src/rzip.o            6162             13464
+#> 10  src/zip.so           64036            192016
 ```
 
 ### Uncompressing ZIP files
