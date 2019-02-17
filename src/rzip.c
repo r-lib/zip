@@ -4,7 +4,7 @@
 
 #include <Rinternals.h>
 
-#include "zip.h"
+#include "miniz.h"
 
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 	       SEXP compression_level, SEXP append) {
@@ -12,59 +12,79 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
   int ccompression_level = INTEGER(compression_level)[0];
   int cappend = LOGICAL(append)[0];
   int i, n = LENGTH(files);
+  mz_zip_archive zip_archive;
 
-  struct zip_t *zip = zip_open(czipfile, ccompression_level,
-			       cappend ? 'a' : 'w');
-  if (!zip) error("Can't open zip file");
+  memset(&zip_archive, 0, sizeof(zip_archive));
 
-  for (i = 0; i < n; i++) {
-    const char *key = CHAR(STRING_ELT(keys, i));
-    const char *filename = CHAR(STRING_ELT(files, i));
-    int directory = LOGICAL(dirs)[i];
-    time_t cmtime = REAL(mtime)[i];
-    if (zip_entry_open(zip, key)) error("Can't create zip file entry");
-    if (zip_entry_fwrite(zip, filename, directory)) error("Can't write zip file entry");
-    if (zip_entry_close(zip, cmtime)) error("Can't close zip file entry");
+  if (cappend) {
+    if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0) ||
+	!mz_zip_writer_init_from_reader(&zip_archive, czipfile)) {
+      error("Cannot open zip file `%s` for appending", czipfile);
+    }
+  } else {
+    if (!mz_zip_writer_init_file(&zip_archive, czipfile, 0)) {
+      error("Cannot open zip file `%s` for writing", czipfile);
+    }
   }
 
-  zip_close(zip);
+  for (i = 0; i < n; i++) {
+   const char *key = CHAR(STRING_ELT(keys, i));
+   const char *filename = CHAR(STRING_ELT(files, i));
+   int directory = LOGICAL(dirs)[i];
+   if (directory) REprintf("adding %s %s\n", key, filename);
+   if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
+			       ccompression_level)) {
+     goto cleanup;
+   }
+  }
 
+  if (!mz_zip_writer_finalize_archive(&zip_archive)) goto cleanup;
+  if (!mz_zip_writer_end(&zip_archive)) goto cleanup;
+  return R_NilValue;
+  
+ cleanup:
+  mz_zip_writer_end(&zip_archive);
+  error("Cannot create zip file `%s`, file might be corrupt", czipfile);
   return R_NilValue;
 }
 
 SEXP R_zip_list(SEXP zipfile) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
-  char **files;
-  size_t *compressed_size;
-  size_t *uncompressed_size;
-  time_t *timestamps;
-  size_t i, num_files;
+  size_t num_files;
+  unsigned int i;
   SEXP result = R_NilValue;
+  mz_bool status;
+  mz_zip_archive zip_archive;
 
-  int status = zip_list(czipfile, &num_files, &files, &compressed_size,
-			&uncompressed_size, &timestamps);
-
-  if (status) error("Cannot list zip file contents");
-
+  memset(&zip_archive, 0, sizeof(zip_archive));
+  status = mz_zip_reader_init_file(&zip_archive, czipfile, 0);
+  if (!status) error("Cannot open zip file `%s`", czipfile);
+  
+  num_files = mz_zip_reader_get_num_files(&zip_archive);
   result = PROTECT(allocVector(VECSXP, 4));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP, num_files));
   SET_VECTOR_ELT(result, 1, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 2, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 3, allocVector(INTSXP, num_files));
 
-  for (i = 0; i < num_files; ++i) {
-    SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkChar(files[i]));
-    REAL(VECTOR_ELT(result, 1))[i] = compressed_size[i];
-    REAL(VECTOR_ELT(result, 2))[i] = uncompressed_size[i];
-    INTEGER(VECTOR_ELT(result, 3))[i] = timestamps[i];
-    free(files[i]);
-  }
-  free(files);
-  free(compressed_size);
-  free(uncompressed_size);
-  free(timestamps);
+  for (i = 0; i < num_files; i++) {
+    mz_zip_archive_file_stat file_stat;
+    status = mz_zip_reader_file_stat (&zip_archive, i, &file_stat);
+    if (!status) goto cleanup;
 
+    SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkChar(file_stat.m_filename));
+    REAL(VECTOR_ELT(result, 1))[i] = file_stat.m_comp_size;
+    REAL(VECTOR_ELT(result, 2))[i] = file_stat.m_uncomp_size;
+    INTEGER(VECTOR_ELT(result, 3))[i] = (int) file_stat.m_time;
+  }
+
+  mz_zip_reader_end(&zip_archive);
   UNPROTECT(1);
+  return result;
+
+ cleanup:
+  mz_zip_reader_end(&zip_archive);
+  error("Cannot list zip entries, corrupt zip file?");
   return result;
 }
 
