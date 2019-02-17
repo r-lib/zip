@@ -9,7 +9,7 @@
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 	       SEXP compression_level, SEXP append) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
-  int ccompression_level = INTEGER(compression_level)[0];
+  mz_uint ccompression_level =(mz_uint) INTEGER(compression_level)[0];
   int cappend = LOGICAL(append)[0];
   int i, n = LENGTH(files);
   mz_zip_archive zip_archive;
@@ -31,17 +31,26 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
    const char *key = CHAR(STRING_ELT(keys, i));
    const char *filename = CHAR(STRING_ELT(files, i));
    int directory = LOGICAL(dirs)[i];
-   if (directory) REprintf("adding %s %s\n", key, filename);
-   if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
-			       ccompression_level)) {
-     goto cleanup;
+   if (directory) {
+     MZ_TIME_T cmtime = (MZ_TIME_T) REAL(mtime)[i];
+     if (!mz_zip_writer_add_mem_ex_v2(&zip_archive, key, 0, 0, 0, 0,
+				      ccompression_level, 0, 0, &cmtime, 0, 0,
+				      0, 0)) {
+       goto cleanup;
+     }
+
+   } else {
+     if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
+				 ccompression_level)) {
+       goto cleanup;
+     }
    }
   }
 
   if (!mz_zip_writer_finalize_archive(&zip_archive)) goto cleanup;
   if (!mz_zip_writer_end(&zip_archive)) goto cleanup;
   return R_NilValue;
-  
+
  cleanup:
   mz_zip_writer_end(&zip_archive);
   error("Cannot create zip file `%s`, file might be corrupt", czipfile);
@@ -59,7 +68,7 @@ SEXP R_zip_list(SEXP zipfile) {
   memset(&zip_archive, 0, sizeof(zip_archive));
   status = mz_zip_reader_init_file(&zip_archive, czipfile, 0);
   if (!status) error("Cannot open zip file `%s`", czipfile);
-  
+
   num_files = mz_zip_reader_get_num_files(&zip_archive);
   result = PROTECT(allocVector(VECSXP, 4));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP, num_files));
