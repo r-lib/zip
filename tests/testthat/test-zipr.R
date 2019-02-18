@@ -349,8 +349,8 @@ test_that("empty directories are archived as directories", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(paste0(bt, "/"), file.path(bt, "foo/"), file.path(bt, "foo", "bar/"),
-      file.path(bt, "foo", "bar2/"), file.path(bt, "foo", "file1"))
+    c(paste0(bt, "/"), paste0(bt, "/foo/"), paste0(bt, "/foo/bar/"),
+      paste0(bt, "/foo/bar2/"), paste0(bt, "/foo/file1"))
   )
 
   on.exit(unlink(tmp2, recursive = TRUE), add = TRUE)

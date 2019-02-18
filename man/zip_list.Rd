@@ -16,3 +16,4 @@ A data frame with columns: \code{filename}, \code{compressed_size},
 \description{
 List Files in a 'zip' Archive
 }
+\concept{zip/unzip functions}
