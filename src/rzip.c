@@ -4,6 +4,10 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#ifdef _WIN32
+#include <direct.h>		/* _mkdir */
+#endif
+
 #include <Rinternals.h>
 
 #include "miniz.h"
