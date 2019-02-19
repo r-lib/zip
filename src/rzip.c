@@ -1,6 +1,8 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <errno.h>
+#include <sys/stat.h>
 
 #include <Rinternals.h>
 
@@ -49,6 +51,8 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 
   if (!mz_zip_writer_finalize_archive(&zip_archive)) goto cleanup;
   if (!mz_zip_writer_end(&zip_archive)) goto cleanup;
+
+  /* TODO: return info */
   return R_NilValue;
 
  cleanup:
@@ -95,6 +99,136 @@ SEXP R_zip_list(SEXP zipfile) {
   mz_zip_reader_end(&zip_archive);
   error("Cannot list zip entries, corrupt zip file?");
   return result;
+}
+
+int zip_str_file_path(const char *cexdir, const char *key,
+		      char **buffer, size_t *buffer_size) {
+  size_t len1 = strlen(cexdir);
+  size_t len2 = strlen(key);
+  size_t need_size = len1 + len2 + 2;
+  char *newbuffer;
+
+  if (*buffer_size < need_size) {
+    newbuffer = realloc((void*) *buffer, need_size);
+    if (!newbuffer) return 1;
+
+    *buffer = newbuffer;
+    *buffer_size = need_size;
+  }
+
+  strcpy(*buffer, cexdir);
+  (*buffer)[len1] = '/';
+  strcpy(*buffer + len1 + 1, key);
+
+  return 0;
+}
+
+int zip_mkdirp(char *path)  {
+  char *p;
+  int status;
+
+  errno = 0;
+
+  /* Iterate the string */
+  for (p = path + 1; *p; p++) {
+    if (*p == '/') {
+      *p = '\0';
+#ifdef _WIN32
+      status = _mkdir(path);
+#else
+      status = mkdir(path, S_IRWXU);
+#endif
+      *p = '/';
+      if (status && errno != EEXIST) return 1;
+    }
+  }
+
+#ifdef _WIN32
+  status = _mkdir(path);
+#else
+  status = mkdir(path, S_IRWXU);
+#endif
+  if (status &&  errno != EEXIST) return 1;
+
+  return 0;
+}
+
+SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
+		 SEXP exdir) {
+  const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
+  int coverwrite = LOGICAL(overwrite)[0];
+  int cjunkpaths = LOGICAL(junkpaths)[0];
+  const char *cexdir = CHAR(STRING_ELT(exdir, 0));
+  int allfiles = isNull(files);
+  int i, n;
+  mz_zip_archive zip_archive;
+  char *buffer = 0;
+  size_t buffer_size = 0;
+
+  memset(&zip_archive, 0, sizeof(zip_archive));
+
+  if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0)) {
+    error("Cannot open zip file `%s` for reading", czipfile);
+  }
+
+  /* We allocate a fairly large buffer for the destination file names here,
+     so that we don't need to reallocated it all the time */
+  buffer_size = 10;
+  buffer = malloc(buffer_size);
+  if (!buffer) {
+    mz_zip_reader_end(&zip_archive);
+    error("Cannot extract zip archive `%s`, out of memory", czipfile);
+  }
+
+  n = allfiles ? mz_zip_reader_get_num_files(&zip_archive) : LENGTH(files);
+
+  for (i = 0; i < n; i++) {
+    mz_uint32 idx = -1;
+    const char *key = 0;
+    mz_zip_archive_file_stat file_stat;
+
+    if (allfiles) {
+      idx = (mz_uint32) i;
+    } else {
+      key = CHAR(STRING_ELT(files, i));
+      if (mz_zip_reader_locate_file_v2(&zip_archive, key, /* pComment= */ 0,
+				       /* flags= */ 0, &idx)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Cannot extract file `%s` from archive `%s`", key, czipfile);
+      }
+    }
+
+    if (! mz_zip_reader_file_stat (&zip_archive, idx, &file_stat)) {
+      mz_zip_reader_end(&zip_archive);
+      if (buffer) free(buffer);
+      error("Cannot extract zip archive `%s`", czipfile);
+    }
+    key = file_stat.m_filename;
+
+    if (zip_str_file_path(cexdir, key, &buffer, &buffer_size)) {
+      mz_zip_reader_end(&zip_archive);
+      if (buffer) free(buffer);
+      error("Cannot extract zip archive `%s`, out of memory", czipfile);
+    }
+
+    if (file_stat.m_is_directory) {
+      zip_mkdirp(buffer);
+      /* TODO: set modification time */
+
+    } else {
+      if (!mz_zip_reader_extract_to_file(&zip_archive, idx, buffer, 0)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Cannot extract file `%s` from archive `%s`", key, czipfile);
+      }
+    }
+  }
+
+  mz_zip_reader_end(&zip_archive);
+
+  /* TODO: return info */
+  return R_NilValue;
 }
 
 #ifdef _WIN32

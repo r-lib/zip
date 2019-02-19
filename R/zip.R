@@ -151,3 +151,22 @@ zip_list <- function(zipfile) {
     timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
   )
 }
+
+#' @export
+
+zip_unzip <- function(zipfile, files = NULL, overwrite = TRUE,
+                      junkpaths = FALSE, exdir = ".") {
+
+  stopifnot(
+    is_string(zipfile),
+    is_character_or_null(files),
+    is_flag(overwrite),
+    is_flag(junkpaths),
+    is_string(exdir))
+
+  zipfile <- normalizePath(zipfile)
+  mkdirp(exdir)
+  exdir <- normalizePath(exdir)
+
+  .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir)
+}
