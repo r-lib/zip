@@ -3,6 +3,7 @@
 #include <time.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #ifdef _WIN32
 #include <direct.h>		/* _mkdir */
@@ -143,7 +144,9 @@ int zip_mkdirp(char *path)  {
       status = mkdir(path, S_IRWXU);
 #endif
       *p = '/';
-      if (status && errno != EEXIST) return 1;
+      if (status && errno != EEXIST) {
+	  return 1;
+      }
     }
   }
 
@@ -152,7 +155,7 @@ int zip_mkdirp(char *path)  {
 #else
   status = mkdir(path, S_IRWXU);
 #endif
-  if (status &&  errno != EEXIST) return 1;
+  if ((status && errno != EEXIST)) return 1;
 
   return 0;
 }
@@ -199,11 +202,11 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
 				       /* flags= */ 0, &idx)) {
 	mz_zip_reader_end(&zip_archive);
 	if (buffer) free(buffer);
-	error("Cannot extract file `%s` from archive `%s`", key, czipfile);
+	error("Cannot find file `%s` in zip archive `%s`", key, czipfile);
       }
     }
 
-    if (! mz_zip_reader_file_stat (&zip_archive, idx, &file_stat)) {
+    if (! mz_zip_reader_file_stat(&zip_archive, idx, &file_stat)) {
       mz_zip_reader_end(&zip_archive);
       if (buffer) free(buffer);
       error("Cannot extract zip archive `%s`", czipfile);
@@ -217,8 +220,12 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     }
 
     if (file_stat.m_is_directory) {
-      zip_mkdirp(buffer);
-      /* TODO: set modification time */
+      if (zip_mkdirp(buffer)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Cannot extract directory `%s` from archive `%s`", key,
+	      czipfile);
+      }
 
     } else {
       if (!mz_zip_reader_extract_to_file(&zip_archive, idx, buffer, 0)) {
@@ -229,6 +236,41 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     }
   }
 
+  /* Round two, to set the mtime on directories. We skip handling most
+     of the errors here, because the central directory is unchanged, and
+     if we got here, then it must be still good. */
+
+  for (i = 0; i < n; i++) {
+    mz_uint32 idx = -1;
+    const char *key = 0;
+    mz_zip_archive_file_stat file_stat;
+
+    if (allfiles) {
+      idx = (mz_uint32) i;
+    } else {
+      key = CHAR(STRING_ELT(files, i));
+      mz_zip_reader_locate_file_v2(&zip_archive, key, /* pComment= */ 0,
+				   /* flags= */ 0, &idx);
+    }
+
+    mz_zip_reader_file_stat(&zip_archive, idx, &file_stat);
+    key = file_stat.m_filename;
+
+    if (file_stat.m_is_directory) {
+      struct timeval times[2];
+      times[0].tv_sec  = times[1].tv_sec = file_stat.m_time;
+      times[0].tv_usec = times[1].tv_usec = 0;
+      zip_str_file_path(cexdir, key, &buffer, &buffer_size);
+      if (utimes(buffer, times)) {
+	if (buffer) free(buffer);
+	mz_zip_reader_end(&zip_archive);
+	error("Failed to set mtime on `%s` while extracting `%s`", buffer,
+	      czipfile);
+      }
+    }
+  }
+
+  if (buffer) free(buffer);
   mz_zip_reader_end(&zip_archive);
 
   /* TODO: return info */
