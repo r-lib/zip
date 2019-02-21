@@ -23,9 +23,6 @@ files. If \code{TRUE}, all files will be created in \code{exdir}.}
 \item{exdir}{Directory to uncompress the archive to. If it does not
 exist, it will be created.}
 }
-\value{
-TODO
-}
 \description{
 Uncompress 'zip' Archives
 }

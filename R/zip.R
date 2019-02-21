@@ -164,7 +164,6 @@ zip_list <- function(zipfile) {
 #'   files. If `TRUE`, all files will be created in `exdir`.
 #' @param exdir Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
-#' @return TODO
 #'
 #' @export
 
@@ -183,4 +182,6 @@ zip_unzip <- function(zipfile, files = NULL, overwrite = TRUE,
   exdir <- normalizePath(exdir)
 
   .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir)
+
+  invisible()
 }
