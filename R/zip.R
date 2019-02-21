@@ -135,7 +135,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 #'
 #' @param zipfile Path to an existing ZIP file.
 #' @return A data frame with columns: `filename`, `compressed_size`,
-#'   `uncompressed_size`.
+#'   `uncompressed_size`, `timestamp`.
 #'
 #' @family zip/unzip functions
 #' @export
@@ -152,6 +152,19 @@ zip_list <- function(zipfile) {
   )
 }
 
+#' Uncompress 'zip' Archives
+#'
+#' @param zipfile Path to the zip file to uncompress.
+#' @param files Character vector of files to extract from the archive.
+#'   Files within directories can be specified, but they must use a forward
+#'   slash as path separator, as this is what zip files use internally.
+#' @param overwrite Whether to overwrite existing files. If `FALSE` and
+#'   a file already exists, then an error is thrown.
+#' @param junkpaths TODO
+#' @param exdir Directory to uncompress the archive to. If it does not
+#'   exist, it will be created.
+#' @return TODO
+#'
 #' @export
 
 zip_unzip <- function(zipfile, files = NULL, overwrite = TRUE,
