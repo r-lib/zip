@@ -43,3 +43,52 @@ make_big_file1 <- function(file, mb) {
 bns <- function(x) {
   paste0(basename(x), "/")
 }
+
+test_temp_file <- function(fileext = "", pattern = "test-file-",
+                           envir = parent.frame(), create = TRUE) {
+  tmp <- tempfile(pattern = pattern, fileext = fileext)
+  if (identical(envir, .GlobalEnv)) {
+    message("Temporary files will _not_ be cleaned up")
+  } else {
+    withr::defer(
+      try(unlink(tmp, recursive = TRUE, force = TRUE), silent = TRUE),
+      envir = envir)
+  }
+  if (create) {
+    cat("", file = tmp)
+    normalizePath(tmp)
+  } else {
+    tmp
+  }
+}
+
+test_temp_dir <- function(pattern = "test-dir-", envir = parent.frame(),
+                          create = TRUE) {
+  tmp <- test_temp_file(pattern = pattern, envir = envir, create = FALSE)
+  if (create) {
+    dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
+    normalizePath(tmp)
+  } else {
+    tmp
+  }
+}
+
+make_a_zip <- function(mtime = Sys.time(), envir = parent.frame()) {
+  tmp <- test_temp_dir(envir = envir)
+  cat("file1\n", file = file.path(tmp, "file1"))
+  cat("file11\n", file = file.path(tmp, "file11"))
+  dir.create(file.path(tmp, "dir"))
+  cat("file2\n", file = file.path(tmp, "dir", "file2"))
+  cat("file3\n", file = file.path(tmp, "dir", "file3"))
+
+  Sys.setFileTime(file.path(tmp, "file1"), mtime)
+  Sys.setFileTime(file.path(tmp, "file11"), mtime)
+  Sys.setFileTime(file.path(tmp, "dir", "file2"), mtime)
+  Sys.setFileTime(file.path(tmp, "dir", "file3"), mtime)
+  Sys.setFileTime(file.path(tmp, "dir"), mtime)
+  Sys.setFileTime(tmp, mtime)
+
+  zip <- test_temp_file(".zip", envir = envir)
+  zipr(zip, tmp)
+  list(zip = zip, ex = tmp)
+}
