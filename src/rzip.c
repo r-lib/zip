@@ -162,6 +162,11 @@ int zip_mkdirp(char *path, int complete)  {
   return 0;
 }
 
+int zip_file_exists(char *filename) {
+  struct stat st;
+  return ! stat(filename, &st);
+}
+
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
 		 SEXP exdir) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
@@ -230,6 +235,13 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
       }
 
     } else {
+      if (!coverwrite && zip_file_exists(buffer)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Not overwriting `%s` when  extracting `%s`", buffer,
+	      czipfile);
+      }
+
       if (zip_mkdirp(buffer, 0)) {
 	mz_zip_reader_end(&zip_archive);
 	if (buffer) free(buffer);

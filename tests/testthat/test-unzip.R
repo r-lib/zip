@@ -108,7 +108,13 @@ test_that("unzip sets mtime correctly", {
 })
 
 test_that("overwrite is FALSE", {
-
+  z <- make_a_zip()
+  tmp <- test_temp_dir()
+  zip_unzip(z$zip, exdir = tmp)
+  zip_unzip(z$zip, exdir = tmp)
+  expect_error(
+    zip_unzip(z$zip, overwrite = FALSE, exdir = tmp),
+    "Not overwriting")
 })
 
 test_that("junkpaths is TRUE", {
