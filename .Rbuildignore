@@ -5,3 +5,5 @@
 ^.travis.yml$
 ^appveyor.yml$
 ^revdep$
+^sources\.zip$
+^README\.html$
