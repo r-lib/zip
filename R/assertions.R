@@ -8,7 +8,7 @@ is_character <- function(x) {
 }
 
 is_character_or_null <- function(x) {
-  is.null(x) || is.character(x)
+  is.null(x) || is_character(x)
 }
 
 is_flag <- function(x) {
