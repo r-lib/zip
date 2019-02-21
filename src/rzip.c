@@ -224,7 +224,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
 
   /* We allocate a fairly large buffer for the destination file names here,
      so that we don't need to reallocated it all the time */
-  buffer_size = 10;
+  buffer_size = 1000;
   buffer = malloc(buffer_size);
   if (!buffer) {
     mz_zip_reader_end(&zip_archive);
