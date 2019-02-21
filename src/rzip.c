@@ -7,6 +7,7 @@
 
 #ifdef _WIN32
 #include <direct.h>		/* _mkdir */
+#include <windows.h>
 #endif
 
 #include <Rinternals.h>
@@ -167,6 +168,42 @@ int zip_file_exists(char *filename) {
   return ! stat(filename, &st);
 }
 
+int zip_set_mtime(const char *filename, time_t mtime) {
+#ifdef _WIN32
+  SYSTEMTIME st;
+  FILETIME modft;
+  struct tm *utctm;
+  HANDLE hFile;
+  time_t ftimei = (time_t) mtime;
+
+  utctm = gmtime(&ftimei);
+  if (!utctm) return 1;
+
+  st.wYear         = (WORD) utctm->tm_year + 1900;
+  st.wMonth        = (WORD) utctm->tm_mon + 1;
+  st.wDayOfWeek    = (WORD) utctm->tm_wday;
+  st.wDay          = (WORD) utctm->tm_mday;
+  st.wHour         = (WORD) utctm->tm_hour;
+  st.wMinute       = (WORD) utctm->tm_min;
+  st.wSecond       = (WORD) utctm->tm_sec;
+  st.wMilliseconds = (WORD) 1000*(mtime - ftimei);
+  if (!SystemTimeToFileTime(&st, &modft)) return 1;
+
+  hFile = CreateFile(filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+		     FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  if (hFile == INVALID_HANDLE_VALUE) return 1;
+  int res  = SetFileTime(hFile, NULL, NULL, &modft);
+  CloseHandle(hFile);
+  return res == 0; /* success is non-zero */
+
+#else
+  struct timeval times[2];
+  times[0].tv_sec  = times[1].tv_sec = mtime;
+  times[0].tv_usec = times[1].tv_usec = 0;
+  return utimes(filename, times);
+#endif
+}
+
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
 		 SEXP exdir) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
@@ -278,11 +315,8 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     key = file_stat.m_filename;
 
     if (file_stat.m_is_directory) {
-      struct timeval times[2];
-      times[0].tv_sec  = times[1].tv_sec = file_stat.m_time;
-      times[0].tv_usec = times[1].tv_usec = 0;
       zip_str_file_path(cexdir, key, &buffer, &buffer_size);
-      if (utimes(buffer, times)) {
+      if (zip_set_mtime(buffer, file_stat.m_time)) {
 	if (buffer) free(buffer);
 	mz_zip_reader_end(&zip_archive);
 	error("Failed to set mtime on `%s` while extracting `%s`", buffer,
@@ -299,7 +333,6 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
 }
 
 #ifdef _WIN32
-#include <windows.h>
 
 int zip__utf8_to_utf16_alloc(const char* s, WCHAR** ws_ptr) {
   int ws_len, r;
