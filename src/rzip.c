@@ -283,7 +283,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
       if (!coverwrite && zip_file_exists(buffer)) {
 	mz_zip_reader_end(&zip_archive);
 	if (buffer) free(buffer);
-	error("Not overwriting `%s` when  extracting `%s`", buffer,
+	error("Not overwriting `%s` when  extracting `%s`", key,
 	      czipfile);
       }
 
