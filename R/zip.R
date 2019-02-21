@@ -160,7 +160,8 @@ zip_list <- function(zipfile) {
 #'   slash as path separator, as this is what zip files use internally.
 #' @param overwrite Whether to overwrite existing files. If `FALSE` and
 #'   a file already exists, then an error is thrown.
-#' @param junkpaths TODO
+#' @param junkpaths Whether to ignore all directory paths when creating
+#'   files. If `TRUE`, all files will be created in `exdir`.
 #' @param exdir Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
 #' @return TODO

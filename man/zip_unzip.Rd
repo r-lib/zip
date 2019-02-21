@@ -17,7 +17,8 @@ slash as path separator, as this is what zip files use internally.}
 \item{overwrite}{Whether to overwrite existing files. If \code{FALSE} and
 a file already exists, then an error is thrown.}
 
-\item{junkpaths}{TODO}
+\item{junkpaths}{Whether to ignore all directory paths when creating
+files. If \code{TRUE}, all files will be created in \code{exdir}.}
 
 \item{exdir}{Directory to uncompress the archive to. If it does not
 exist, it will be created.}

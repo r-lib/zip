@@ -108,11 +108,19 @@ SEXP R_zip_list(SEXP zipfile) {
 }
 
 int zip_str_file_path(const char *cexdir, const char *key,
-		      char **buffer, size_t *buffer_size) {
+		      char **buffer, size_t *buffer_size, int cjunkpaths) {
+
   size_t len1 = strlen(cexdir);
-  size_t len2 = strlen(key);
-  size_t need_size = len1 + len2 + 2;
+  size_t need_size, len2;
   char *newbuffer;
+
+  if (cjunkpaths) {
+    char *base = strrchr(key, '/');
+    if (base) key = base;
+  }
+
+  len2 = strlen(key);
+  need_size = len1 + len2 + 2;
 
   if (*buffer_size < need_size) {
     newbuffer = realloc((void*) *buffer, need_size);
@@ -257,14 +265,14 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     }
     key = file_stat.m_filename;
 
-    if (zip_str_file_path(cexdir, key, &buffer, &buffer_size)) {
+    if (zip_str_file_path(cexdir, key, &buffer, &buffer_size, cjunkpaths)) {
       mz_zip_reader_end(&zip_archive);
       if (buffer) free(buffer);
       error("Cannot extract zip archive `%s`, out of memory", czipfile);
     }
 
     if (file_stat.m_is_directory) {
-      if (zip_mkdirp(buffer, 1)) {
+      if (! cjunkpaths && zip_mkdirp(buffer, 1)) {
 	mz_zip_reader_end(&zip_archive);
 	if (buffer) free(buffer);
 	error("Cannot extract directory `%s` from archive `%s`", key,
@@ -279,7 +287,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
 	      czipfile);
       }
 
-      if (zip_mkdirp(buffer, 0)) {
+      if (! cjunkpaths && zip_mkdirp(buffer, 0)) {
 	mz_zip_reader_end(&zip_archive);
 	if (buffer) free(buffer);
 	error("Cannot create directory `%s` to extract `%s`"
@@ -298,7 +306,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
      of the errors here, because the central directory is unchanged, and
      if we got here, then it must be still good. */
 
-  for (i = 0; i < n; i++) {
+  for (i = 0; ! cjunkpaths &&  i < n; i++) {
     mz_uint32 idx = -1;
     const char *key = 0;
     mz_zip_archive_file_stat file_stat;
@@ -315,7 +323,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     key = file_stat.m_filename;
 
     if (file_stat.m_is_directory) {
-      zip_str_file_path(cexdir, key, &buffer, &buffer_size);
+      zip_str_file_path(cexdir, key, &buffer, &buffer_size, cjunkpaths);
       if (zip_set_mtime(buffer, file_stat.m_time)) {
 	if (buffer) free(buffer);
 	mz_zip_reader_end(&zip_archive);

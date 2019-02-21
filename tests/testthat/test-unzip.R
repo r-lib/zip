@@ -118,5 +118,17 @@ test_that("overwrite is FALSE", {
 })
 
 test_that("junkpaths is TRUE", {
+  z <- make_a_zip()
+  tmp <- test_temp_dir()
+  zip_unzip(z$zip, exdir = tmp, junkpaths = TRUE)
 
+  expect_true(file.exists(file.path(tmp, "file1")))
+  expect_true(file.exists(file.path(tmp, "file2")))
+  expect_true(file.exists(file.path(tmp, "file11")))
+  expect_true(file.exists(file.path(tmp, "file3")))
+
+  expect_false(file.exists(file.path(tmp, "dir")))
+
+  expect_equal(readLines(file.path(tmp, "file1")), "file1")
+  expect_equal(readLines(file.path(tmp, "file2")), "file2")
 })
