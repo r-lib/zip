@@ -3,7 +3,7 @@
 #include <time.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <utime.h>
+#include <sys/time.h>
 
 #ifdef _WIN32
 #include <direct.h>		/* _mkdir */
@@ -278,12 +278,11 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     key = file_stat.m_filename;
 
     if (file_stat.m_is_directory) {
-      struct utimbuf times;
-      memset(&times, 0, sizeof(times));
-      times.actime = file_stat.m_time;
-      times.modtime = file_stat.m_time;
+      struct timeval times[2];
+      times[0].tv_sec  = times[1].tv_sec = file_stat.m_time;
+      times[0].tv_usec = times[1].tv_usec = 0;
       zip_str_file_path(cexdir, key, &buffer, &buffer_size);
-      if (utime(buffer, &times)) {
+      if (utimes(buffer, times)) {
 	if (buffer) free(buffer);
 	mz_zip_reader_end(&zip_archive);
 	error("Failed to set mtime on `%s` while extracting `%s`", buffer,
