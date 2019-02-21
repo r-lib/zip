@@ -128,7 +128,7 @@ int zip_str_file_path(const char *cexdir, const char *key,
   return 0;
 }
 
-int zip_mkdirp(char *path)  {
+int zip_mkdirp(char *path, int complete)  {
   char *p;
   int status;
 
@@ -150,12 +150,14 @@ int zip_mkdirp(char *path)  {
     }
   }
 
+  if (complete) {
 #ifdef _WIN32
-  status = _mkdir(path);
+    status = _mkdir(path);
 #else
-  status = mkdir(path, S_IRWXU);
+    status = mkdir(path, S_IRWXU);
 #endif
-  if ((status && errno != EEXIST)) return 1;
+    if ((status && errno != EEXIST)) return 1;
+  }
 
   return 0;
 }
@@ -198,7 +200,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
       idx = (mz_uint32) i;
     } else {
       key = CHAR(STRING_ELT(files, i));
-      if (mz_zip_reader_locate_file_v2(&zip_archive, key, /* pComment= */ 0,
+      if (!mz_zip_reader_locate_file_v2(&zip_archive, key, /* pComment= */ 0,
 				       /* flags= */ 0, &idx)) {
 	mz_zip_reader_end(&zip_archive);
 	if (buffer) free(buffer);
@@ -220,7 +222,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     }
 
     if (file_stat.m_is_directory) {
-      if (zip_mkdirp(buffer)) {
+      if (zip_mkdirp(buffer, 1)) {
 	mz_zip_reader_end(&zip_archive);
 	if (buffer) free(buffer);
 	error("Cannot extract directory `%s` from archive `%s`", key,
@@ -228,6 +230,13 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
       }
 
     } else {
+      if (zip_mkdirp(buffer, 0)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Cannot create directory `%s` to extract `%s`"
+	      "from archive `%s`", key, czipfile);
+      }
+
       if (!mz_zip_reader_extract_to_file(&zip_archive, idx, buffer, 0)) {
 	mz_zip_reader_end(&zip_archive);
 	if (buffer) free(buffer);
