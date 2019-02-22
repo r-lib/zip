@@ -111,3 +111,7 @@ get_zip_data_nopath_recursive <- function(x) {
     dir = dir
   )
 }
+
+mkdirp <- function(x, ...) {
+  dir.create(x, showWarnings = FALSE, recursive = TRUE, ...)
+}

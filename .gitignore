@@ -4,3 +4,5 @@
 /src/*.o
 /src/zip.so
 /revdep
+/README.html
+/sources.zip

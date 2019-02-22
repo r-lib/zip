@@ -1,11 +1,16 @@
+---
+output: github_document
+---
 
-```{r, setup, echo = FALSE, message = FALSE}
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
 knitr::opts_chunk$set(
+  collapse = TRUE,
   comment = "#>",
-  tidy = FALSE,
-  error = FALSE,
-  fig.width = 8,
-  fig.height = 8)
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
 ```
 
 # zip
@@ -21,7 +26,7 @@ knitr::opts_chunk$set(
 ## Installation
 
 ```{r eval = FALSE}
-source("https://install-github.me/r-lib/zip")
+install.packages("zip")
 ```
 
 ## Usage
@@ -59,8 +64,13 @@ zip_list("sources.zip")
 
 ### Uncompressing ZIP files
 
-This is currently not supported by the `zip` package, but available from
-base R, via `utils::unzip()`.
+`zip_unzip()` uncompresses a ZIP archive:
+
+```{r}
+exdir <- tempfile()
+zip_unzip("sources.zip", exdir = exdir)
+dir(exdir)
+```
 
 ## License
 

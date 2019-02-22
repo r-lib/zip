@@ -3,6 +3,7 @@
 export(zip)
 export(zip_append)
 export(zip_list)
+export(zip_unzip)
 export(zipr)
 export(zipr_append)
 useDynLib(zip, .registration = TRUE, .fixes = "c_")

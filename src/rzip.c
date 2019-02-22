@@ -1,6 +1,14 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+
+#ifdef _WIN32
+#include <direct.h>		/* _mkdir */
+#include <windows.h>
+#endif
 
 #include <Rinternals.h>
 
@@ -49,6 +57,8 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 
   if (!mz_zip_writer_finalize_archive(&zip_archive)) goto cleanup;
   if (!mz_zip_writer_end(&zip_archive)) goto cleanup;
+
+  /* TODO: return info */
   return R_NilValue;
 
  cleanup:
@@ -97,8 +107,240 @@ SEXP R_zip_list(SEXP zipfile) {
   return result;
 }
 
+int zip_str_file_path(const char *cexdir, const char *key,
+		      char **buffer, size_t *buffer_size, int cjunkpaths) {
+
+  size_t len1 = strlen(cexdir);
+  size_t need_size, len2;
+  char *newbuffer;
+
+  if (cjunkpaths) {
+    char *base = strrchr(key, '/');
+    if (base) key = base;
+  }
+
+  len2 = strlen(key);
+  need_size = len1 + len2 + 2;
+
+  if (*buffer_size < need_size) {
+    newbuffer = realloc((void*) *buffer, need_size);
+    if (!newbuffer) return 1;
+
+    *buffer = newbuffer;
+    *buffer_size = need_size;
+  }
+
+  strcpy(*buffer, cexdir);
+  (*buffer)[len1] = '/';
+  strcpy(*buffer + len1 + 1, key);
+
+  return 0;
+}
+
+int zip_mkdirp(char *path, int complete)  {
+  char *p;
+  int status;
+
+  errno = 0;
+
+  /* Iterate the string */
+  for (p = path + 1; *p; p++) {
+    if (*p == '/') {
+      *p = '\0';
 #ifdef _WIN32
-#include <windows.h>
+      status = _mkdir(path);
+#else
+      status = mkdir(path, S_IRWXU);
+#endif
+      *p = '/';
+      if (status && errno != EEXIST) {
+	  return 1;
+      }
+    }
+  }
+
+  if (complete) {
+#ifdef _WIN32
+    status = _mkdir(path);
+#else
+    status = mkdir(path, S_IRWXU);
+#endif
+    if ((status && errno != EEXIST)) return 1;
+  }
+
+  return 0;
+}
+
+int zip_file_exists(char *filename) {
+  struct stat st;
+  return ! stat(filename, &st);
+}
+
+int zip_set_mtime(const char *filename, time_t mtime) {
+#ifdef _WIN32
+  SYSTEMTIME st;
+  FILETIME modft;
+  struct tm *utctm;
+  HANDLE hFile;
+  time_t ftimei = (time_t) mtime;
+
+  utctm = gmtime(&ftimei);
+  if (!utctm) return 1;
+
+  st.wYear         = (WORD) utctm->tm_year + 1900;
+  st.wMonth        = (WORD) utctm->tm_mon + 1;
+  st.wDayOfWeek    = (WORD) utctm->tm_wday;
+  st.wDay          = (WORD) utctm->tm_mday;
+  st.wHour         = (WORD) utctm->tm_hour;
+  st.wMinute       = (WORD) utctm->tm_min;
+  st.wSecond       = (WORD) utctm->tm_sec;
+  st.wMilliseconds = (WORD) 1000*(mtime - ftimei);
+  if (!SystemTimeToFileTime(&st, &modft)) return 1;
+
+  hFile = CreateFile(filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+		     FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  if (hFile == INVALID_HANDLE_VALUE) return 1;
+  int res  = SetFileTime(hFile, NULL, NULL, &modft);
+  CloseHandle(hFile);
+  return res == 0; /* success is non-zero */
+
+#else
+  struct timeval times[2];
+  times[0].tv_sec  = times[1].tv_sec = mtime;
+  times[0].tv_usec = times[1].tv_usec = 0;
+  return utimes(filename, times);
+#endif
+}
+
+SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
+		 SEXP exdir) {
+  const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
+  int coverwrite = LOGICAL(overwrite)[0];
+  int cjunkpaths = LOGICAL(junkpaths)[0];
+  const char *cexdir = CHAR(STRING_ELT(exdir, 0));
+  int allfiles = isNull(files);
+  int i, n;
+  mz_zip_archive zip_archive;
+  char *buffer = 0;
+  size_t buffer_size = 0;
+
+  memset(&zip_archive, 0, sizeof(zip_archive));
+
+  if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0)) {
+    error("Cannot open zip file `%s` for reading", czipfile);
+  }
+
+  /* We allocate a fairly large buffer for the destination file names here,
+     so that we don't need to reallocated it all the time */
+  buffer_size = 1000;
+  buffer = malloc(buffer_size);
+  if (!buffer) {
+    mz_zip_reader_end(&zip_archive);
+    error("Cannot extract zip archive `%s`, out of memory", czipfile);
+  }
+
+  n = allfiles ? mz_zip_reader_get_num_files(&zip_archive) : LENGTH(files);
+
+  for (i = 0; i < n; i++) {
+    mz_uint32 idx = -1;
+    const char *key = 0;
+    mz_zip_archive_file_stat file_stat;
+
+    if (allfiles) {
+      idx = (mz_uint32) i;
+    } else {
+      key = CHAR(STRING_ELT(files, i));
+      if (!mz_zip_reader_locate_file_v2(&zip_archive, key, /* pComment= */ 0,
+				       /* flags= */ 0, &idx)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Cannot find file `%s` in zip archive `%s`", key, czipfile);
+      }
+    }
+
+    if (! mz_zip_reader_file_stat(&zip_archive, idx, &file_stat)) {
+      mz_zip_reader_end(&zip_archive);
+      if (buffer) free(buffer);
+      error("Cannot extract zip archive `%s`", czipfile);
+    }
+    key = file_stat.m_filename;
+
+    if (zip_str_file_path(cexdir, key, &buffer, &buffer_size, cjunkpaths)) {
+      mz_zip_reader_end(&zip_archive);
+      if (buffer) free(buffer);
+      error("Cannot extract zip archive `%s`, out of memory", czipfile);
+    }
+
+    if (file_stat.m_is_directory) {
+      if (! cjunkpaths && zip_mkdirp(buffer, 1)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Cannot extract directory `%s` from archive `%s`", key,
+	      czipfile);
+      }
+
+    } else {
+      if (!coverwrite && zip_file_exists(buffer)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Not overwriting `%s` when  extracting `%s`", key,
+	      czipfile);
+      }
+
+      if (! cjunkpaths && zip_mkdirp(buffer, 0)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Cannot create directory `%s` to extract `%s`"
+	      "from archive `%s`", key, czipfile);
+      }
+
+      if (!mz_zip_reader_extract_to_file(&zip_archive, idx, buffer, 0)) {
+	mz_zip_reader_end(&zip_archive);
+	if (buffer) free(buffer);
+	error("Cannot extract file `%s` from archive `%s`", key, czipfile);
+      }
+    }
+  }
+
+  /* Round two, to set the mtime on directories. We skip handling most
+     of the errors here, because the central directory is unchanged, and
+     if we got here, then it must be still good. */
+
+  for (i = 0; ! cjunkpaths &&  i < n; i++) {
+    mz_uint32 idx = -1;
+    const char *key = 0;
+    mz_zip_archive_file_stat file_stat;
+
+    if (allfiles) {
+      idx = (mz_uint32) i;
+    } else {
+      key = CHAR(STRING_ELT(files, i));
+      mz_zip_reader_locate_file_v2(&zip_archive, key, /* pComment= */ 0,
+				   /* flags= */ 0, &idx);
+    }
+
+    mz_zip_reader_file_stat(&zip_archive, idx, &file_stat);
+    key = file_stat.m_filename;
+
+    if (file_stat.m_is_directory) {
+      zip_str_file_path(cexdir, key, &buffer, &buffer_size, cjunkpaths);
+      if (zip_set_mtime(buffer, file_stat.m_time)) {
+	if (buffer) free(buffer);
+	mz_zip_reader_end(&zip_archive);
+	error("Failed to set mtime on `%s` while extracting `%s`", buffer,
+	      czipfile);
+      }
+    }
+  }
+
+  if (buffer) free(buffer);
+  mz_zip_reader_end(&zip_archive);
+
+  /* TODO: return info */
+  return R_NilValue;
+}
+
+#ifdef _WIN32
 
 int zip__utf8_to_utf16_alloc(const char* s, WCHAR** ws_ptr) {
   int ws_len, r;

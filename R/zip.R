@@ -135,7 +135,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 #'
 #' @param zipfile Path to an existing ZIP file.
 #' @return A data frame with columns: `filename`, `compressed_size`,
-#'   `uncompressed_size`.
+#'   `uncompressed_size`, `timestamp`.
 #'
 #' @family zip/unzip functions
 #' @export
@@ -150,4 +150,38 @@ zip_list <- function(zipfile) {
     uncompressed_size = res[[3]],
     timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
   )
+}
+
+#' Uncompress 'zip' Archives
+#'
+#' @param zipfile Path to the zip file to uncompress.
+#' @param files Character vector of files to extract from the archive.
+#'   Files within directories can be specified, but they must use a forward
+#'   slash as path separator, as this is what zip files use internally.
+#' @param overwrite Whether to overwrite existing files. If `FALSE` and
+#'   a file already exists, then an error is thrown.
+#' @param junkpaths Whether to ignore all directory paths when creating
+#'   files. If `TRUE`, all files will be created in `exdir`.
+#' @param exdir Directory to uncompress the archive to. If it does not
+#'   exist, it will be created.
+#'
+#' @export
+
+zip_unzip <- function(zipfile, files = NULL, overwrite = TRUE,
+                      junkpaths = FALSE, exdir = ".") {
+
+  stopifnot(
+    is_string(zipfile),
+    is_character_or_null(files),
+    is_flag(overwrite),
+    is_flag(junkpaths),
+    is_string(exdir))
+
+  zipfile <- normalizePath(zipfile)
+  mkdirp(exdir)
+  exdir <- normalizePath(exdir)
+
+  .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir)
+
+  invisible()
 }
