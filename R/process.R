@@ -22,6 +22,9 @@ unzip_exe <- function() {
 
 zip_data <- new.env(parent = emptyenv())
 
+## R CMD check fix
+super <- ""
+
 #' Create an external unzip process
 #'
 #' @param zipfile Path to the zip file to uncompress.
