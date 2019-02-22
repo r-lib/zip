@@ -185,6 +185,7 @@ zip_list <- function(zipfile) {
 #'   exist, it will be created.
 #'
 #' @export
+#' @examples
 #' ## Some files to zip up
 #' dir.create(tmp <- tempfile())
 #' cat("first file", file = file.path(tmp, "file1"))
