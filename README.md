@@ -25,11 +25,6 @@ install.packages("zip")
 
 ``` r
 library(zip)
-#> 
-#> Attaching package: 'zip'
-#> The following object is masked from 'package:utils':
-#> 
-#>     zip
 ```
 
 ### Creating ZIP files
@@ -45,9 +40,9 @@ archiving them, so that the files are stored using a relative path name.
 zip("sources.zip", c("R", "src"))
 file.info("sources.zip")
 #>               size isdir mode               mtime               ctime
-#> sources.zip 282033 FALSE  644 2019-02-21 10:54:12 2019-02-21 10:54:12
+#> sources.zip 281336 FALSE  644 2019-02-22 21:36:30 2019-02-22 21:36:30
 #>                           atime uid gid       uname grname
-#> sources.zip 2019-02-21 10:53:19 501  20 gaborcsardi  staff
+#> sources.zip 2019-02-22 21:36:30 501  20 gaborcsardi  staff
 ```
 
 Directories are added recursively by default.
@@ -61,20 +56,54 @@ existing ZIP archive.
 
 ``` r
 zip_list("sources.zip")
-#>          filename compressed_size uncompressed_size           timestamp
-#> 1              R/               0                 0 2019-02-21 10:46:08
-#> 2  R/assertions.R             125               296 2019-02-21 10:20:08
-#> 3       R/utils.R             772              2791 2019-02-19 10:57:56
-#> 4         R/zip.R            1890              5700 2019-02-21 10:46:08
-#> 5            src/               0                 0 2019-02-21 10:42:10
-#> 6      src/init.c             335               762 2019-02-18 21:16:20
-#> 7      src/init.o            1470              3600 2019-02-21 10:20:12
-#> 8     src/miniz.c           54987            313432 2019-02-20 11:40:22
-#> 9     src/miniz.h           18060             66464 2019-02-18 19:56:28
-#> 10    src/miniz.o          123757            331616 2019-02-21 10:20:14
-#> 11     src/rzip.c            3430             11991 2019-02-21 10:42:08
-#> 12     src/rzip.o           10089             22552 2019-02-21 10:42:10
-#> 13     src/zip.so           65694            197088 2019-02-21 10:42:10
+#>              filename compressed_size uncompressed_size
+#> 1                  R/               0                 0
+#> 2      R/assertions.R             125               296
+#> 3         R/process.R             626              1377
+#> 4           R/utils.R             905              3047
+#> 5             R/zip.R            2156              6686
+#> 6                src/               0                 0
+#> 7          src/init.c             335               762
+#> 8          src/init.o             557              1376
+#> 9  src/install.libs.R             259               540
+#> 10       src/Makevars             155               271
+#> 11   src/Makevars.win             156               283
+#> 12        src/miniz.c           55232            314589
+#> 13        src/miniz.h           18113             66863
+#> 14        src/miniz.o           60555            174988
+#> 15         src/rzip.c            2268              7071
+#> 16         src/rzip.o            2734              6436
+#> 17         src/tools/               0                 0
+#> 18    src/tools/unzip           63554            176576
+#> 19  src/tools/unzip.c             214               323
+#> 20          src/zip.c            2769              9110
+#> 21          src/zip.h             406               872
+#> 22          src/zip.o            3182              7772
+#> 23         src/zip.so           64455            182064
+#>              timestamp permissions
+#> 1  2019-02-22 19:01:34         755
+#> 2  2019-02-21 10:20:08         644
+#> 3  2019-02-22 19:01:34         644
+#> 4  2019-02-22 17:58:34         644
+#> 5  2019-02-22 17:17:02         644
+#> 6  2019-02-22 20:29:54         755
+#> 7  2019-02-18 21:16:20         644
+#> 8  2019-02-22 20:29:54         644
+#> 9  2019-02-22 17:34:26         644
+#> 10 2019-02-22 20:29:52         644
+#> 11 2019-02-22 18:33:50         644
+#> 12 2019-02-22 12:27:14         755
+#> 13 2019-02-22 10:45:42         644
+#> 14 2019-02-22 20:29:54         644
+#> 15 2019-02-22 17:22:00         644
+#> 16 2019-02-22 20:29:54         644
+#> 17 2019-02-22 20:29:54         755
+#> 18 2019-02-22 20:29:54         755
+#> 19 2019-02-22 17:27:56         644
+#> 20 2019-02-22 20:17:54         644
+#> 21 2019-02-22 17:49:04         644
+#> 22 2019-02-22 20:29:54         644
+#> 23 2019-02-22 20:29:54         755
 ```
 
 ### Uncompressing ZIP files

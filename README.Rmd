@@ -31,6 +31,10 @@ install.packages("zip")
 
 ## Usage
 
+```{r, include = FALSE, echo = FALSE, results = "hide"}
+library(zip)
+```
+
 ```{r}
 library(zip)
 ```
