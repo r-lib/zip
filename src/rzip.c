@@ -367,6 +367,16 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
 	error("Cannot extract file `%s` from archive `%s`", key, czipfile);
       }
     }
+#ifndef _WIN32
+    mode_t mode;
+    zip_get_permissions(&file_stat, &mode);
+    if (chmod(buffer, mode)) {
+      mz_zip_reader_end(&zip_archive);
+      if (buffer) free(buffer);
+      error("Cannot set permissions for `%s` from archive `%s`",
+	    key, czipfile);
+    }
+#endif
   }
 
   /* Round two, to set the mtime on directories. We skip handling most
