@@ -2,6 +2,8 @@
 #ifndef R_ZIP_H
 #define R_ZIP_H
 
+#include <sys/types.h>
+
 #include "miniz.h"
 
 typedef enum zip_error_codes {
