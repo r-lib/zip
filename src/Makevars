@@ -6,7 +6,7 @@ OBJECTS = init.o miniz.o rzip.o zip.o
 all: tools/unzip $(SHLIB)
 
 tools/unzip: miniz.c zip.c tools/unzip.c
-	$(CC) $(CFLAGS) miniz.c tools/unzip.c -o tools/unzip
+	$(CC) $(CFLAGS) miniz.c zip.c tools/unzip.c -o tools/unzip
 
 clean:
 	rm -rf $(SHLIB) $(OBJECTS) \

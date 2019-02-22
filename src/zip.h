@@ -2,6 +2,8 @@
 #ifndef R_ZIP_H
 #define R_ZIP_H
 
+#include "miniz.h"
+
 typedef enum zip_error_codes {
   R_ZIP_ESUCCESS     = 0,
   R_ZIP_EOPEN        = 1,
