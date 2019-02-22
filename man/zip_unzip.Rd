@@ -26,3 +26,10 @@ exist, it will be created.}
 \description{
 Uncompress 'zip' Archives
 }
+\section{Permissions}{
+
+
+If the zip archive stores permissions and was created on Unix,
+the permissions will be restored.
+}
+

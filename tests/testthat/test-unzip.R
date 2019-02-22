@@ -132,3 +132,39 @@ test_that("junkpaths is TRUE", {
   expect_equal(readLines(file.path(tmp, "file1")), "file1")
   expect_equal(readLines(file.path(tmp, "file2")), "file2")
 })
+
+test_that("permissions as kept on Unix", {
+  skip_on_os("windows")
+
+  tmp <- test_temp_dir()
+  Sys.chmod(tmp, "0777", FALSE)
+
+  cat("foobar\n", file = f <- file.path(tmp, "file1"))
+  Sys.chmod(f, "0400", FALSE)
+
+  dir.create(f <- file.path(tmp, "dir"))
+  Sys.chmod(f, "0700", FALSE)
+
+  cat("foobar2\n", file = f <- file.path(tmp, "dir", "file2"))
+  Sys.chmod(f, "0755",  FALSE)
+
+  cat("foobar3\n", file = f <- file.path(tmp, "dir", "file3"))
+  Sys.chmod(f, "0777",  FALSE)
+
+  zip <- test_temp_file(".zip", create = FALSE)
+  zipr(zip, tmp)
+
+  tmp2 <- test_temp_dir()
+  zip_unzip(zip, exdir = tmp2)
+
+  check_perm <- function(mode, ...) {
+    f <- file.path(tmp2, ...)
+    expect_equal(file.info(f)$mode, as.octmode(mode))
+  }
+
+  check_perm("0777", basename(tmp))
+  check_perm("0400", basename(tmp), "file1")
+  check_perm("0700", basename(tmp), "dir")
+  check_perm("0755", basename(tmp), "dir", "file2")
+  check_perm("0777", basename(tmp), "dir", "file3")
+})
