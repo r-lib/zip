@@ -1314,6 +1314,15 @@ void *mz_zip_extract_archive_file_to_heap_v2(const char *pZip_filename, const ch
 
 #endif /* #ifndef MINIZ_NO_ARCHIVE_WRITING_APIS */
 
+int mz_zip_get_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
+			       mz_uint16 *value);
+int mz_zip_set_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
+			       mz_uint16 value);
+int mz_zip_get_external_attr(mz_zip_archive *pZip, mz_uint file_index,
+			     mz_uint32 *value);
+int mz_zip_set_external_attr(mz_zip_archive *pZip, mz_uint file_index,
+			     mz_uint32 value);
+
 #ifdef __cplusplus
 }
 #endif

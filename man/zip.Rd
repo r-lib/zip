@@ -37,6 +37,21 @@ The name of the created zip file, invisibly.
 \details{
 \code{zipr_append} and \code{zip_append} append compressed files to an
 existing 'zip' file.
+}
+\section{Permissions}{
+
+
+\code{zipr()} (and \code{zip()}, \code{zipr_append()}, etc.) add the permissions of
+the archived files and directories to the ZIP archive, on Unix systems.
+Most zip and unzip implementations support these, so they will be
+recovered after extracting the archive.
+
+Note, however that the owner and group (uid and gid) are currently
+omitted, even on Unix.
+}
+
+\section{Relative paths}{
+
 
 The different between \code{zipr} and \code{zip} is how they handle the relative
 paths of the input files.
@@ -81,6 +96,7 @@ zip_list("x.zip")$filename
 #> foo2/file3
 }
 }
+
 \examples{
 ## Some files to zip up
 dir.create(tmp <- tempfile())

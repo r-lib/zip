@@ -9,6 +9,18 @@ NULL
 #' `zipr_append` and `zip_append` append compressed files to an
 #' existing 'zip' file.
 #'
+#' @section Permissions:
+#'
+#' `zipr()` (and `zip()`, `zipr_append()`, etc.) add the permissions of
+#' the archived files and directories to the ZIP archive, on Unix systems.
+#' Most zip and unzip implementations support these, so they will be
+#' recovered after extracting the archive.
+#'
+#' Note, however that the owner and group (uid and gid) are currently
+#' omitted, even on Unix.
+#'
+#' @section Relative paths:
+#'
 #' The different between `zipr` and `zip` is how they handle the relative
 #' paths of the input files.
 #'
@@ -135,7 +147,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 #'
 #' @param zipfile Path to an existing ZIP file.
 #' @return A data frame with columns: `filename`, `compressed_size`,
-#'   `uncompressed_size`, `timestamp`.
+#'   `uncompressed_size`, `timestamp`, `permissions`.
 #'
 #' @family zip/unzip functions
 #' @export
@@ -143,13 +155,15 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 zip_list <- function(zipfile) {
   zipfile <- normalizePath(zipfile)
   res <- .Call(c_R_zip_list, zipfile)
-  data.frame(
+  df <- data.frame(
     stringsAsFactors = FALSE,
     filename = res[[1]],
     compressed_size = res[[2]],
     uncompressed_size = res[[3]],
     timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
   )
+  df$permissions <- as.octmode(res[[5]])
+  df
 }
 
 #' Uncompress 'zip' Archives

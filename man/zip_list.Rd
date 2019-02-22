@@ -11,7 +11,7 @@ zip_list(zipfile)
 }
 \value{
 A data frame with columns: \code{filename}, \code{compressed_size},
-\code{uncompressed_size}, \code{timestamp}.
+\code{uncompressed_size}, \code{timestamp}, \code{permissions}.
 }
 \description{
 List Files in a 'zip' Archive
