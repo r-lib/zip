@@ -3,7 +3,7 @@ OBJECTS = init.o miniz.o rzip.o zip.o
 
 .PHONY: all clean
 
-all: tools/unzip $(SHLIB)
+all: tools/unzip.exe $(SHLIB)
 
 tools/unzip.exe: miniz.c zip.c tools/unzip.c
 	$(CC) $(CFLAGS) miniz.c zip.c tools/unzip.c -o tools/unzip.exe
