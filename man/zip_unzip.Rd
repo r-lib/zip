@@ -33,3 +33,19 @@ If the zip archive stores permissions and was created on Unix,
 the permissions will be restored.
 }
 
+\examples{
+## Some files to zip up
+dir.create(tmp <- tempfile())
+cat("first file", file = file.path(tmp, "file1"))
+cat("second file", file = file.path(tmp, "file2"))
+
+zipfile <- tempfile(fileext = ".zip")
+zipr(zipfile, tmp)
+
+## List contents
+zip_list(zipfile)
+
+## Extract
+tmp2 <- tempfile()
+zip_unzip(zipfile, exdir = tmp2)
+}
