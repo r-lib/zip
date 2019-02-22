@@ -7,3 +7,6 @@
 ^revdep$
 ^sources\.zip$
 ^README\.html$
+^src/tools/unzip$
+^src/tools/unzip\.exe$
+^src/tools/unzip\.dSYM$
