@@ -368,3 +368,38 @@ test_that("empty directories are archived as directories", {
 
   expect_equal(readLines(file.path(tmp2, bt, "foo", "file1")), "contents")
 })
+
+test_that("Permissions are kept on Unix", {
+  skip_on_os("windows")
+
+  tmp <- test_temp_dir()
+  Sys.chmod(tmp, "0777", FALSE)
+
+  cat("foobar\n", file = f <- file.path(tmp, "file1"))
+  Sys.chmod(f, "0400", FALSE)
+
+  dir.create(f <- file.path(tmp, "dir"))
+  Sys.chmod(f, "0700", FALSE)
+
+  cat("foobar2\n", file = f <- file.path(tmp, "dir", "file2"))
+  Sys.chmod(f, "0755",  FALSE)
+
+  cat("foobar3\n", file = f <- file.path(tmp, "dir", "file3"))
+  Sys.chmod(f, "0777",  FALSE)
+
+  zip <- test_temp_file(".zip", create = FALSE)
+  zipr(zip, tmp)
+
+  l <- zip_list(zip)
+
+  check_perm <- function(name, mode) {
+    w <- match(name, basename(l$filename))
+    expect_equal(l$permissions[w], as.octmode(mode))
+  }
+
+  check_perm(basename(tmp), "0777")
+  check_perm("file1", "0400")
+  check_perm("dir", "0700")
+  check_perm("file2", "0755")
+  check_perm("file3", "0777")
+})

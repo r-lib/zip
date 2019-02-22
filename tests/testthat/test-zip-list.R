@@ -26,6 +26,7 @@ test_that("can list a zip file", {
 
   expect_equal(
     colnames(list),
-    c("filename", "compressed_size", "uncompressed_size", "timestamp")
+    c("filename", "compressed_size", "uncompressed_size", "timestamp",
+      "permissions")
   )
 })

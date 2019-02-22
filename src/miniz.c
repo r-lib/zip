@@ -3953,6 +3953,55 @@ static MZ_FORCEINLINE const mz_uint8 *mz_zip_get_cdh(mz_zip_archive *pZip, mz_ui
     return &MZ_ZIP_ARRAY_ELEMENT(&pZip->m_pState->m_central_dir, mz_uint8, MZ_ZIP_ARRAY_ELEMENT(&pZip->m_pState->m_central_dir_offsets, mz_uint32, file_index));
 }
 
+
+int mz_zip_get_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
+			       mz_uint16 *value) {
+  mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
+  mz_uint16 *p2;
+
+  if (!p) return 0;
+
+  p2 = (mz_uint16*) (p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS);
+  *value = *p2;
+  return 1;
+}
+
+int mz_zip_set_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
+			       mz_uint16 value) {
+  mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
+  mz_uint16 *p2;
+
+  if (!p) return 0;
+
+  p2 = (mz_uint16*) (p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS);
+  *p2 = value;
+  return 1;
+}
+
+int mz_zip_get_external_attr(mz_zip_archive *pZip, mz_uint file_index,
+			     mz_uint32 *value) {
+  mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
+  mz_uint32 *p2;
+
+  if (!p) return 0;
+
+  p2 = (mz_uint32*) (p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
+  *value = *p2;
+  return 1;
+}
+
+int mz_zip_set_external_attr(mz_zip_archive *pZip, mz_uint file_index,
+			     mz_uint32 value) {
+  mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
+  mz_uint32 *p2;
+
+  if (!p) return 0;
+
+  p2 = (mz_uint32*) (p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
+  *p2 = value;
+  return 1;
+}
+
 mz_bool mz_zip_reader_is_file_encrypted(mz_zip_archive *pZip, mz_uint file_index)
 {
     mz_uint m_bit_flag;

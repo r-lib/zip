@@ -14,6 +14,65 @@
 
 #include "miniz.h"
 
+int zip_set_permissions(mz_zip_archive *zip_archive, mz_uint file_index,
+			const char *filename) {
+
+  /* We only do this on Unix currently*/
+#ifdef _WIN32
+  return 0;
+#else
+  mz_uint16 version_by;
+  mz_uint32 external_attr;
+  struct stat st;
+
+  if (! mz_zip_get_version_made_by(zip_archive, file_index, &version_by) ||
+      ! mz_zip_get_external_attr(zip_archive, file_index, &external_attr)) {
+    return 1;
+  }
+
+  if (stat(filename, &st)) return 1;
+
+  version_by &= 0x00FF;
+  version_by |= 3 << 8;
+
+  /* We need to set the created-by version here, apparently, otherwise
+     miniz will not set it properly.... */
+  version_by |= 23;
+
+  external_attr &= 0x0000FFFF;
+  external_attr |= st.st_mode << 16;
+
+  if (! mz_zip_set_version_made_by(zip_archive, file_index, version_by) ||
+      ! mz_zip_set_external_attr(zip_archive, file_index, external_attr)) {
+    return 1;
+  }
+
+  return 0;
+#endif
+}
+
+#ifdef _WIN32
+int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
+  *mode = stat->m_is_directory ? 0700 : 0600;
+  return 0;
+}
+#else
+int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
+  mz_uint16 version_by = (stat->m_version_made_by >> 8) & 0xFF;
+  mz_uint32 external_attr = (stat->m_external_attr >> 16) & 0xFFFF;
+
+  /* If it is not made by Unix, or the permission field is zero,
+     we ignore them. */
+  if (version_by != 3 || external_attr == 0) {
+    *mode = stat->m_is_directory ? 0700 : 0600;
+  } else {
+    *mode = (mode_t) external_attr & 0777;
+  }
+
+  return 0;
+}
+#endif
+
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 	       SEXP compression_level, SEXP append) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
@@ -36,23 +95,27 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
   }
 
   for (i = 0; i < n; i++) {
-   const char *key = CHAR(STRING_ELT(keys, i));
-   const char *filename = CHAR(STRING_ELT(files, i));
-   int directory = LOGICAL(dirs)[i];
-   if (directory) {
-     MZ_TIME_T cmtime = (MZ_TIME_T) REAL(mtime)[i];
-     if (!mz_zip_writer_add_mem_ex_v2(&zip_archive, key, 0, 0, 0, 0,
-				      ccompression_level, 0, 0, &cmtime, 0, 0,
-				      0, 0)) {
-       goto cleanup;
-     }
+    const char *key = CHAR(STRING_ELT(keys, i));
+    const char *filename = CHAR(STRING_ELT(files, i));
+    int directory = LOGICAL(dirs)[i];
+    if (directory) {
+      MZ_TIME_T cmtime = (MZ_TIME_T) REAL(mtime)[i];
+      if (!mz_zip_writer_add_mem_ex_v2(&zip_archive, key, 0, 0, 0, 0,
+				       ccompression_level, 0, 0, &cmtime, 0, 0,
+				       0, 0)) {
+	goto cleanup;
+      }
 
-   } else {
-     if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
-				 ccompression_level)) {
-       goto cleanup;
-     }
-   }
+    } else {
+      if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
+				  ccompression_level)) {
+	goto cleanup;
+      }
+    }
+
+    if (zip_set_permissions(&zip_archive, i, filename)) {
+      goto cleanup;
+    }
   }
 
   if (!mz_zip_writer_finalize_archive(&zip_archive)) goto cleanup;
@@ -80,14 +143,16 @@ SEXP R_zip_list(SEXP zipfile) {
   if (!status) error("Cannot open zip file `%s`", czipfile);
 
   num_files = mz_zip_reader_get_num_files(&zip_archive);
-  result = PROTECT(allocVector(VECSXP, 4));
+  result = PROTECT(allocVector(VECSXP, 5));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP, num_files));
   SET_VECTOR_ELT(result, 1, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 2, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 3, allocVector(INTSXP, num_files));
+  SET_VECTOR_ELT(result, 4, allocVector(INTSXP, num_files));
 
   for (i = 0; i < num_files; i++) {
     mz_zip_archive_file_stat file_stat;
+    mode_t mode;
     status = mz_zip_reader_file_stat (&zip_archive, i, &file_stat);
     if (!status) goto cleanup;
 
@@ -95,6 +160,8 @@ SEXP R_zip_list(SEXP zipfile) {
     REAL(VECTOR_ELT(result, 1))[i] = file_stat.m_comp_size;
     REAL(VECTOR_ELT(result, 2))[i] = file_stat.m_uncomp_size;
     INTEGER(VECTOR_ELT(result, 3))[i] = (int) file_stat.m_time;
+    zip_get_permissions(&file_stat, &mode);
+    INTEGER(VECTOR_ELT(result, 4))[i] = (int) mode;
   }
 
   mz_zip_reader_end(&zip_archive);
