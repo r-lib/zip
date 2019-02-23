@@ -1,7 +1,7 @@
 
 context("large files")
 
-test_that("can compress large files", {
+test_that("can compress / uncompress large files", {
 
   skip_on_cran()
   if (! nzchar(Sys.getenv("ZIP_LONG_TESTS"))) skip("takes long")
@@ -30,4 +30,25 @@ test_that("can compress large files", {
   unlink(file1)
   zip::unzip(zipfile, exdir = tmp2)
   expect_equal(file.info(file.path(tmp2, "file1"))$size, size)
+})
+
+test_that("can compress / uncompress many files", {
+
+  skip_on_cran()
+  if (! nzchar(Sys.getenv("ZIP_LONG_TESTS"))) skip("takes long")
+
+  tmp <- test_temp_dir()
+  for (i in 1:70000) cat("file", i, file = file.path(tmp, i))
+
+  zip <- test_temp_file(".zip")
+  zipr(zip, tmp)
+
+  l <- zip_list(zip)
+  expect_equal(nrow(l), 70001)
+
+  tmp2 <- test_temp_dir()
+  zip::unzip(zip, exdir = tmp2)
+  expect_equal(
+    length(dir(file.path(tmp2, basename(tmp)))),
+    70000)
 })
