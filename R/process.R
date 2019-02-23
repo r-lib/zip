@@ -29,27 +29,35 @@ zip_data <- new.env(parent = emptyenv())
 ## R CMD check fix
 super <- ""
 
-#' Create an external unzip process
+#' Class for an external unzip process
 #'
-#' `unzip_process()` return an R6 class that represents an unzip process.
-#' `make_unzip_process()` is a shorthand that also creates an instance of
-#' this class.
+#' `unzip_process()` returns an R6 class that represents an unzip process.
+#' It is implemented as a subclass of [processx::process].
 #'
-#' @param zipfile Path to the zip file to uncompress.
-#' @param exdir Directory to uncompress the archive to. If it does not
+#' @section Using the `unzip_process` class:
+#'
+#' ```
+#' up <- unzip_process()$new(zipfile, exdir = ".")
+#' ```
+#'
+#' See [processx::process] for the class methods.
+#'
+#' Arguments:
+#' * `zipfile`: Path to the zip file to uncompress.
+#' * `exdir`: Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
-#' @return An unzip process object, its class inherits from the
-#'   [processx::process] class.
+#'
+#' @return An `unzip_process` R6 class object, a subclass of
+#' [processx::process].
 #'
 #' @export
-
-make_unzip_process <- function(zipfile, exdir) {
-  unzip_class <- unzip_process()
-  unzip_class$new(zipfile, exdir)
-}
-
-#' @export
-#' @rdname make_unzip_process
+#' @examples
+#' ex <- system.file("example.zip", package = "zip")
+#' tmp <- tempfile()
+#' up <- unzip_process()$new(ex, exdir = tmp)
+#' up$wait()
+#' up$get_exit_status()
+#' dir(tmp)
 
 unzip_process <- function() {
   need_packages(c("processx", "R6"), "creating unzip processes")
@@ -58,44 +66,51 @@ unzip_process <- function() {
       "unzip_process",
       inherit = processx::process,
       public = list(
-        initialize = function(zipfile, exdir) {
-          private$zipfile <- zipfile
-          private$exdir <- exdir
+        initialize = function(zipfile, exdir = ".") {
+          stopifnot(
+            is_string(zipfile),
+            is_string(exdir))
           super$initialize(unzip_exe(), c(zipfile, exdir),
                            poll_connection = TRUE, stderr = tempfile())
         }
       ),
-      private = list(
-        zipfile = NULL,
-        exdir = NULL
-      )
+      private = list()
     )
 
   zip_data$unzip_class
 }
 
-#' Create an external zip process
+#' Class for an external zip process
 #'
-#' `zip_process()` return an R6 class that represents a zip process.
-#' `make_zip_process()` is a shorthand that also creates an instance of
-#' this class.
+#' `zip_process()` returns an R6 class that represents a zip process.
+#' It is implemented as a subclass of [processx::process].
 #'
-#' @param zipfile Path to the zip file to create.
-#' @param files List of file to add to the archive. Each specified file
-#'   or directory in is created as a top-level entry in the zip archive.
-#' @param recurse Whether to add the contents of directories recursively.
-#' @return A zip process object, its class inherits from the
-#'   [processx::process] class.
+#' @section Using the `zip_process` class:
+#'
+#' ```
+#' zp <- zip_process()$new(zipfile, files, recurse = TRUE)
+#' ```
+#'
+#' See [processx::process] for the class methods.
+#'
+#' Arguments:
+#' * `zipfile`: Path to the zip file to create.
+#' * `files`: List of file to add to the archive. Each specified file
+#'    or directory in is created as a top-level entry in the zip archive.
+#' * `recurse` Whether to add the contents of directories recursively.
+#'
+#' @return A `zip_process` R6 class object, a subclass of
+#' [processx::process].
 #'
 #' @export
-
-make_zip_process <- function(zipfile, files, recurse = TRUE) {
-  zip_class <- zip_process()
-  zip_class$new(zipfile, files, recurse)
-}
-
-#' @export
-#' @rdname make_zip_process
+#' @examples
+#' dir.create(tmp <- tempfile())
+#' write.table(iris, file = file.path(tmp, "iris.ssv"))
+#' zipfile <- tempfile(fileext = ".zip")
+#' zp <- zip_process()$new(zipfile, tmp)
+#' zp$wait()
+#' zp$get_exit_status()
+#' zip_list(zipfile)
 
 zip_process <- function() {
   need_packages(c("processx", "R6"), "creating zip processes")

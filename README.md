@@ -40,9 +40,9 @@ archiving them, so that the files are stored using a relative path name.
 zip("sources.zip", c("R", "src"))
 file.info("sources.zip")
 #>              size isdir mode               mtime               ctime
-#> sources.zip 87695 FALSE  644 2019-02-23 20:05:10 2019-02-23 20:05:10
+#> sources.zip 87851 FALSE  644 2019-02-23 22:02:36 2019-02-23 22:02:36
 #>                           atime uid gid       uname grname
-#> sources.zip 2019-02-23 20:05:10 501  20 gaborcsardi  staff
+#> sources.zip 2019-02-23 22:02:36 501  20 gaborcsardi  staff
 ```
 
 Directories are added recursively by default.
@@ -59,7 +59,7 @@ zip_list("sources.zip")
 #>                filename compressed_size uncompressed_size
 #> 1                    R/               0                 0
 #> 2        R/assertions.R             125               296
-#> 3           R/process.R            1227              4121
+#> 3           R/process.R            1383              4471
 #> 4             R/utils.R             905              3047
 #> 5               R/zip.R            2194              6763
 #> 6                  src/               0                 0
@@ -76,24 +76,24 @@ zip_list("sources.zip")
 #> 17            src/zip.c            3169             11295
 #> 18            src/zip.h             504              1211
 #>              timestamp permissions
-#> 1  2019-02-23 20:00:50         755
+#> 1  2019-02-23 22:00:10         755
 #> 2  2019-02-22 22:11:46         644
-#> 3  2019-02-23 20:00:50         644
+#> 3  2019-02-23 22:00:10         644
 #> 4  2019-02-22 22:27:58         644
-#> 5  2019-02-23 17:30:12         644
-#> 6  2019-02-23 20:05:04         755
+#> 5  2019-02-23 20:35:36         644
+#> 6  2019-02-23 22:02:32         755
 #> 7  2019-02-22 22:11:46         644
-#> 8  2019-02-23 20:04:12         644
-#> 9  2019-02-23 20:03:28         644
-#> 10 2019-02-23 20:03:04         644
+#> 8  2019-02-23 20:35:36         644
+#> 9  2019-02-23 20:35:36         644
+#> 10 2019-02-23 20:35:36         644
 #> 11 2019-02-23 01:38:12         755
 #> 12 2019-02-22 22:11:46         644
-#> 13 2019-02-23 10:23:00         644
-#> 14 2019-02-23 20:05:04         755
-#> 15 2019-02-22 22:27:58         644
-#> 16 2019-02-23 16:41:06         644
-#> 17 2019-02-23 16:33:22         644
-#> 18 2019-02-23 10:40:12         644
+#> 13 2019-02-23 20:35:36         644
+#> 14 2019-02-23 22:02:32         755
+#> 15 2019-02-23 20:35:36         644
+#> 16 2019-02-23 20:35:36         644
+#> 17 2019-02-23 20:35:36         644
+#> 18 2019-02-23 20:35:36         644
 ```
 
 ### Uncompressing ZIP files
@@ -106,6 +106,13 @@ unzip("sources.zip", exdir = exdir)
 dir(exdir)
 #> [1] "R"   "src"
 ```
+
+### Compressing and uncompressing in background processes
+
+You can use the `zip_process()` and `unzip_process()` functions to
+create background zip / unzip processes. These processes were
+implemented on top of the `processx::process` class, so they are
+pollable.
 
 ## License
 

@@ -6,8 +6,8 @@
 
 * New `unzip()` function for uncompressing zip archives.
 
-* New `unzip_process()` and `make_unzip_process()` functions to uncompress
-  an archive in a background process.
+* New `zip_process()` and `unzip_process()` functions to create or
+  uncompress an archive in a background process.
 
 * `zip()`, `zipr()`, `zip_append()` and `zipr_append()` all include
   directories in the archives, empty ones as well.

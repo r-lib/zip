@@ -76,6 +76,12 @@ unzip("sources.zip", exdir = exdir)
 dir(exdir)
 ```
 
+### Compressing and uncompressing in background processes
+
+You can use the `zip_process()` and  `unzip_process()` functions to
+create background zip / unzip processes. These processes were implemented
+on top of the `processx::process` class, so they are pollable.
+
 ## License
 
 CC0

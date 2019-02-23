@@ -4,7 +4,7 @@ context("unzip_process")
 test_that("unzip_process", {
   z <- make_a_zip()
   tmp2 <- test_temp_dir()
-  p1 <- make_unzip_process(z$zip, tmp2)
+  p1 <- unzip_process()$new(z$zip, tmp2)
   p1$wait(2000)
   p1$kill()
 
