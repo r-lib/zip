@@ -30,8 +30,14 @@ static const char *zip_error_strings[] = {
   /* 8 R_ZIP_ESETPERM     */
      "Cannot set permissions for `%s` from archive `%s`",
   /* 9 R_ZIP_ESETMTIME    */
-     "Failed to set mtime on `%s` while extracting `%s`"
-
+      "Failed to set mtime on `%s` while extracting `%s`",
+  /*10 R_ZIP_EOPENWRITE   */ "Cannot open zip file `%s` for writing",
+  /*11 R_ZIP_EOPENWRITE   */ "Cannot open zip file `%s` for appending",
+  /*12 R_ZIP_EADDDIR      */ "Cannot add directory `%s` to archive `%s`",
+  /*13 R_ZIP_EADDFILE     */ "Cannot add file `%s` to archive `%s`",
+  /*14 R_ZIP_ESETZIPPERM  */
+      "Cannot set permission on file `%s` in archive `%s`",
+  /*15 R_ZIP_ECREATE      */ "Could not create zip archive `%s`"
 };
 
 static zip_error_handler_t *zip_error_handler = 0;
@@ -49,7 +55,9 @@ void zip_error(int errorcode, const char *file, int line, ...) {
   zip_error_handler(zip_error_buffer, file, line, errorcode, err);
 }
 
-#define ZIP_ERROR(c, ...) zip_error((c), __FILE__, __LINE__, __VA_ARGS__)
+#define ZIP_ERROR(c, ...) do {				\
+  zip_error((c), __FILE__, __LINE__, __VA_ARGS__);	\
+  return 1; }  while(0)
 
 int zip_set_permissions(mz_zip_archive *zip_archive, mz_uint file_index,
 			const char *filename) {
@@ -340,6 +348,67 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 
   if (buffer) free(buffer);
   mz_zip_reader_end(&zip_archive);
+
+  /* TODO: return info */
+  return 0;
+}
+
+int zip_zip(const char *czipfile, int num_files, const char **ckeys,
+	    const char **cfiles, int *cdirs, double *cmtimes,
+	    int compression_level, int cappend) {
+
+  mz_uint ccompression_level = (mz_uint) compression_level;
+  int i, n = num_files;
+  mz_zip_archive zip_archive;
+
+  memset(&zip_archive, 0, sizeof(zip_archive));
+
+  if (cappend) {
+    if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0) ||
+	!mz_zip_writer_init_from_reader(&zip_archive, czipfile)) {
+      ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
+    }
+  } else {
+    if (!mz_zip_writer_init_file(&zip_archive, czipfile, 0)) {
+      ZIP_ERROR(R_ZIP_EOPENWRITE, czipfile);
+    }
+  }
+
+  for (i = 0; i < n; i++) {
+    const char *key = ckeys[i];
+    const char *filename = cfiles[i];
+    int directory = cdirs[i];
+    if (directory) {
+      MZ_TIME_T cmtime = (MZ_TIME_T) cmtimes[i];
+      if (!mz_zip_writer_add_mem_ex_v2(&zip_archive, key, 0, 0, 0, 0,
+				       ccompression_level, 0, 0, &cmtime, 0, 0,
+				       0, 0)) {
+	mz_zip_writer_end(&zip_archive);
+	ZIP_ERROR(R_ZIP_EADDDIR, key, czipfile);
+      }
+
+    } else {
+      if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
+				  ccompression_level)) {
+	mz_zip_writer_end(&zip_archive);
+	ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+      }
+    }
+
+    if (zip_set_permissions(&zip_archive, i, filename)) {
+      mz_zip_writer_end(&zip_archive);
+      ZIP_ERROR(R_ZIP_ESETZIPPERM, key, czipfile);
+    }
+  }
+
+  if (!mz_zip_writer_finalize_archive(&zip_archive)) {
+    mz_zip_writer_end(&zip_archive);
+    ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+  }
+
+  if (!mz_zip_writer_end(&zip_archive)) {
+    ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+  }
 
   /* TODO: return info */
   return 0;

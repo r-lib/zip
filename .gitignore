@@ -6,6 +6,9 @@
 /revdep
 /README.html
 /sources.zip
-/src/tools/unzip
-/src/tools/unzip.exe
-/src/tools/unzip.dSYM
+/src/tools/cmdunzip
+/src/tools/cmdunzip.exe
+/src/tools/cmdunzip.dSYM
+/src/tools/cmdzip
+/src/tools/cmdzip.exe
+/src/tools/cmdzip.dSYM

@@ -19,9 +19,8 @@ zipr_append(zipfile, files, recurse = TRUE, compression_level = 9)
 \item{zipfile}{The zip file to create. If the file exists, \code{zip}
 overwrites it, but \code{zip_append} appends to it.}
 
-\item{files}{List of file to add to the archive. Absolute path names
-will be added as absolute path names, relative path names stay
-relative in the archive.}
+\item{files}{List of file to add to the archive. See details below
+about absolute and relative path names.}
 
 \item{recurse}{Whether to add the contents of directories recursively.}
 
