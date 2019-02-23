@@ -1,15 +1,27 @@
 
 # 1.0.0.9000
 
-* New functions: `zipr()` and `zipr_append()`, that always store
-  relative file names in the archive
+* New `zipr()` and `zipr_append()`, they always store relative file names
+  in the archive.
 
-* Add time stamps to zip file entries, and include them in the
-  output of `zip_list()`
+* New `zip_unzip()` function for uncompressing zip archives.
 
-* Include directories in the archives, empty ones as well
+* New `make_unzip_process()` function to uncompress an archive in the
+  background.
 
-* Fix reporting the size of large files in the archive
+* `zip()`, `zipr()`, `zip_append()` and `zipr_append()` all include
+  directories in the archives, empty ones as well.
+
+* `zip()`, `zipr()`, `zip_append()` and `zipr_append()` all add time stamps
+  to the archive and `zip_list()` returns then in the `timestamp` column.
+
+* `zip()`, `zipr()`, `zip_append()` and `zipr_append()` all add file
+  and directory permissions to the archive on Unix systems, and
+  `zip_list()` returns them in the `permissions` column.
+
+* `zip_list()` now correctly reports the size of large files in the archive.
+
+* Use miniz 2.0.8 internally.
 
 # 1.0.0
 
