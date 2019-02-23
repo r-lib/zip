@@ -30,8 +30,11 @@ static const char *zip_error_strings[] = {
   /* 8 R_ZIP_ESETPERM     */
      "Cannot set permissions for `%s` from archive `%s`",
   /* 9 R_ZIP_ESETMTIME    */
-     "Failed to set mtime on `%s` while extracting `%s`"
-
+      "Failed to set mtime on `%s` while extracting `%s`",
+  /*10 R_ZIP_EOPENWRITE   */ "Cannot open zip file `%s` for writing",
+  /*11 R_ZIP_EOPENWRITE   */ "Cannot open zip file `%s` for appending",
+  /*12 R_ZIP_ECREATE      */
+      "Could not create zip file `%s`, file might be corrupt"
 };
 
 static zip_error_handler_t *zip_error_handler = 0;
@@ -343,4 +346,61 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 
   /* TODO: return info */
   return 0;
+}
+
+int zip_zip(const char *czipfile, int num_files, const char **ckeys,
+	    const char **cfiles, int *cdirs, double *cmtimes,
+	    int compression_level, int cappend) {
+
+  mz_uint ccompression_level = (mz_uint) compression_level;
+  int i, n = num_files;
+  mz_zip_archive zip_archive;
+
+  memset(&zip_archive, 0, sizeof(zip_archive));
+
+  if (cappend) {
+    if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0) ||
+	!mz_zip_writer_init_from_reader(&zip_archive, czipfile)) {
+      ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
+    }
+  } else {
+    if (!mz_zip_writer_init_file(&zip_archive, czipfile, 0)) {
+      ZIP_ERROR(R_ZIP_EOPENWRITE, czipfile);
+    }
+  }
+
+  for (i = 0; i < n; i++) {
+    const char *key = ckeys[i];
+    const char *filename = cfiles[i];
+    int directory = cdirs[i];
+    if (directory) {
+      MZ_TIME_T cmtime = (MZ_TIME_T) cmtimes[i];
+      if (!mz_zip_writer_add_mem_ex_v2(&zip_archive, key, 0, 0, 0, 0,
+				       ccompression_level, 0, 0, &cmtime, 0, 0,
+				       0, 0)) {
+	goto cleanup;
+      }
+
+    } else {
+      if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
+				  ccompression_level)) {
+	goto cleanup;
+      }
+    }
+
+    if (zip_set_permissions(&zip_archive, i, filename)) {
+      goto cleanup;
+    }
+  }
+
+  if (!mz_zip_writer_finalize_archive(&zip_archive)) goto cleanup;
+  if (!mz_zip_writer_end(&zip_archive)) goto cleanup;
+
+  /* TODO: return info */
+  return 0;
+
+ cleanup:
+  mz_zip_writer_end(&zip_archive);
+  ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+  return 1;
 }

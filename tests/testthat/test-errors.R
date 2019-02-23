@@ -62,7 +62,7 @@ test_that("non readable file", {
       dirname(tmp),
       zipr(zipfile, basename(tmp))
     ),
-    "Cannot create zip file"
+    "Could not create zip file"
   )
 })
 

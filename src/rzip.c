@@ -15,63 +15,6 @@
 #include "miniz.h"
 #include "zip.h"
 
-SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
-	       SEXP compression_level, SEXP append) {
-  const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
-  mz_uint ccompression_level =(mz_uint) INTEGER(compression_level)[0];
-  int cappend = LOGICAL(append)[0];
-  int i, n = LENGTH(files);
-  mz_zip_archive zip_archive;
-
-  memset(&zip_archive, 0, sizeof(zip_archive));
-
-  if (cappend) {
-    if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0) ||
-	!mz_zip_writer_init_from_reader(&zip_archive, czipfile)) {
-      error("Cannot open zip file `%s` for appending", czipfile);
-    }
-  } else {
-    if (!mz_zip_writer_init_file(&zip_archive, czipfile, 0)) {
-      error("Cannot open zip file `%s` for writing", czipfile);
-    }
-  }
-
-  for (i = 0; i < n; i++) {
-    const char *key = CHAR(STRING_ELT(keys, i));
-    const char *filename = CHAR(STRING_ELT(files, i));
-    int directory = LOGICAL(dirs)[i];
-    if (directory) {
-      MZ_TIME_T cmtime = (MZ_TIME_T) REAL(mtime)[i];
-      if (!mz_zip_writer_add_mem_ex_v2(&zip_archive, key, 0, 0, 0, 0,
-				       ccompression_level, 0, 0, &cmtime, 0, 0,
-				       0, 0)) {
-	goto cleanup;
-      }
-
-    } else {
-      if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
-				  ccompression_level)) {
-	goto cleanup;
-      }
-    }
-
-    if (zip_set_permissions(&zip_archive, i, filename)) {
-      goto cleanup;
-    }
-  }
-
-  if (!mz_zip_writer_finalize_archive(&zip_archive)) goto cleanup;
-  if (!mz_zip_writer_end(&zip_archive)) goto cleanup;
-
-  /* TODO: return info */
-  return R_NilValue;
-
- cleanup:
-  mz_zip_writer_end(&zip_archive);
-  error("Cannot create zip file `%s`, file might be corrupt", czipfile);
-  return R_NilValue;
-}
-
 SEXP R_zip_list(SEXP zipfile) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   size_t num_files;
@@ -119,6 +62,36 @@ SEXP R_zip_list(SEXP zipfile) {
 void R_zip_error_handler(const char *reason, const char *file,
 			 int line, int zip_errno, int eno) {
   error("zip error: `%s` in file `%s:%i`", reason, file, line);
+}
+
+SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
+	       SEXP compression_level, SEXP append) {
+
+  const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
+  const char **ckeys = 0, **cfiles = 0;
+  int *cdirs = INTEGER(dirs);
+  double *cmtimes = REAL(mtime);
+  int ccompression_level = INTEGER(compression_level)[0];
+  int cappend = LOGICAL(append)[0];
+  int i, n = LENGTH(keys);
+
+  /* The reason we allocate n+1 here is that otherwise R_alloc will
+     return a NULL pointer for n == 0, and zip_unzip interprets that
+     as extracting the whole archive. */
+
+  ckeys  = (const char **) R_alloc(n + 1, sizeof(char*));
+  cfiles = (const char **) R_alloc(n + 1, sizeof(char*));
+  for (i = 0; i < n; i++) {
+    ckeys [i] = CHAR(STRING_ELT(keys,  i));
+    cfiles[i] = CHAR(STRING_ELT(files, i));
+  }
+
+  zip_set_error_handler(R_zip_error_handler);
+
+  zip_zip(czipfile, n, ckeys, cfiles, cdirs, cmtimes, ccompression_level,
+	  cappend);
+
+  return R_NilValue;
 }
 
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
