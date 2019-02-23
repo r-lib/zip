@@ -168,6 +168,9 @@ zip_list <- function(zipfile) {
 
 #' Uncompress 'zip' Archives
 #'
+#' `unzip()` always restores modification times of the extracted files and
+#' directories.
+#'
 #' @section Permissions:
 #'
 #' If the zip archive stores permissions and was created on Unix,
@@ -177,6 +180,7 @@ zip_list <- function(zipfile) {
 #' @param files Character vector of files to extract from the archive.
 #'   Files within directories can be specified, but they must use a forward
 #'   slash as path separator, as this is what zip files use internally.
+#'   If `NULL`, all files will be extracted.
 #' @param overwrite Whether to overwrite existing files. If `FALSE` and
 #'   a file already exists, then an error is thrown.
 #' @param junkpaths Whether to ignore all directory paths when creating
