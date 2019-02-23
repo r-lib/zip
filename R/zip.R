@@ -72,9 +72,8 @@ NULL
 #'
 #' @param zipfile The zip file to create. If the file exists, `zip`
 #'   overwrites it, but `zip_append` appends to it.
-#' @param files List of file to add to the archive. Absolute path names
-#'   will be added as absolute path names, relative path names stay
-#'   relative in the archive.
+#' @param files List of file to add to the archive. See details below
+#'    about absolute and relative path names.
 #' @param recurse Whether to add the contents of directories recursively.
 #' @param compression_level A number between 1 and 9. 9 compresses best,
 #'   but it also takes the longest.

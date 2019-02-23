@@ -10,3 +10,6 @@
 ^src/tools/unzip$
 ^src/tools/unzip\.exe$
 ^src/tools/unzip\.dSYM$
+^src/tools/zip$
+^src/tools/zip\.exe$
+^src/tools/zip\.dSYM$
