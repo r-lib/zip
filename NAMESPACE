@@ -2,6 +2,7 @@
 
 export(make_unzip_process)
 export(unzip)
+export(unzip_process)
 export(zip)
 export(zip_append)
 export(zip_list)

@@ -2,9 +2,12 @@
 % Please edit documentation in R/process.R
 \name{make_unzip_process}
 \alias{make_unzip_process}
+\alias{unzip_process}
 \title{Create an external unzip process}
 \usage{
 make_unzip_process(zipfile, exdir)
+
+unzip_process()
 }
 \arguments{
 \item{zipfile}{Path to the zip file to uncompress.}
@@ -17,5 +20,7 @@ An unzip process object, its class inherits from the
 \link[processx:process]{processx::process} class.
 }
 \description{
-Create an external unzip process
+\code{unzip_process()} return an R6 class that represents an unzip process.
+\code{make_unzip_process()} is a shorthand that also creates an instance of
+this class.
 }

@@ -27,6 +27,10 @@ super <- ""
 
 #' Create an external unzip process
 #'
+#' `unzip_process()` return an R6 class that represents an unzip process.
+#' `make_unzip_process()` is a shorthand that also creates an instance of
+#' this class.
+#'
 #' @param zipfile Path to the zip file to uncompress.
 #' @param exdir Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
@@ -36,14 +40,25 @@ super <- ""
 #' @export
 
 make_unzip_process <- function(zipfile, exdir) {
+  unzip_class <- unzip_process()
+  unzip_class$new(zipfile, exdir)
+}
+
+#' @export
+#' @rdname make_unzip_process
+
+unzip_process <- function() {
   need_packages(c("processx", "R6"), "creating unzip processes")
-  unzip_class <- zip_data$unzip_class %||%
+  zip_data$unzip_class <- zip_data$unzip_class %||%
     R6::R6Class(
       "unzip_process",
       inherit = processx::process,
       public = list(
         initialize = function(zipfile, exdir) {
-          super$initialize(unzip_exe(), c(zipfile, exdir))
+          private$zipfile <- zipfile
+          private$exdir <- exdir
+          super$initialize(unzip_exe(), c(zipfile, exdir),
+                           poll_connection = TRUE, stderr = tempfile())
         }
       ),
       private = list(
@@ -52,5 +67,5 @@ make_unzip_process <- function(zipfile, exdir) {
       )
     )
 
-  unzip_class$new(zipfile, exdir)
+  zip_data$unzip_class
 }
