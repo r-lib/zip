@@ -1,8 +1,8 @@
 
 progs <- if (WINDOWS) {
-  file.path("tools", c("zip.exe", "unzip.exe"))
+  file.path("tools", c("cmdzip.exe", "cmdunzip.exe"))
 } else {
-  file.path("tools", c("zip", "unzip"))
+  file.path("tools", c("cmdzip", "cmdunzip"))
 }
 
 dest <- file.path(R_PACKAGE_DIR, paste0("bin", R_ARCH))

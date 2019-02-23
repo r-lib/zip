@@ -7,9 +7,9 @@
 ^revdep$
 ^sources\.zip$
 ^README\.html$
-^src/tools/unzip$
-^src/tools/unzip\.exe$
-^src/tools/unzip\.dSYM$
-^src/tools/zip$
-^src/tools/zip\.exe$
-^src/tools/zip\.dSYM$
+^src/tools/cmdunzip$
+^src/tools/cmdunzip\.exe$
+^src/tools/cmdunzip\.dSYM$
+^src/tools/cmdzip$
+^src/tools/cmdzip\.exe$
+^src/tools/cmdzip\.dSYM$

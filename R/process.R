@@ -17,11 +17,11 @@ get_tool <- function (prog) {
 }
 
 unzip_exe <- function() {
-  get_tool("unzip")
+  get_tool("cmdunzip")
 }
 
 zip_exe <- function() {
-  get_tool("zip")
+  get_tool("cmdzip")
 }
 
 zip_data <- new.env(parent = emptyenv())
