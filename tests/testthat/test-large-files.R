@@ -7,12 +7,12 @@ test_that("can compress large files", {
   if (! nzchar(Sys.getenv("ZIP_LONG_TESTS"))) skip("takes long")
 
   ## Note: it will be also skipped if we cannot find a reasonable quick
-  ## way to create a 4GB file.
+  ## way to create a 5GB file.
 
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
   dir.create(tmp <- tempfile())
   file1 <- file.path(tmp, "file1")
-  make_big_file(file1, 4000)
+  make_big_file(file1, 5000)
   size <- file.info(file1)$size
 
   zipfile <- tempfile(fileext = ".zip")
@@ -28,6 +28,6 @@ test_that("can compress large files", {
   dir.create(tmp2 <- tempfile())
 
   unlink(file1)
-  utils::unzip(zipfile, exdir = tmp2)
-
+  zip::unzip(zipfile, exdir = tmp2)
+  expect_equal(file.info(file.path(tmp2, "file1"))$size, size)
 })
