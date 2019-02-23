@@ -4,7 +4,7 @@
 * New `zipr()` and `zipr_append()`, they always store relative file names
   in the archive.
 
-* New `zip_unzip()` function for uncompressing zip archives.
+* New `unzip()` function for uncompressing zip archives.
 
 * New `make_unzip_process()` function to uncompress an archive in the
   background.

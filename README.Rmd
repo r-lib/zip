@@ -68,11 +68,11 @@ zip_list("sources.zip")
 
 ### Uncompressing ZIP files
 
-`zip_unzip()` uncompresses a ZIP archive:
+`unzip()` uncompresses a ZIP archive:
 
 ```{r}
 exdir <- tempfile()
-zip_unzip("sources.zip", exdir = exdir)
+unzip("sources.zip", exdir = exdir)
 dir(exdir)
 ```
 

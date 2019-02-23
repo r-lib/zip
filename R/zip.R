@@ -203,9 +203,9 @@ zip_list <- function(zipfile) {
 #'
 #' ## Extract
 #' tmp2 <- tempfile()
-#' zip_unzip(zipfile, exdir = tmp2)
+#' unzip(zipfile, exdir = tmp2)
 
-zip_unzip <- function(zipfile, files = NULL, overwrite = TRUE,
+unzip <- function(zipfile, files = NULL, overwrite = TRUE,
                       junkpaths = FALSE, exdir = ".") {
 
   stopifnot(
