@@ -3250,7 +3250,7 @@ static MZ_FORCEINLINE mz_bool mz_zip_array_push_back(mz_zip_archive *pZip, mz_zi
     size_t orig_size = pArray->m_size;
     if (!mz_zip_array_resize(pZip, pArray, orig_size + n, MZ_TRUE))
         return MZ_FALSE;
-    memcpy((mz_uint8 *)pArray->m_p + orig_size * pArray->m_element_size, pElements, n * pArray->m_element_size);
+    if (pElements) memcpy((mz_uint8 *)pArray->m_p + orig_size * pArray->m_element_size, pElements, n * pArray->m_element_size);
     return MZ_TRUE;
 }
 
@@ -3957,48 +3957,40 @@ static MZ_FORCEINLINE const mz_uint8 *mz_zip_get_cdh(mz_zip_archive *pZip, mz_ui
 int mz_zip_get_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
 			       mz_uint16 *value) {
   mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
-  mz_uint16 *p2;
 
   if (!p) return 0;
 
-  p2 = (mz_uint16*) (p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS);
-  *value = *p2;
+  memcpy(value, p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS, sizeof(mz_uint16));
   return 1;
 }
 
 int mz_zip_set_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
 			       mz_uint16 value) {
   mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
-  mz_uint16 *p2;
 
   if (!p) return 0;
 
-  p2 = (mz_uint16*) (p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS);
-  *p2 = value;
+  memcpy(p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS, &value, sizeof(mz_uint16));
   return 1;
 }
 
 int mz_zip_get_external_attr(mz_zip_archive *pZip, mz_uint file_index,
 			     mz_uint32 *value) {
   mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
-  mz_uint32 *p2;
 
   if (!p) return 0;
 
-  p2 = (mz_uint32*) (p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
-  *value = *p2;
+  memcpy(value, p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS, sizeof(mz_uint32));
   return 1;
 }
 
 int mz_zip_set_external_attr(mz_zip_archive *pZip, mz_uint file_index,
 			     mz_uint32 value) {
   mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
-  mz_uint32 *p2;
 
   if (!p) return 0;
 
-  p2 = (mz_uint32*) (p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
-  *p2 = value;
+  memcpy(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS, &value, sizeof(mz_uint32));
   return 1;
 }
 
@@ -5702,7 +5694,7 @@ static size_t mz_zip_file_write_func(void *pOpaque, mz_uint64 file_ofs, const vo
         return 0;
     }
 
-    return MZ_FWRITE(pBuf, 1, n, pZip->m_pState->m_pFile);
+    if (pBuf) return MZ_FWRITE(pBuf, 1, n, pZip->m_pState->m_pFile); else return 0;
 }
 
 mz_bool mz_zip_writer_init_file(mz_zip_archive *pZip, const char *pFilename, mz_uint64 size_to_reserve_at_beginning)
