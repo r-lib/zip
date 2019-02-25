@@ -56,8 +56,14 @@ test_that("get_zip_data", {
       bar, file.path(tmp, "foobar"))),
     c(TRUE, TRUE, TRUE, FALSE, FALSE)
   )
+  data <- data[order(data$file), ]
+  rownames(data) <- NULL
 
-  expect_equal(get_zip_data_nopath_recursive(tmp), data)
+  data2 <- get_zip_data_nopath_recursive(tmp)
+  data2 <- data2[order(data2$file), ]
+  rownames(data2) <- NULL
+
+  expect_equal(data2, data)
   expect_equal(get_zip_data_nopath(tmp, TRUE), data)
 
   expect_equal(
