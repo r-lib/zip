@@ -162,5 +162,5 @@ write_zip_params <- function(files, recurse, outfile) {
   writeBin(con = con, as.integer(data$dir))
 
   ## mtime
-  writeBin(con = con, mtime)
+  writeBin(con = con, as.double(mtime))
 }
