@@ -1,6 +1,9 @@
 
 # dev
 
+* `zip_process()` and `unzip_process()` can now pass extra arguments to
+  `processx::process` (#32).
+
 # 2.0.1
 
 * `zip()` and `zip_append()` are now soft-deprecated, please use

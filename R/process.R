@@ -37,7 +37,8 @@ super <- ""
 #' @section Using the `unzip_process` class:
 #'
 #' ```
-#' up <- unzip_process()$new(zipfile, exdir = ".")
+#' up <- unzip_process()$new(zipfile, exdir = ".", poll_connection = TRUE,
+#'                            stderr = tempfile(), ...)
 #' ```
 #'
 #' See [processx::process] for the class methods.
@@ -46,6 +47,13 @@ super <- ""
 #' * `zipfile`: Path to the zip file to uncompress.
 #' * `exdir`: Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
+#' * `poll_connection`: passed to the `initialize` method of
+#'   [processx::process], it allows using [processx::poll()] or the
+#'   `poll_io()` method to poll for the completion of the process.
+#' * `stderr`: passed to the `initialize` method of [processx::process],
+#'   by default the standard error is written to a temporary file.
+#'   This file can be used to diagnose errors if the process failed.
+#' * `...` passed to the `initialize` method of [processx::process].
 #'
 #' @return An `unzip_process` R6 class object, a subclass of
 #' [processx::process].
@@ -66,13 +74,15 @@ unzip_process <- function() {
       "unzip_process",
       inherit = processx::process,
       public = list(
-        initialize = function(zipfile, exdir = ".") {
+        initialize = function(zipfile, exdir = ".", poll_connection = TRUE,
+                              stderr = tempfile(), ...) {
           stopifnot(
             is_string(zipfile),
             is_string(exdir))
           exdir <- normalizePath(exdir, winslash = "/", mustWork = FALSE)
           super$initialize(unzip_exe(), c(zipfile, exdir),
-                           poll_connection = TRUE, stderr = tempfile())
+                           poll_connection = poll_connection,
+                           stderr = stderr, ...)
         }
       ),
       private = list()
@@ -89,7 +99,9 @@ unzip_process <- function() {
 #' @section Using the `zip_process` class:
 #'
 #' ```
-#' zp <- zip_process()$new(zipfile, files, recurse = TRUE)
+#' zp <- zip_process()$new(zipfile, files, recurse = TRUE,
+#'                          poll_connection = TRUE,
+#'                          stderr = tempfile(), ...)
 #' ```
 #'
 #' See [processx::process] for the class methods.
@@ -99,6 +111,13 @@ unzip_process <- function() {
 #' * `files`: List of file to add to the archive. Each specified file
 #'    or directory in is created as a top-level entry in the zip archive.
 #' * `recurse` Whether to add the contents of directories recursively.
+#' * `poll_connection`: passed to the `initialize` method of
+#'   [processx::process], it allows using [processx::poll()] or the
+#'   `poll_io()` method to poll for the completion of the process.
+#' * `stderr`: passed to the `initialize` method of [processx::process],
+#'   by default the standard error is written to a temporary file.
+#'   This file can be used to diagnose errors if the process failed.
+#' * `...` passed to the `initialize` method of [processx::process].
 #'
 #' @return A `zip_process` R6 class object, a subclass of
 #' [processx::process].
@@ -120,14 +139,17 @@ zip_process <- function() {
       "zip_process",
       inherit = processx::process,
       public = list(
-        initialize = function(zipfile, files, recurse = TRUE) {
+        initialize = function(zipfile, files, recurse = TRUE,
+                              poll_connection = TRUE, stderr = tempfile(),
+                              ...) {
           private$zipfile <- zipfile
           private$files <- files
           private$recurse <- recurse
           private$params_file <- tempfile()
           write_zip_params(files, recurse, private$params_file)
           super$initialize(zip_exe(), c(zipfile, private$params_file),
-                           poll_connection = TRUE, stderr = tempfile())
+                           poll_connection = poll_connection,
+                           stderr = stderr, ...)
         }
       ),
       private = list(
