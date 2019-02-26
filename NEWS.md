@@ -1,4 +1,6 @@
 
+# dev
+
 # 2.0.0
 
 * New `zipr()` and `zipr_append()`, they always store relative file names
