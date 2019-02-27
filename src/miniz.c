@@ -2939,9 +2939,11 @@ extern "C" {
 #include <sys/stat.h>
 
 #if defined(_MSC_VER) || defined(__MINGW64__)
+#if defined(__MINGW64_VERSION_MAJOR) && __MINGW64_VERSION_MAJOR < 5
 errno_t freopen_s(FILE *restrict *restrict newstreamptr,
                   const char *restrict filename, const char *restrict mode,
                   FILE *restrict stream);
+#endif
 static FILE *mz_fopen(const char *pFilename, const char *pMode)
 {
     FILE *pFile = NULL;
