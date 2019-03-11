@@ -92,3 +92,11 @@ make_a_zip <- function(mtime = Sys.time(), envir = parent.frame()) {
   zipr(zip, tmp)
   list(zip = zip, ex = tmp)
 }
+
+expect_deprecated <- function(expr) {
+  expect_silent(
+    withCallingHandlers(
+      expr,
+      "deprecated" = function(e) invokeRestart("muffleMessage"))
+  )
+}

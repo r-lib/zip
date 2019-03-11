@@ -98,6 +98,7 @@ NULL
 #' zip_list(zipfile)
 
 zip <- function(zipfile, files, recurse = TRUE, compression_level = 9) {
+  deprecated("zip", "zip::zip() is deprecated, please use zip::zipr() instead")
   zip_internal(zipfile, files, recurse, compression_level, append = FALSE,
                keep_path = TRUE)
 }
@@ -115,6 +116,9 @@ zipr <- function(zipfile, files, recurse = TRUE, compression_level = 9) {
 
 zip_append <- function(zipfile, files, recurse = TRUE,
                        compression_level = 9) {
+  deprecated(
+    "zip_append",
+    "zip::zip_append() is deprecated, please use zip::zipr_append instead")
   zip_internal(zipfile, files, recurse, compression_level, append = TRUE,
                keep_path = TRUE)
 }

@@ -1,6 +1,9 @@
 
 # dev
 
+* `zip()` and `zip_append()` are now soft-deprecated, please use
+  `zipr()` and `zipr_append()` instead.
+
 # 2.0.0
 
 * New `zipr()` and `zipr_append()`, they always store relative file names
