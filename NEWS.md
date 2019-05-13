@@ -4,6 +4,10 @@
 * `zip_process()` and `unzip_process()` can now pass extra arguments to
   `processx::process` (#32).
 
+* `unzip_process()` now makes sure the `exdir` path is created with
+  forward slashes on Windows, mixing forward and backward slashes can
+  cause errors.
+
 # 2.0.1
 
 * `zip()` and `zip_append()` are now soft-deprecated, please use
