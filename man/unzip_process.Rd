@@ -15,7 +15,8 @@ An \code{unzip_process} R6 class object, a subclass of
 It is implemented as a subclass of \link[processx:process]{processx::process}.
 }
 \section{Using the \code{unzip_process} class}{
-\preformatted{up <- unzip_process()$new(zipfile, exdir = ".")
+\preformatted{up <- unzip_process()$new(zipfile, exdir = ".", poll_connection = TRUE,
+                           stderr = tempfile(), ...)
 }
 
 See \link[processx:process]{processx::process} for the class methods.
@@ -25,6 +26,13 @@ Arguments:
 \item \code{zipfile}: Path to the zip file to uncompress.
 \item \code{exdir}: Directory to uncompress the archive to. If it does not
 exist, it will be created.
+\item \code{poll_connection}: passed to the \code{initialize} method of
+\link[processx:process]{processx::process}, it allows using \code{\link[processx:poll]{processx::poll()}} or the
+\code{poll_io()} method to poll for the completion of the process.
+\item \code{stderr}: passed to the \code{initialize} method of \link[processx:process]{processx::process},
+by default the standard error is written to a temporary file.
+This file can be used to diagnose errors if the process failed.
+\item \code{...} passed to the \code{initialize} method of \link[processx:process]{processx::process}.
 }
 }
 
