@@ -70,6 +70,16 @@ NULL
 #' #> foo2/file3
 #' ```
 #'
+#' Because of the potential issues with `zip()` and `zip_append()`,
+#' they are now soft-deprecated, and their first use in the R session
+#' will trigger a reminder message. To suppress this message, you can
+#' use something like this:
+#' ```
+#' withCallingHandlers(
+#'   zip::zip(...),
+#'   deprecated = function(e) NULL)
+#' ```
+#'
 #' @param zipfile The zip file to create. If the file exists, `zip`
 #'   overwrites it, but `zip_append` appends to it.
 #' @param files List of file to add to the archive. See details below

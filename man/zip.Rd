@@ -94,6 +94,14 @@ zip_list("x.zip")$filename
 #> foo2
 #> foo2/file3
 }
+
+Because of the potential issues with \code{zip()} and \code{zip_append()},
+they are now soft-deprecated, and their first use in the R session
+will trigger a reminder message. To suppress this message, you can
+use something like this:\preformatted{withCallingHandlers(
+  zip::zip(...),
+  deprecated = function(e) NULL)
+}
 }
 
 \examples{
