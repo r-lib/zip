@@ -1,5 +1,5 @@
 
-# dev
+# 2.0.2
 
 * `zip_process()` and `unzip_process()` can now pass extra arguments to
   `processx::process` (#32).
