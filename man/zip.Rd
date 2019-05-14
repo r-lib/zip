@@ -7,13 +7,17 @@
 \alias{zipr_append}
 \title{Compress Files into 'zip' Archives}
 \usage{
-zip(zipfile, files, recurse = TRUE, compression_level = 9)
+zip(zipfile, files, recurse = TRUE, compression_level = 9,
+  include_directories = TRUE)
 
-zipr(zipfile, files, recurse = TRUE, compression_level = 9)
+zipr(zipfile, files, recurse = TRUE, compression_level = 9,
+  include_directories = TRUE)
 
-zip_append(zipfile, files, recurse = TRUE, compression_level = 9)
+zip_append(zipfile, files, recurse = TRUE, compression_level = 9,
+  include_directories = TRUE)
 
-zipr_append(zipfile, files, recurse = TRUE, compression_level = 9)
+zipr_append(zipfile, files, recurse = TRUE, compression_level = 9,
+  include_directories = TRUE)
 }
 \arguments{
 \item{zipfile}{The zip file to create. If the file exists, \code{zip}
@@ -26,6 +30,10 @@ about absolute and relative path names.}
 
 \item{compression_level}{A number between 1 and 9. 9 compresses best,
 but it also takes the longest.}
+
+\item{include_directories}{Whether to explicitly include directories
+in the archive. Including directories might confuse MS Office when
+reading docx files, so set this to \code{FALSE} for creating them.}
 }
 \value{
 The name of the created zip file, invisibly.

@@ -1,12 +1,18 @@
 
 `%||%` <- function(l, r) if (is.null(l)) r else l
 
-get_zip_data <- function(files, recurse, keep_path) {
-  if (keep_path) {
+get_zip_data <- function(files, recurse, keep_path, include_directories) {
+  list <- if (keep_path) {
     get_zip_data_path(files, recurse)
   } else {
     get_zip_data_nopath(files, recurse)
   }
+
+  if (!include_directories) {
+    list <- list[! list$dir, ]
+  }
+
+  list
 }
 
 get_zip_data_path <- function(files, recurse) {

@@ -403,3 +403,28 @@ test_that("Permissions are kept on Unix", {
   check_perm("file2", "0755")
   check_perm("file3", "0777")
 })
+
+test_that("can omit directories", {
+  on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)))
+
+  dir.create(tmp <- tempfile())
+  cat("first file", file = file.path(tmp, "file1"))
+  cat("second file", file = file.path(tmp, "file2"))
+
+  zipfile <- tempfile(fileext = ".zip")
+
+  expect_silent(
+    withr::with_dir(
+      dirname(tmp),
+      zipr(zipfile, basename(tmp), include_directories = FALSE)
+    )
+  )
+
+  expect_true(file.exists(zipfile))
+
+  list <- zip_list(zipfile)
+  expect_equal(
+    list$filename,
+    file.path(basename(tmp), c("file1", "file2"))
+  )
+})

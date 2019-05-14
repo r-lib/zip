@@ -73,7 +73,8 @@ test_temp_dir <- function(pattern = "test-dir-", envir = parent.frame(),
   }
 }
 
-make_a_zip <- function(mtime = Sys.time(), envir = parent.frame()) {
+make_a_zip <- function(mtime = Sys.time(), envir = parent.frame(),
+                       include_directories = TRUE) {
   tmp <- test_temp_dir(envir = envir)
   cat("file1\n", file = file.path(tmp, "file1"))
   cat("file11\n", file = file.path(tmp, "file11"))
@@ -89,7 +90,7 @@ make_a_zip <- function(mtime = Sys.time(), envir = parent.frame()) {
   Sys.setFileTime(tmp, mtime)
 
   zip <- test_temp_file(".zip", envir = envir)
-  zipr(zip, tmp)
+  zipr(zip, tmp, include_directories = include_directories)
   list(zip = zip, ex = tmp)
 }
 

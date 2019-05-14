@@ -27,7 +27,10 @@ Arguments:
 \item \code{zipfile}: Path to the zip file to create.
 \item \code{files}: List of file to add to the archive. Each specified file
 or directory in is created as a top-level entry in the zip archive.
-\item \code{recurse} Whether to add the contents of directories recursively.
+\item \code{recurse}: Whether to add the contents of directories recursively.
+\item \code{include_directories}: Whether to explicitly include directories
+in the archive. Including directories might confuse MS Office when
+reading docx files, so set this to \code{FALSE} for creating them.
 \item \code{poll_connection}: passed to the \code{initialize} method of
 \link[processx:process]{processx::process}, it allows using \code{\link[processx:poll]{processx::poll()}} or the
 \code{poll_io()} method to poll for the completion of the process.

@@ -110,7 +110,10 @@ unzip_process <- function() {
 #' * `zipfile`: Path to the zip file to create.
 #' * `files`: List of file to add to the archive. Each specified file
 #'    or directory in is created as a top-level entry in the zip archive.
-#' * `recurse` Whether to add the contents of directories recursively.
+#' * `recurse`: Whether to add the contents of directories recursively.
+#' * `include_directories`: Whether to explicitly include directories
+#'   in the archive. Including directories might confuse MS Office when
+#'   reading docx files, so set this to `FALSE` for creating them.
 #' * `poll_connection`: passed to the `initialize` method of
 #'   [processx::process], it allows using [processx::poll()] or the
 #'   `poll_io()` method to poll for the completion of the process.
@@ -140,13 +143,16 @@ zip_process <- function() {
       inherit = processx::process,
       public = list(
         initialize = function(zipfile, files, recurse = TRUE,
+                              include_directories = TRUE,
                               poll_connection = TRUE, stderr = tempfile(),
                               ...) {
           private$zipfile <- zipfile
           private$files <- files
           private$recurse <- recurse
+          private$include_directories <- include_directories
           private$params_file <- tempfile()
-          write_zip_params(files, recurse, private$params_file)
+          write_zip_params(files, recurse, include_directories,
+                           private$params_file)
           super$initialize(zip_exe(), c(zipfile, private$params_file),
                            poll_connection = poll_connection,
                            stderr = stderr, ...)
@@ -156,6 +162,7 @@ zip_process <- function() {
         zipfile = NULL,
         files = NULL,
         recurse = NULL,
+        include_directories = NULL,
         params_file = NULL
       )
     )
@@ -163,8 +170,9 @@ zip_process <- function() {
   zip_data$zip_class
 }
 
-write_zip_params <- function(files, recurse, outfile) {
-  data <- get_zip_data(files, recurse, keep_path = FALSE)
+write_zip_params <- function(files, recurse, include_directories, outfile) {
+  data <- get_zip_data(files, recurse, keep_path = FALSE,
+                       include_directories = include_directories)
   mtime <- as.double(file.info(data$file)$mtime)
 
   con <- file(outfile, open = "wb")

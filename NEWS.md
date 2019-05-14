@@ -1,6 +1,10 @@
 
 # dev
 
+* `zipr()` and `zipr_append()` get an `include_directories = TRUE`
+  argument, that can be used to omit directory entries from the zip
+  archive. These entries may cause problems in MS Office docx files (#34).
+
 # 2.0.2
 
 * `zip_process()` and `unzip_process()` can now pass extra arguments to
