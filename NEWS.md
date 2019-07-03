@@ -1,5 +1,5 @@
 
-# dev
+# 2.0.3
 
 * `zipr()` and `zipr_append()` get an `include_directories = TRUE`
   argument, that can be used to omit directory entries from the zip
