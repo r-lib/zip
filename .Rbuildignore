@@ -13,3 +13,5 @@
 ^src/tools/cmdzip$
 ^src/tools/cmdzip\.exe$
 ^src/tools/cmdzip\.dSYM$
+^\.Rprofile$
+^r-packages$
