@@ -57,7 +57,7 @@ NULL
 #'
 #' For `zipr` (and `zipr_append`), each specified file or directory in
 #' `files` is created as a top-level entry in the zip archive.
-#' We suggest that you use `zip` and `zip_append` for new code, as they
+#' We suggest that you use `zipr` and `zipr_append` for new code, as they
 #' don't create non-portable archives. For the same directory structure,
 #' these zip entries are created:
 #' ```

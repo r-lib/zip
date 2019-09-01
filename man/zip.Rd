@@ -92,7 +92,7 @@ zip_list("x.zip")$filename
 
 For \code{zipr} (and \code{zipr_append}), each specified file or directory in
 \code{files} is created as a top-level entry in the zip archive.
-We suggest that you use \code{zip} and \code{zip_append} for new code, as they
+We suggest that you use \code{zipr} and \code{zipr_append} for new code, as they
 don't create non-portable archives. For the same directory structure,
 these zip entries are created:\preformatted{zipr("x.zip", c("bar/file1", "bar2", "../foo2"))
 zip_list("x.zip")$filename
