@@ -1,5 +1,5 @@
 
-# development version
+# 2.0.4
 
 * `unzip_process()` prints better error messages to the standard error,
   and exits with a non-zero status, on error.
