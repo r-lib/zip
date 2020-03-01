@@ -21,7 +21,7 @@ NULL
 #'
 #' @section Relative paths:
 #'
-#' The different between `zipr` and `zip` is how they handle the relative
+#' The difference between `zipr` and `zip` is how they handle the relative
 #' paths of the input files.
 #'
 #' For `zip` (and `zip_append`), the root of the archive is supposed to
