@@ -1,6 +1,9 @@
 
 # development version
 
+* `zipr()` and `zipr_append()` now support custom filenames in zip files.
+  Use the names of `files` to specify the paths within the zip file (#50).
+
 # 2.0.4
 
 * `unzip_process()` prints better error messages to the standard error,
