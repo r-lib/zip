@@ -5,18 +5,18 @@ get_zip_data <- function(files, recurse, keep_path, include_directories) {
   if (!keep_path && is.null(names(files))) {
     names(files) <- basename(normalizePath(files))
   }
-  
+
   keys <- names(files) %||% files
   files <- normalizePath(files)
   is_dir <- file.info(files)$isdir
-  
+
   if (!recurse && any(is_dir)) {
     warning("directories ignored in zip file, specify recurse = TRUE")
     files <- files[!is_dir]
     keys <- keys[!is_dir]
     is_dir <- is_dir[!is_dir]
   }
-  
+
   if (!length(files)) {
     return(data.frame(
       stringsAsFactors = FALSE,
@@ -25,7 +25,7 @@ get_zip_data <- function(files, recurse, keep_path, include_directories) {
       dir = logical()
     ))
   }
-  
+
   zip_data <- do.call(rbind, mapply(
     function(key, file, is_dir) {
       if (is_dir) {
@@ -39,13 +39,15 @@ get_zip_data <- function(files, recurse, keep_path, include_directories) {
             no.. = TRUE
           )
         )
-        
+
         keys <- file.path(key, files)
         files <- file.path(file, files)
         dirs <- file.info(files)$isdir
-        keys[dirs] <- paste0(keys[dirs], "/")
-        
-        data.frame( 
+        keys[dirs & !grepl("/$", keys)] <- paste0(
+          keys[dirs & !grepl("/$", keys)], "/"
+        )
+
+        data.frame(
           stringsAsFactors = FALSE,
           key = keys,
           files = files,
@@ -65,12 +67,12 @@ get_zip_data <- function(files, recurse, keep_path, include_directories) {
     is_dir = is_dir,
     SIMPLIFY = FALSE
   ))
-  
+
   zip_data <- zip_data[!duplicated(zip_data$key) & zip_data$key != "/", ]
-  
+
   row.names(zip_data) <- NULL
   zip_data$files <- normalizePath(zip_data$files)
-  
+
   if (!include_directories) {
     zip_data[!zip_data$dir, ]
   } else {
