@@ -99,7 +99,7 @@ contain absolute file names, or file names that start with \verb{../} or
 \verb{./}.
 
 E.g. for the following directory structure:\preformatted{## Warning in dir.create(tmp <- tempdir()): '/var/folders/
-## 59/0gkmw1yj2w7bf2dfc3jznv5w0000gn/T//RtmpUJywWb' already exists
+## 59/0gkmw1yj2w7bf2dfc3jznv5w0000gn/T//RtmpzuS9Yx' already exists
 }\if{html}{\out{<div class="r">}}\preformatted{
 foo
   bar
@@ -132,6 +132,24 @@ zip_list("x.zip")$filename
 #> foo2
 #> foo2/file3
 }\if{html}{\out{</div>}}
+}
+
+\section{Custom file structure}{
+
+
+Both \code{zipr} and \code{zip} allow manual specification of the file structure using
+the names of \code{files}.
+
+Assuming files \code{bar/file1_2}, \code{dir1/file1_2}, \verb{dir1/file2_2"} and \code{foo2} to
+exist in the current working directory, the names can be used to produce a
+custom file structure as follows:\preformatted{zipr("x.zip", c("file1" = "bar/file1_2", "dir1" = "dir1_2", "foo2" = "foo2"))
+zip_list("x.zip")$filename
+#> file1
+#> dir1
+#> dir1/file1_2
+#> dir1/file2_2
+#> foo2
+}
 }
 
 \examples{
