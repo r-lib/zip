@@ -80,6 +80,24 @@ NULL
 #'   deprecated = function(e) NULL)
 #' ```
 #'
+#' @section Custom file structure:
+#'
+#' Both `zipr` and `zip` allow manual specification of the file structure using
+#' the names of `files`.
+#'
+#' Assuming files `bar/file1_2`, `dir1/file1_2`, `dir1/file2_2"` and `foo2` to
+#' exist in the current working directory, the names can be used to produce a
+#' custom file structure as follows:
+#'
+#' ```
+#' zipr("x.zip", c("file1" = "bar/file1_2", "dir1" = "dir1_2", "foo2" = "foo2"))
+#' zip_list("x.zip")$filename
+#' #> file1
+#' #> dir1
+#' #> dir1/file1_2
+#' #> dir1/file2_2
+#' #> foo2
+#' ```
 #' @param zipfile The zip file to create. If the file exists, `zip`
 #'   overwrites it, but `zip_append` appends to it.
 #' @param files List of file to add to the archive. See details below
