@@ -146,7 +146,8 @@ test_that("can use names to create custom structure", {
   expect_silent(
     withr::with_dir(
       tmp,
-      zipr(zipfile, c("file1_z" = file1, "file2_z" = file2, "dir1_z" = "dir1"))
+      zipr(zipfile, c(file1, file2, "dir1"),
+           keys = c("file1_z", "file2_z", "dir1_z"))
     )
   )
 

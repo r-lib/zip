@@ -6,7 +6,7 @@ test_that("get_zip_data", {
   dir.create(tmp <- tempfile())
 
   expect_equal(
-    get_zip_data(tmp, TRUE, FALSE, TRUE),
+    get_zip_data(tmp, bnn(tmp), TRUE, TRUE),
     df(paste0(basename(tmp), "/"), normalizePath(tmp), TRUE)
   )
 
@@ -14,12 +14,12 @@ test_that("get_zip_data", {
   cat("foobar", file = foobar)
 
   expect_equal(
-    get_zip_data(foobar, TRUE, FALSE, TRUE),
+    get_zip_data(foobar, bnn(foobar), TRUE, TRUE),
     df(basename(foobar), normalizePath(foobar), FALSE)
   )
 
   expect_equal(
-    get_zip_data(tmp, TRUE, FALSE, TRUE),
+    get_zip_data(tmp, bnn(tmp), TRUE, TRUE),
     df(c(paste0(basename(tmp), "/"), file.path(basename(tmp), "foobar")),
        normalizePath(c(tmp, foobar)),
        c(TRUE, FALSE)
@@ -27,7 +27,7 @@ test_that("get_zip_data", {
   )
 
   expect_equal(
-    withr::with_dir(tmp, get_zip_data(".", TRUE, FALSE, TRUE)),
+    withr::with_dir(tmp, get_zip_data(".", bnn("."), TRUE, TRUE)),
     df(c(paste0(basename(tmp), "/"), file.path(basename(tmp), "foobar")),
        normalizePath(c(tmp, foobar)),
        c(TRUE, FALSE)
@@ -53,21 +53,21 @@ test_that("get_zip_data", {
   data <- data[order(data$file), ]
   rownames(data) <- NULL
 
-  data2 <- get_zip_data(tmp, TRUE, FALSE, TRUE)
+  data2 <- get_zip_data(tmp, bnn(tmp), TRUE, TRUE)
   data2 <- data2[order(data2$file), ]
   rownames(data2) <- NULL
 
   expect_equal(data2, data)
 
   expect_equal(
-    get_zip_data(c(foobar, bar), TRUE, FALSE, TRUE),
+    get_zip_data(c(foobar, bar), bnn(c(foobar, bar)), TRUE, TRUE),
     df(c("foobar", "bar"),
        normalizePath(c(foobar, bar)),
        c(FALSE, FALSE))
   )
 
   expect_equal(
-    get_zip_data(file.path(tmp, "foo"), TRUE, FALSE, TRUE),
+    get_zip_data(file.path(tmp, "foo"), bnn(file.path(tmp, "foo")), TRUE, TRUE),
     df(c("foo/", "foo/bar"),
        normalizePath(c(file.path(tmp, "foo"), file.path(tmp, "foo", "bar"))),
        c(TRUE, FALSE)

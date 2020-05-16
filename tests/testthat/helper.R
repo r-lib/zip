@@ -44,6 +44,10 @@ bns <- function(x) {
   paste0(basename(x), "/")
 }
 
+bnn <- function(x) {
+  basename(normalizePath(x))
+}
+
 test_temp_file <- function(fileext = "", pattern = "test-file-",
                            envir = parent.frame(), create = TRUE) {
   tmp <- tempfile(pattern = pattern, fileext = fileext)

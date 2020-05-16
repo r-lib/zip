@@ -1,12 +1,7 @@
 
 `%||%` <- function(l, r) if (is.null(l)) r else l
 
-get_zip_data <- function(files, recurse, keep_path, include_directories) {
-  if (!keep_path && is.null(names(files))) {
-    names(files) <- basename(normalizePath(files))
-  }
-
-  keys <- names(files) %||% files
+get_zip_data <- function(files, keys, recurse, include_directories) {
   files <- normalizePath(files)
   is_dir <- file.info(files)$isdir
 

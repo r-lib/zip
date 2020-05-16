@@ -12,7 +12,8 @@ zip(
   files,
   recurse = TRUE,
   compression_level = 9,
-  include_directories = TRUE
+  include_directories = TRUE,
+  keys = files
 )
 
 zipr(
@@ -20,7 +21,8 @@ zipr(
   files,
   recurse = TRUE,
   compression_level = 9,
-  include_directories = TRUE
+  include_directories = TRUE,
+  keys = basename(normalizePath(files))
 )
 
 zip_append(
@@ -28,7 +30,8 @@ zip_append(
   files,
   recurse = TRUE,
   compression_level = 9,
-  include_directories = TRUE
+  include_directories = TRUE,
+  keys = files
 )
 
 zipr_append(
@@ -36,7 +39,8 @@ zipr_append(
   files,
   recurse = TRUE,
   compression_level = 9,
-  include_directories = TRUE
+  include_directories = TRUE,
+  keys = basename(normalizePath(files))
 )
 }
 \arguments{
@@ -54,6 +58,8 @@ but it also takes the longest.}
 \item{include_directories}{Whether to explicitly include directories
 in the archive. Including directories might confuse MS Office when
 reading docx files, so set this to \code{FALSE} for creating them.}
+
+\item{keys}{Custom file names to set in the zip archive.}
 
 \item{keep_path}{Whether to keep the full path to \code{files} in the
 archive. See "Relative Paths" below for details. (\code{zip} and
@@ -99,7 +105,7 @@ contain absolute file names, or file names that start with \verb{../} or
 \verb{./}.
 
 E.g. for the following directory structure:\preformatted{## Warning in dir.create(tmp <- tempdir()): '/var/folders/
-## 59/0gkmw1yj2w7bf2dfc3jznv5w0000gn/T//RtmpzuS9Yx' already exists
+## 59/0gkmw1yj2w7bf2dfc3jznv5w0000gn/T//RtmpihLUTD' already exists
 }\if{html}{\out{<div class="r">}}\preformatted{
 foo
   bar
@@ -142,7 +148,8 @@ the names of \code{files}.
 
 Assuming files \code{bar/file1_2}, \code{dir1/file1_2}, \verb{dir1/file2_2"} and \code{foo2} to
 exist in the current working directory, the names can be used to produce a
-custom file structure as follows:\preformatted{zipr("x.zip", c("file1" = "bar/file1_2", "dir1" = "dir1_2", "foo2" = "foo2"))
+custom file structure as follows:\preformatted{zipr("x.zip", c("bar/file1_2", "dir1_2", "foo2"),
+     keys = c("file1", "dir1", "foo2"))
 zip_list("x.zip")$filename
 #> file1
 #> dir1
