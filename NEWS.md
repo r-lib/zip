@@ -1,6 +1,9 @@
 
 # development version
 
+* `unzip_process()` now works when R library is on different drive than `exdir`
+  on Windows (#45)
+
 # 2.0.4
 
 * `unzip_process()` prints better error messages to the standard error,

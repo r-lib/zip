@@ -79,7 +79,7 @@ unzip_process <- function() {
           stopifnot(
             is_string(zipfile),
             is_string(exdir))
-          exdir <- normalizePath(exdir, winslash = "/", mustWork = FALSE)
+          exdir <- normalizePath(exdir, winslash = "\\", mustWork = FALSE)
           super$initialize(unzip_exe(), c(zipfile, exdir),
                            poll_connection = poll_connection,
                            stderr = stderr, ...)
