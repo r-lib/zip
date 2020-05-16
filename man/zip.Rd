@@ -144,7 +144,7 @@ zip_list("x.zip")$filename
 
 
 Both \code{zipr} and \code{zip} allow manual specification of the file structure using
-the names of \code{files}.
+the argument \code{keys}.
 
 Assuming files \code{bar/file1_2}, \code{dir1/file1_2}, \verb{dir1/file2_2"} and \code{foo2} to
 exist in the current working directory, the names can be used to produce a

@@ -78,7 +78,7 @@ NULL
 #' @section Custom file structure:
 #'
 #' Both `zipr` and `zip` allow manual specification of the file structure using
-#' the names of `files`.
+#' the argument `keys`.
 #'
 #' Assuming files `bar/file1_2`, `dir1/file1_2`, `dir1/file2_2"` and `foo2` to
 #' exist in the current working directory, the names can be used to produce a
