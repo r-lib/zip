@@ -7,17 +7,37 @@
 \alias{zipr_append}
 \title{Compress Files into 'zip' Archives}
 \usage{
-zip(zipfile, files, recurse = TRUE, compression_level = 9,
-  include_directories = TRUE)
+zip(
+  zipfile,
+  files,
+  recurse = TRUE,
+  compression_level = 9,
+  include_directories = TRUE
+)
 
-zipr(zipfile, files, recurse = TRUE, compression_level = 9,
-  include_directories = TRUE)
+zipr(
+  zipfile,
+  files,
+  recurse = TRUE,
+  compression_level = 9,
+  include_directories = TRUE
+)
 
-zip_append(zipfile, files, recurse = TRUE, compression_level = 9,
-  include_directories = TRUE)
+zip_append(
+  zipfile,
+  files,
+  recurse = TRUE,
+  compression_level = 9,
+  include_directories = TRUE
+)
 
-zipr_append(zipfile, files, recurse = TRUE, compression_level = 9,
-  include_directories = TRUE)
+zipr_append(
+  zipfile,
+  files,
+  recurse = TRUE,
+  compression_level = 9,
+  include_directories = TRUE
+)
 }
 \arguments{
 \item{zipfile}{The zip file to create. If the file exists, \code{zip}
@@ -60,15 +80,15 @@ omitted, even on Unix.
 \section{Relative paths}{
 
 
-The different between \code{zipr} and \code{zip} is how they handle the relative
+The difference between \code{zipr} and \code{zip} is how they handle the relative
 paths of the input files.
 
 For \code{zip} (and \code{zip_append}), the root of the archive is supposed to
 be the current working directory. The paths of the files are fully kept
 in the archive. Absolute paths are also kept. Note that this might result
 non-portable archives: some zip tools do not handle zip archives that
-contain absolute file names, or file names that start with \code{..//} or
-\code{./}. This behavior is kept for compatibility, and we suggest that you
+contain absolute file names, or file names that start with \verb{..//} or
+\verb{./}. This behavior is kept for compatibility, and we suggest that you
 use \code{zipr} and \code{zipr_append} for new code.
 
 E.g. for the following directory structure:\preformatted{foo
