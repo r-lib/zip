@@ -11,11 +11,9 @@ test_that("can compress single directory", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip(zipfile, basename(tmp))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(tmp))
   )
 
   expect_true(file.exists(zipfile))
@@ -36,11 +34,9 @@ test_that("can compress single file", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip(zipfile, basename(tmp))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(tmp))
   )
 
   expect_true(file.exists(zipfile))
@@ -58,11 +54,9 @@ test_that("can compress multiple files", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp1),
-      zip(zipfile, basename(c(tmp1, tmp2)))
-    )
+  withr::with_dir(
+    dirname(tmp1),
+    zip(zipfile, basename(c(tmp1, tmp2)))
   )
 
   expect_true(file.exists(zipfile))
@@ -84,11 +78,9 @@ test_that("can compress multiple directories", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp1),
-      zip(zipfile, basename(c(tmp1, tmp2)))
-    )
+  withr::with_dir(
+    dirname(tmp1),
+    zip(zipfile, basename(c(tmp1, tmp2)))
   )
 
   expect_true(file.exists(zipfile))
@@ -127,11 +119,9 @@ test_that("can compress files and directories", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip(zipfile, basename(c(file1, tmp, file2)))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(c(file1, tmp, file2)))
   )
 
   expect_true(file.exists(zipfile))
@@ -184,18 +174,14 @@ test_that("compression level is used", {
   zipfile1 <- tempfile(fileext = ".zip")
   zipfile2 <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(file),
-      zip(zipfile1, basename(file), compression_level = 1)
-    )
+  withr::with_dir(
+    dirname(file),
+    zip(zipfile1, basename(file), compression_level = 1)
   )
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(file),
-      zip(zipfile2, basename(file), compression_level = 9)
-    )
+  withr::with_dir(
+    dirname(file),
+    zip(zipfile2, basename(file), compression_level = 9)
   )
 
   expect_true(file.exists(zipfile1))
@@ -220,11 +206,9 @@ test_that("can append a directory to an archive", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip(zipfile, basename(tmp))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(tmp))
   )
 
   expect_true(file.exists(zipfile))
@@ -239,11 +223,9 @@ test_that("can append a directory to an archive", {
   cat("first file2", file = file.path(tmp2, "file3"))
   cat("second file2", file = file.path(tmp2, "file4"))
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip_append(zipfile, basename(tmp2))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip_append(zipfile, basename(tmp2))
   )
 
   list <- zip_list(zipfile)
@@ -264,11 +246,9 @@ test_that("can append a file to an archive", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip(zipfile, basename(tmp))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(tmp))
   )
 
   expect_true(file.exists(zipfile))
@@ -281,11 +261,9 @@ test_that("can append a file to an archive", {
 
   cat("first file2", file = file1 <- tempfile())
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip_append(zipfile, basename(file1))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip_append(zipfile, basename(file1))
   )
 
   list <- zip_list(zipfile)
@@ -306,11 +284,9 @@ test_that("can append files and directories to an archive", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip(zipfile, basename(tmp))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(tmp))
   )
 
   expect_true(file.exists(zipfile))
@@ -326,11 +302,9 @@ test_that("can append files and directories to an archive", {
   cat("another", file = file.path(tmp2, "file3"))
   cat("and another", file = file.path(tmp2, "file4"))
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip_append(zipfile, basename(c(file1, tmp2)))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip_append(zipfile, basename(c(file1, tmp2)))
   )
 
   list <- zip_list(zipfile)
@@ -352,11 +326,9 @@ test_that("empty directories are archived as directories", {
   dir.create(file.path(tmp, "foo", "bar2"))
   cat("contents\n", file = file.path(tmp, "foo", "file1"))
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip(zipfile, basename(tmp))
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(tmp))
   )
 
   bt <- basename(tmp)
@@ -453,11 +425,9 @@ test_that("can omit directories", {
 
   zipfile <- tempfile(fileext = ".zip")
 
-  expect_deprecated(
-    withr::with_dir(
-      dirname(tmp),
-      zip(zipfile, basename(tmp), include_directories = FALSE)
-    )
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(tmp), include_directories = FALSE)
   )
 
   expect_true(file.exists(zipfile))

@@ -131,12 +131,3 @@ need_packages <- function(pkgs, what = "this function") {
     }
   }
 }
-
-deprecated <- function(id, msg) {
-  if (isTRUE(zip_data$deprecated[[id]])) return(invisible())
-  zip_data$deprecated <- as.list(zip_data$deprecated)
-  zip_data$deprecated[[id]] <-  TRUE
-  m <- simpleMessage(paste0("Note: ", msg, "\n"))
-  class(m) <- c("deprecated", class(m))
-  message(m)
-}

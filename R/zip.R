@@ -70,16 +70,6 @@ NULL
 #' #> foo2/file3
 #' ```
 #'
-#' Because of the potential issues with `zip()` and `zip_append()`,
-#' they are now soft-deprecated, and their first use in the R session
-#' will trigger a reminder message. To suppress this message, you can
-#' use something like this:
-#' ```
-#' withCallingHandlers(
-#'   zip::zip(...),
-#'   deprecated = function(e) NULL)
-#' ```
-#'
 #' @param zipfile The zip file to create. If the file exists, `zip`
 #'   overwrites it, but `zip_append` appends to it.
 #' @param files List of file to add to the archive. See details below
@@ -112,7 +102,6 @@ NULL
 
 zip <- function(zipfile, files, recurse = TRUE, compression_level = 9,
                 include_directories = TRUE) {
-  deprecated("zip", "zip::zip() is deprecated, please use zip::zipr() instead")
   zip_internal(zipfile, files, recurse, compression_level, append = FALSE,
                keep_path = TRUE, include_directories = include_directories)
 }
@@ -131,9 +120,6 @@ zipr <- function(zipfile, files, recurse = TRUE, compression_level = 9,
 
 zip_append <- function(zipfile, files, recurse = TRUE,
                        compression_level = 9, include_directories = TRUE) {
-  deprecated(
-    "zip_append",
-    "zip::zip_append() is deprecated, please use zip::zipr_append instead")
   zip_internal(zipfile, files, recurse, compression_level, append = TRUE,
                keep_path = TRUE, include_directories = include_directories)
 }
