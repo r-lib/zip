@@ -7,11 +7,14 @@
 ^revdep$
 ^sources\.zip$
 ^README\.html$
+^src/.*\.o$
+^src/zip.dll$
 ^src/tools/cmdunzip$
 ^src/tools/cmdunzip\.exe$
 ^src/tools/cmdunzip\.dSYM$
 ^src/tools/cmdzip$
 ^src/tools/cmdzip\.exe$
 ^src/tools/cmdzip\.dSYM$
+^src/tools/zip.exe$
 ^\.Rprofile$
 ^r-packages$

@@ -13,3 +13,5 @@
 /src/tools/cmdzip.exe
 /src/tools/cmdzip.dSYM
 /r-packages
+/src/tools/zip.exe
+/src/zip.dll
