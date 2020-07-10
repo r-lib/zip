@@ -171,8 +171,8 @@ zip_process <- function() {
 }
 
 write_zip_params <- function(files, recurse, include_directories, outfile) {
-  data <- get_zip_data(files, recurse, keep_path = FALSE,
-                       include_directories = include_directories)
+  data <- get_zip_data(files, basename(normalizePath(files)),
+                       recurse, include_directories = include_directories)
   mtime <- as.double(file.info(data$file)$mtime)
 
   con <- file(outfile, open = "wb")
