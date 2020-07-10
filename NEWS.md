@@ -1,8 +1,19 @@
 
 # development version
 
-* `unzip_process()` now works when R library is on different drive than `exdir`
-  on Windows (#45)
+* `unzip_process()` now works when R library is on different drive
+  than `exdir` on Windows (#45)
+
+* zip functions now have a `mode` argument to choose how files and
+  directories are assembled into the archive. See the docs for
+  details.
+
+* zip functions now have a `root` argument, zip changes the working
+  directory to this before creating the archive, so all files are
+  relative to `root`.
+
+* `zip()` and `zip_append()` are not deprecated any more, as it was
+  hard to achieve the same functionality with the other zip functions.
 
 # 2.0.4
 

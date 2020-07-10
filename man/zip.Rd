@@ -12,7 +12,9 @@ zip(
   files,
   recurse = TRUE,
   compression_level = 9,
-  include_directories = TRUE
+  include_directories = TRUE,
+  root = ".",
+  mode = c("mirror", "cherry-pick")
 )
 
 zipr(
@@ -20,7 +22,9 @@ zipr(
   files,
   recurse = TRUE,
   compression_level = 9,
-  include_directories = TRUE
+  include_directories = TRUE,
+  root = ".",
+  mode = c("cherry-pick", "mirror")
 )
 
 zip_append(
@@ -28,7 +32,9 @@ zip_append(
   files,
   recurse = TRUE,
   compression_level = 9,
-  include_directories = TRUE
+  include_directories = TRUE,
+  root = ".",
+  mode = c("mirror", "cherry-pick")
 )
 
 zipr_append(
@@ -36,7 +42,9 @@ zipr_append(
   files,
   recurse = TRUE,
   compression_level = 9,
-  include_directories = TRUE
+  include_directories = TRUE,
+  root = ".",
+  mode = c("cherry-pick", "mirror")
 )
 }
 \arguments{
@@ -55,10 +63,12 @@ but it also takes the longest.}
 in the archive. Including directories might confuse MS Office when
 reading docx files, so set this to \code{FALSE} for creating them.}
 
-\item{keep_path}{Whether to keep the full path to \code{files} in the
-archive. See "Relative Paths" below for details. (\code{zip} and
-\code{zip_append} default to \code{TRUE}, \code{zipr} and \code{zipr_append} default
-to FALSE.)}
+\item{root}{Change to this working directory before creating the
+archive.}
+
+\item{mode}{Selects how files and directories are stored in
+the archice. It can be \code{"mirror"} or \code{"cherrypick"}.
+See "Relative Paths" below for details.}
 }
 \value{
 The name of the created zip file, invisibly.
@@ -72,9 +82,73 @@ The name of the created zip file, invisibly.
 }
 \details{
 \code{zip_append()} appends compressed files to an existing 'zip' file.
-}
-\section{Permissions}{
+\subsection{Relative paths}{
 
+\code{zip()} and \code{zip_append()} can run in two different modes: mirror
+mode and cherry picking mode. They handle the specified \code{files}
+differently.
+\subsection{Mirror mode}{
+
+Mirror mode is for creating the zip archive of a directory structure,
+exactly as it is on the disk. The current working directory will
+be the root of the archive, and the paths will be fully kept.
+zip changes the current directory to \code{root} before creating the
+archive.
+
+(Absolute paths are also kept. Note that this might result
+non-portable archives: some zip tools do not handle zip archives that
+contain absolute file names, or file names that start with \verb{../} or
+\verb{./}. zip warns you if this should happen.)
+
+E.g. consider the following directory structure:\preformatted{.
+|-- foo
+|   |-- bar
+|   |   |-- file1
+|   |   `-- file2
+|   `-- bar2
+`-- foo2
+    `-- file3
+}
+
+Assuming the current working directory is \code{foo}, the following zip
+entries are created by \code{zip}:\if{html}{\out{<div class="r">}}\preformatted{setwd("foo")
+zip::zip("../test.zip", c("bar/file1", "bar2", "../foo2"))
+}\if{html}{\out{</div>}}\preformatted{## Warning in warn_for_dotdot(data$key): Some paths reference parent directory,
+## creating non-portable zip file
+}\if{html}{\out{<div class="r">}}\preformatted{zip_list("../test.zip")[, "filename", drop = FALSE]
+}\if{html}{\out{</div>}}\preformatted{##        filename
+## 1     bar/file1
+## 2         bar2/
+## 3      ../foo2/
+## 4 ../foo2/file3
+}
+}
+
+\subsection{Cherry picking mode}{
+
+In cherry picking mode, the selected files and directories
+will be at the root of the archive. This mode is handy if you
+want to select a subset of files and directories, possibly from
+different paths and put all of the in the archive, at the top
+level.
+
+Here is an example with the same directory structure as above:\if{html}{\out{<div class="r">}}\preformatted{zip::zip(
+  "../test2.zip",
+  c("bar/file1", "bar2", "../foo2"),
+  mode = "cherry-pick"
+)
+zip_list("../test2.zip")[, "filename", drop = FALSE]
+}\if{html}{\out{</div>}}\preformatted{##     filename
+## 1      file1
+## 2      bar2/
+## 3      foo2/
+## 4 foo2/file3
+}
+}
+
+}
+
+\subsection{Permissions:}{
 
 \code{zip()} (and \code{zip_append()}, etc.) add the permissions of
 the archived files and directories to the ZIP archive, on Unix systems.
@@ -85,69 +159,29 @@ Note, however that the owner and group (uid and gid) are currently
 omitted, even on Unix.
 }
 
-\section{Relative paths}{
+\subsection{\code{zipr()} and \code{zipr_append()}}{
 
-
-The difference between \code{zipr} and \code{zip} is how they handle the relative
-paths of the input files.
-
-For \code{zip} (and \code{zip_append}), the root of the archive is supposed to
-be the current working directory. The paths of the files are fully kept
-in the archive. Absolute paths are also kept. Note that this might result
-non-portable archives: some zip tools do not handle zip archives that
-contain absolute file names, or file names that start with \verb{../} or
-\verb{./}.
-
-E.g. for the following directory structure:\preformatted{## Warning in dir.create(tmp <- tempdir()): '/var/folders/
-## 59/0gkmw1yj2w7bf2dfc3jznv5w0000gn/T//RtmpUJywWb' already exists
-}\if{html}{\out{<div class="r">}}\preformatted{
-foo
-  bar
-    file1
-  bar2
-    file2
-foo2
-  file3
-}\if{html}{\out{</div>}}
-
-Assuming the current working directory is \code{foo}, the following zip
-entries are created by \code{zip}:\if{html}{\out{<div class="r">}}\preformatted{zip("x.zip", c("bar/file1", "bar2", "../foo2"))
-zip_list("x.zip")$filename
-#> bar/file1
-#> bar2
-#> bar2/file2
-#> ../foo2
-#> ../foo2/file3
-}\if{html}{\out{</div>}}
-
-For \code{zipr} (and \code{zipr_append}), each specified file or directory in
-\code{files} is created as a top-level entry in the zip archive.
-We suggest that you use \code{zipr} and \code{zipr_append} for new code, as they
-don't create non-portable archives. For the same directory structure,
-these zip entries are created:\if{html}{\out{<div class="r">}}\preformatted{zipr("x.zip", c("bar/file1", "bar2", "../foo2"))
-zip_list("x.zip")$filename
-#> file1
-#> bar2
-#> bar2/file2
-#> foo2
-#> foo2/file3
-}\if{html}{\out{</div>}}
+These function exist for historical reasons. They are identical
+to \code{zip()} and \code{zipr_append()} with a different default for the
+\code{mode} argument.
 }
-
+}
 \examples{
-## Some files to zip up
+## Some files to zip up. We will run all this in the R sesion's
+## temporary directory, to avoid messing up the user's workspace.
 dir.create(tmp <- tempfile())
-cat("first file", file = file.path(tmp, "file1"))
-cat("second file", file = file.path(tmp, "file2"))
+dir.create(file.path(tmp, "mydir"))
+cat("first file", file = file.path(tmp, "mydir", "file1"))
+cat("second file", file = file.path(tmp, "mydir", "file2"))
 
 zipfile <- tempfile(fileext = ".zip")
-zipr(zipfile, tmp)
+zip::zip(zipfile, "mydir", root = tmp)
 
 ## List contents
 zip_list(zipfile)
 
 ## Add another file
-cat("third file", file = file.path(tmp, "file3"))
-zipr_append(zipfile, file.path(tmp, "file3"))
+cat("third file", file = file.path(tmp, "mydir", "file3"))
+zip_append(zipfile, file.path("mydir", "file3"), root = tmp)
 zip_list(zipfile)
 }
