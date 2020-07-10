@@ -2,7 +2,9 @@
 # development version
 
 * `zipr()` and `zipr_append()` now support custom filenames in zip files.
-  Use the names of `files` to specify the paths within the zip file (#50).
+  Use the new argument `keys` to specify the paths within the zip file (#50).
+* `unzip_process()` now works when R library is on different drive than `exdir`
+  on Windows (#45)
 
 # 2.0.4
 
