@@ -13,6 +13,10 @@ A \code{zip_process} R6 class object, a subclass of
 \description{
 \code{zip_process()} returns an R6 class that represents a zip process.
 It is implemented as a subclass of \link[processx:process]{processx::process}.
+
+\if{html}{\out{<link rel="stylesheet" type="text/css" href="../doc/assets/extra.css">}}
+
+\if{html}{\out{<script src="../doc/assets/rd.js"></script>}}
 }
 \section{Using the \code{zip_process} class}{
 \preformatted{zp <- zip_process()$new(zipfile, files, recurse = TRUE,

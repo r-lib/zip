@@ -15,5 +15,9 @@ A data frame with columns: \code{filename}, \code{compressed_size},
 }
 \description{
 List Files in a 'zip' Archive
+
+\if{html}{\out{<link rel="stylesheet" type="text/css" href="../doc/assets/extra.css">}}
+
+\if{html}{\out{<script src="../doc/assets/rd.js"></script>}}
 }
 \concept{zip/unzip functions}

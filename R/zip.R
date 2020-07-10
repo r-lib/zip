@@ -1,17 +1,17 @@
 
+#' @theme assets/extra.css assets/rd.js
 #' @useDynLib zip, .registration = TRUE, .fixes = "c_"
 NULL
 
 #' Compress Files into 'zip' Archives
 #'
-#' `zipr` and `zip` both create a new zip archive file.
+#' `zip()` creates a new zip archive file.
 #'
-#' `zipr_append` and `zip_append` append compressed files to an
-#' existing 'zip' file.
+#' `zip_append()` appends compressed files to an existing 'zip' file.
 #'
 #' @section Permissions:
 #'
-#' `zipr()` (and `zip()`, `zipr_append()`, etc.) add the permissions of
+#' `zip()` (and `zip_append()`, etc.) add the permissions of
 #' the archived files and directories to the ZIP archive, on Unix systems.
 #' Most zip and unzip implementations support these, so they will be
 #' recovered after extracting the archive.
@@ -28,12 +28,17 @@ NULL
 #' be the current working directory. The paths of the files are fully kept
 #' in the archive. Absolute paths are also kept. Note that this might result
 #' non-portable archives: some zip tools do not handle zip archives that
-#' contain absolute file names, or file names that start with `..//` or
-#' `./`. This behavior is kept for compatibility, and we suggest that you
-#' use `zipr` and `zipr_append` for new code.
+#' contain absolute file names, or file names that start with `../` or
+#' `./`.
 #'
 #' E.g. for the following directory structure:
+#' ```{r echo = FALSE}
+#' dir.create(tmp <- tempdir())
+#'
 #' ```
+#'
+#' ```r
+#'
 #' foo
 #'   bar
 #'     file1
@@ -45,7 +50,7 @@ NULL
 #'
 #' Assuming the current working directory is `foo`, the following zip
 #' entries are created by `zip`:
-#' ```
+#' ```r
 #' zip("x.zip", c("bar/file1", "bar2", "../foo2"))
 #' zip_list("x.zip")$filename
 #' #> bar/file1
@@ -60,7 +65,7 @@ NULL
 #' We suggest that you use `zipr` and `zipr_append` for new code, as they
 #' don't create non-portable archives. For the same directory structure,
 #' these zip entries are created:
-#' ```
+#' ```r
 #' zipr("x.zip", c("bar/file1", "bar2", "../foo2"))
 #' zip_list("x.zip")$filename
 #' #> file1
@@ -80,6 +85,10 @@ NULL
 #' @param include_directories Whether to explicitly include directories
 #'   in the archive. Including directories might confuse MS Office when
 #'   reading docx files, so set this to `FALSE` for creating them.
+#' @param keep_path Whether to keep the full path to `files` in the
+#'   archive. See "Relative Paths" below for details. (`zip` and
+#'   `zip_append` default to `TRUE`, `zipr` and `zipr_append` default
+#'   to FALSE.)
 #' @return The name of the created zip file, invisibly.
 #'
 #' @export

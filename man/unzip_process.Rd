@@ -13,6 +13,10 @@ An \code{unzip_process} R6 class object, a subclass of
 \description{
 \code{unzip_process()} returns an R6 class that represents an unzip process.
 It is implemented as a subclass of \link[processx:process]{processx::process}.
+
+\if{html}{\out{<link rel="stylesheet" type="text/css" href="../doc/assets/extra.css">}}
+
+\if{html}{\out{<script src="../doc/assets/rd.js"></script>}}
 }
 \section{Using the \code{unzip_process} class}{
 \preformatted{up <- unzip_process()$new(zipfile, exdir = ".", poll_connection = TRUE,
