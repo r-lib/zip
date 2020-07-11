@@ -106,7 +106,7 @@ NULL
 #' @param root Change to this working directory before creating the
 #'   archive.
 #' @param mode Selects how files and directories are stored in
-#'   the archice. It can be `"mirror"` or `"cherrypick"`.
+#'   the archice. It can be `"mirror"` or `"cherry-pick"`.
 #'   See "Relative Paths" below for details.
 #' @return The name of the created zip file, invisibly.
 #'

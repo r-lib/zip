@@ -1,6 +1,9 @@
 
 # development version
 
+* Now all functions handle Unicode paths correctly, on Windows
+  as well (#42, #53).
+
 * `unzip_process()` now works when R library is on different drive
   than `exdir` on Windows (#45)
 

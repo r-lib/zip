@@ -97,6 +97,43 @@ int zip_set_permissions(mz_zip_archive *zip_archive, mz_uint file_index,
 }
 
 #ifdef _WIN32
+static int utf8_to_utf16(const char* s, WCHAR** ws_ptr) {
+  int ws_len, r;
+  WCHAR* ws;
+
+  ws_len = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ s,
+    /* cbMultiByte =    */ -1,
+    /* lpWideCharStr =  */ NULL,
+    /* cchWideChar =    */ 0
+  );
+
+  if (ws_len <= 0) { return GetLastError(); }
+
+  ws = (WCHAR*) R_alloc(ws_len,  sizeof(WCHAR));
+  if (ws == NULL) { return ERROR_OUTOFMEMORY; }
+
+  r = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ s,
+    /* cbMultiBytes =   */ -1,
+    /* lpWideCharStr =  */ ws,
+    /* cchWideChar =    */ ws_len
+  );
+
+  if (r != ws_len) {
+    error("processx error interpreting UTF8 command or arguments");
+  };
+
+  *ws_ptr = ws;
+  return 0;
+}
+#endif
+
+#ifdef _WIN32
 int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
   *mode = stat->m_is_directory ? 0700 : 0600;
   return 0;
@@ -378,21 +415,45 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
     const char *key = ckeys[i];
     const char *filename = cfiles[i];
     int directory = cdirs[i];
+    MZ_TIME_T cmtime = (MZ_TIME_T) cmtimes[i];
     if (directory) {
-      MZ_TIME_T cmtime = (MZ_TIME_T) cmtimes[i];
       if (!mz_zip_writer_add_mem_ex_v2(&zip_archive, key, 0, 0, 0, 0,
 				       ccompression_level, 0, 0, &cmtime, 0, 0,
 				       0, 0)) {
-	mz_zip_writer_end(&zip_archive);
-	ZIP_ERROR(R_ZIP_EADDDIR, key, czipfile);
+	      mz_zip_writer_end(&zip_archive);
+	      ZIP_ERROR(R_ZIP_EADDDIR, key, czipfile);
       }
 
     } else {
-      if (!mz_zip_writer_add_file(&zip_archive, key, filename, 0, 0,
-				  ccompression_level)) {
-	mz_zip_writer_end(&zip_archive);
-	ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+      FILE* fh = NULL;
+#ifdef _WIN32
+      wchar_t filenameu16;
+      if (!utf8_to_utf16(filename, &filenameu16)) {
+        ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
+      fh = _wfopen(filenameu16, L"r");
+#else
+      fh = fopen(filename, "r");
+#endif
+      if (fh == NULL) {
+        ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+      }
+      mz_uint64 uncomp_size = 0;
+      fseek(fh, 0, SEEK_END);
+      uncomp_size = ftello(fh);
+      fseek(fh, 0, SEEK_SET);
+
+      if (!mz_zip_writer_add_cfile(&zip_archive, key, fh, /* size_to_all= */ uncomp_size,
+          /* pFile_time = */ &cmtime, /* pComment= */ NULL, /* comment_size= */ 0,
+          /* level_and_flags = */ ccompression_level,
+          /* user_extra_data_local = */ NULL, /* user_extra_data_local_len = */ 0,
+          /* user_extra_data_central = */ NULL,
+          /* user_extra_data_central_len = */ 0)) {
+        fclose(fh);
+        mz_zip_writer_end(&zip_archive);
+	      ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+      }
+      fclose(fh);
     }
 
     if (zip_set_permissions(&zip_archive, i, filename)) {
