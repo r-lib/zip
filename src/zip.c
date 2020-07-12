@@ -303,9 +303,9 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
       key = cfiles[i];
       if (!mz_zip_reader_locate_file_v2(&zip_archive, key, /* pComment= */ 0,
 				       /* flags= */ 0, &idx)) {
-	mz_zip_reader_end(&zip_archive);
-	if (buffer) free(buffer);
-	ZIP_ERROR(R_ZIP_ENOENTRY, key, czipfile);
+	      mz_zip_reader_end(&zip_archive);
+	      if (buffer) free(buffer);
+	      ZIP_ERROR(R_ZIP_ENOENTRY, key, czipfile);
       }
     }
 
@@ -324,28 +324,28 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 
     if (file_stat.m_is_directory) {
       if (! cjunkpaths && zip_mkdirp(buffer, 1)) {
-	mz_zip_reader_end(&zip_archive);
-	if (buffer) free(buffer);
-	ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
+	      mz_zip_reader_end(&zip_archive);
+	      if (buffer) free(buffer);
+	      ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
       }
 
     } else {
       if (!coverwrite && zip_file_exists(buffer)) {
-	mz_zip_reader_end(&zip_archive);
-	if (buffer) free(buffer);
-	ZIP_ERROR(R_ZIP_EOVERWRITE, key, czipfile);
+	      mz_zip_reader_end(&zip_archive);
+	      if (buffer) free(buffer);
+	      ZIP_ERROR(R_ZIP_EOVERWRITE, key, czipfile);
       }
 
       if (! cjunkpaths && zip_mkdirp(buffer, 0)) {
-	mz_zip_reader_end(&zip_archive);
-	if (buffer) free(buffer);
-	ZIP_ERROR(R_ZIP_ECREATEDIR, key, czipfile);
+	      mz_zip_reader_end(&zip_archive);
+	      if (buffer) free(buffer);
+	      ZIP_ERROR(R_ZIP_ECREATEDIR, key, czipfile);
       }
 
       if (!mz_zip_reader_extract_to_file(&zip_archive, idx, buffer, 0)) {
-	mz_zip_reader_end(&zip_archive);
-	if (buffer) free(buffer);
-	ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
+	      mz_zip_reader_end(&zip_archive);
+	      if (buffer) free(buffer);
+	      ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
       }
     }
 #ifndef _WIN32
@@ -382,9 +382,9 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     if (file_stat.m_is_directory) {
       zip_str_file_path(cexdir, key, &buffer, &buffer_size, cjunkpaths);
       if (zip_set_mtime(buffer, file_stat.m_time)) {
-	if (buffer) free(buffer);
-	mz_zip_reader_end(&zip_archive);
-	ZIP_ERROR(R_ZIP_ESETMTIME, key, czipfile);
+	      if (buffer) free(buffer);
+	      mz_zip_reader_end(&zip_archive);
+	      ZIP_ERROR(R_ZIP_ESETMTIME, key, czipfile);
       }
     }
   }
