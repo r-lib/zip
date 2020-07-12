@@ -7,10 +7,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#ifndef CMDZIP
-#include <Rinternals.h>
-#endif
-
 #ifdef _WIN32
 #include <direct.h>		/* _mkdir */
 #include <windows.h>
@@ -102,6 +98,7 @@ int zip_set_permissions(mz_zip_archive *zip_archive, mz_uint file_index,
 }
 
 #ifdef _WIN32
+
 static int utf8_to_utf16(const char* s, WCHAR** ws_ptr) {
   int ws_len, r;
   WCHAR* ws;
@@ -117,11 +114,7 @@ static int utf8_to_utf16(const char* s, WCHAR** ws_ptr) {
 
   if (ws_len <= 0) { return GetLastError(); }
 
-#ifdef CMDZIP
   ws = calloc(ws_len, sizeof(WCHAR));
-#else
-  ws = (WCHAR*) (R_alloc)(ws_len,  sizeof(WCHAR));
-#endif
   if (ws == NULL) { return ERROR_OUTOFMEMORY; }
 
   r = MultiByteToWideChar(
@@ -143,6 +136,7 @@ static int utf8_to_utf16(const char* s, WCHAR** ws_ptr) {
   *ws_ptr = ws;
   return 0;
 }
+
 #endif
 
 #ifdef _WIN32
@@ -449,9 +443,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 #endif
       if (fh == NULL) {
 #ifdef _WIN32
-#ifdef CMDZIP
         free(filenameu16);
-#endif
 #endif
         ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
@@ -469,9 +461,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
           /* user_extra_data_central = */ NULL,
           /* user_extra_data_central_len = */ 0);
 #ifdef _WIN32
-#ifdef CMDZIP
       free(filenameu16);
-#endif
 #endif
       fclose(fh);
       if (!ret) {
