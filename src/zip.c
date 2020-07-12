@@ -5,6 +5,11 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <stdarg.h>
+#include <stdio.h>
+
+#ifndef CMDZIP
+#include <Rinternals.h>
+#endif
 
 #ifdef _WIN32
 #include <direct.h>		/* _mkdir */
@@ -112,7 +117,11 @@ static int utf8_to_utf16(const char* s, WCHAR** ws_ptr) {
 
   if (ws_len <= 0) { return GetLastError(); }
 
-  ws = (WCHAR*) R_alloc(ws_len,  sizeof(WCHAR));
+#ifdef CMDZIP
+  ws = calloc(ws_len, sizeof(WCHAR));
+#else
+  ws = (WCHAR*) (R_alloc)(ws_len,  sizeof(WCHAR));
+#endif
   if (ws == NULL) { return ERROR_OUTOFMEMORY; }
 
   r = MultiByteToWideChar(
@@ -125,7 +134,10 @@ static int utf8_to_utf16(const char* s, WCHAR** ws_ptr) {
   );
 
   if (r != ws_len) {
-    error("processx error interpreting UTF8 command or arguments");
+    ZIP_ERROR(
+      R_ZIP_EADDFILE,
+      "cannot convert UTF-8 path name to Unicode"
+    );
   };
 
   *ws_ptr = ws;
@@ -427,15 +439,20 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
     } else {
       FILE* fh = NULL;
 #ifdef _WIN32
-      wchar_t filenameu16;
-      if (!utf8_to_utf16(filename, &filenameu16)) {
+      wchar_t *filenameu16 = NULL;
+      if (utf8_to_utf16(filename, &filenameu16)) {
         ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
-      fh = _wfopen(filenameu16, L"r");
+      fh = _wfopen(filenameu16, L"rb");
 #else
-      fh = fopen(filename, "r");
+      fh = fopen(filename, "rb");
 #endif
       if (fh == NULL) {
+#ifdef _WIN32
+#ifdef CMDZIP
+        free(filenameu16);
+#endif
+#endif
         ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
       mz_uint64 uncomp_size = 0;
@@ -443,17 +460,24 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
       uncomp_size = ftello(fh);
       fseek(fh, 0, SEEK_SET);
 
-      if (!mz_zip_writer_add_cfile(&zip_archive, key, fh, /* size_to_all= */ uncomp_size,
-          /* pFile_time = */ &cmtime, /* pComment= */ NULL, /* comment_size= */ 0,
+      int ret = mz_zip_writer_add_cfile(&zip_archive, key, fh,
+          /* size_to_all= */ uncomp_size, /* pFile_time = */ &cmtime,
+          /* pComment= */ NULL, /* comment_size= */ 0,
           /* level_and_flags = */ ccompression_level,
-          /* user_extra_data_local = */ NULL, /* user_extra_data_local_len = */ 0,
+          /* user_extra_data_local = */ NULL,
+          /* user_extra_data_local_len = */ 0,
           /* user_extra_data_central = */ NULL,
-          /* user_extra_data_central_len = */ 0)) {
-        fclose(fh);
+          /* user_extra_data_central_len = */ 0);
+#ifdef _WIN32
+#ifdef CMDZIP
+      free(filenameu16);
+#endif
+#endif
+      fclose(fh);
+      if (!ret) {
         mz_zip_writer_end(&zip_archive);
 	      ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
-      fclose(fh);
     }
 
     if (zip_set_permissions(&zip_archive, i, filename)) {

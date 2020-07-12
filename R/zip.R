@@ -185,7 +185,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
   data <- get_zip_data(files, recurse, keep_path, include_directories)
   warn_for_dotdot(data$key)
 
-  .Call(c_R_zip_zip, zipfile, data$key, data$file, data$dir,
+  .Call(c_R_zip_zip, zipfile, data$key, enc2utf8(data$file), data$dir,
         file.info(data$file)$mtime, as.integer(compression_level), append)
 
   invisible(zipfile)

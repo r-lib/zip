@@ -112,20 +112,21 @@ test_that("base path with non-ASCII characters", {
 test_that("uncompressed path with non-ASCII characters", {
   local_temp_dir()
   root <- enc2native("\u00fa\u00e1\u00f6\u0151\u00e9")
+  ufile <- enc2native("ufile\u00fa\u00e1")
   dir.create(root)
-  cat("contents\n", file = file.path(root, "file"))
+  cat("contents\n", file = file.path(root, ufile))
   zip("zip1.zip", root, mode = "mirror")
   l <- zip_list("zip1.zip")
   expect_equal(
     l$filename,
-    c(paste0(root, "/"), file.path(root, "file", fsep = "/"))
+    c(paste0(root, "/"), file.path(root, ufile, fsep = "/"))
   )
 
   dir.create("ex1")
   zip::unzip("zip1.zip", exdir = "ex1")
   expect_equal(
     sort(dir("ex1", recursive = TRUE)),
-    file.path(root, "file", fsep = "/")
+    file.path(root, ufile, fsep = "/")
   )
 
   zip("zip2.zip", root, mode = "cherry-pick")
@@ -135,6 +136,6 @@ test_that("uncompressed path with non-ASCII characters", {
   zip::unzip("zip2.zip", exdir = "ex2")
   expect_equal(
     l2$filename,
-    c(paste0(root, "/"), file.path(root, "file", fsep = "/"))
+    c(paste0(root, "/"), file.path(root, ufile, fsep = "/"))
   )
 })
