@@ -119,46 +119,18 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   return R_NilValue;
 }
 
-#ifdef _WIN32
-
-int zip__utf8_to_utf16_alloc(const char* s, WCHAR** ws_ptr) {
-  int ws_len, r;
-  WCHAR* ws;
-
-  ws_len = MultiByteToWideChar(
-    /* CodePage =       */ CP_UTF8,
-    /* dwFlags =        */ 0,
-    /* lpMultiByteStr = */ s,
-    /* cbMultiByte =    */ -1,
-    /* lpWideCharStr =  */ NULL,
-    /* cchWideChar =    */ 0);
-
-  if (ws_len <= 0) { return GetLastError(); }
-
-  ws = (WCHAR*) R_alloc(ws_len,  sizeof(WCHAR));
-  if (ws == NULL) { return ERROR_OUTOFMEMORY; }
-
-  r = MultiByteToWideChar(
-    /* CodePage =       */ CP_UTF8,
-    /* dwFlags =        */ 0,
-    /* lpMultiByteStr = */ s,
-    /* cbMultiBytes =   */ -1,
-    /* lpWideCharStr =  */ ws,
-    /* cchWideChar =    */ ws_len);
-
-  if (r != ws_len) {
-    error("processx error interpreting UTF8 command or arguments");
-  }
-
-  *ws_ptr = ws;
-  return 0;
-}
-
-#endif
 
 #ifdef __APPLE__
 #include <fcntl.h>
 #include <unistd.h>
+#endif
+
+
+#ifdef _WIN32
+
+int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
+                       size_t *buffer_size);
+
 #endif
 
 SEXP R_make_big_file(SEXP filename, SEXP mb) {
@@ -166,10 +138,12 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
 #ifdef _WIN32
 
   const char *cfilename = CHAR(STRING_ELT(filename, 0));
-  WCHAR *wfilename = NULL;
   LARGE_INTEGER li;
 
-  if (zip__utf8_to_utf16_alloc(cfilename, &wfilename)) {
+  wchar_t *wfilename = NULL;
+  size_t wfilename_size = 0;
+
+  if (zip__utf8_to_utf16(cfilename, &wfilename, &wfilename_size)) {
     error("utf8 -> utf16 conversion");
   }
 
@@ -181,21 +155,27 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
     CREATE_NEW,
     FILE_ATTRIBUTE_NORMAL,
     NULL);
-  if (h == INVALID_HANDLE_VALUE) error("Cannot create big file");
+  if (h == INVALID_HANDLE_VALUE) {
+    if (wfilename) free(wfilename);
+    error("Cannot create big file");
+  }
 
   li.QuadPart = INTEGER(mb)[0] * 1024.0 * 1024.0;
   li.LowPart = SetFilePointer(h, li.LowPart, &li.HighPart, FILE_BEGIN);
 
   if (0xffffffff == li.LowPart && GetLastError() != NO_ERROR) {
     CloseHandle(h);
+    if (wfilename) free(wfilename);
     error("Cannot create big file");
   }
 
   if (!SetEndOfFile(h)) {
     CloseHandle(h);
+    if (wfilename) free(wfilename);
     error("Cannot create big file");
   }
 
+  if (wfilename) free(wfilename);
   CloseHandle(h);
 
 #endif

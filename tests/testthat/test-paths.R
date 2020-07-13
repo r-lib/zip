@@ -139,3 +139,12 @@ test_that("uncompressed path with non-ASCII characters", {
     c(paste0(root, "/"), file.path(root, ufile, fsep = "/"))
   )
 })
+
+test_that("zip file with spaces", {
+  TODO
+})
+
+test_that("zip file with non-ASCII characters", {
+  TODO
+})
+

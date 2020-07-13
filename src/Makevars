@@ -1,15 +1,15 @@
 
-OBJECTS = init.o miniz.o rzip.o zip.o
+OBJECTS = init.o miniz.o rzip.o zip.o unixutils.o
 
 .PHONY: all clean
 
 all: tools/cmdzip tools/cmdunzip $(SHLIB)
 
-tools/cmdzip: miniz.c zip.c tools/cmdzip.c
-	$(CC) $(CFLAGS) miniz.c zip.c tools/cmdzip.c -o tools/cmdzip
+tools/cmdzip: miniz.c zip.c unixutils.c tools/cmdzip.c
+	$(CC) $(CFLAGS) miniz.c zip.c unixutils.c tools/cmdzip.c -o tools/cmdzip
 
-tools/cmdunzip: miniz.c zip.c tools/cmdunzip.c
-	$(CC) $(CFLAGS) miniz.c zip.c tools/cmdunzip.c -o tools/cmdunzip
+tools/cmdunzip: miniz.c zip.c unixutils.c tools/cmdunzip.c
+	$(CC) $(CFLAGS) miniz.c zip.c unixutils.c tools/cmdunzip.c -o tools/cmdunzip
 
 clean:
 	rm -rf $(SHLIB) $(OBJECTS) \
