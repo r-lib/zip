@@ -121,6 +121,7 @@ test_that("uncompressed path with non-ASCII characters", {
     l$filename,
     c(paste0(root, "/"), file.path(root, ufile, fsep = "/"))
   )
+  expect_equal(Encoding(l$filename), rep("UTF-8", 2))
 
   dir.create("ex1")
   zip::unzip("zip1.zip", exdir = "ex1")

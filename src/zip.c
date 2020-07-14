@@ -126,20 +126,17 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
   int allfiles = cfiles == NULL;
   int i, n;
   mz_zip_archive zip_archive;
-
   memset(&zip_archive, 0, sizeof(zip_archive));
 
-  if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0)) {
-    ZIP_ERROR(R_ZIP_EOPEN, czipfile);
-  }
+  zip_char_t *buffer = NULL;
+  size_t buffer_size = 0;
 
-  /* We allocate a fairly large buffer for the destination file names here,
-     so that we don't need to reallocated it all the time */
-  size_t buffer_size = 1000;
-  zip_char_t *buffer = malloc(buffer_size * sizeof(zip_char_t));
-  if (!buffer) {
-    mz_zip_reader_end(&zip_archive);
-    ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
+  FILE *zfh = zip_open_utf8(czipfile, ZIP__READ, &buffer, &buffer_size);
+  if (zfh == NULL) ZIP_ERROR(R_ZIP_EOPEN, czipfile);
+  if (!mz_zip_reader_init_cfile(&zip_archive, zfh, 0, 0)) {
+    if (buffer) free(buffer);
+    fclose(zfh);
+    ZIP_ERROR(R_ZIP_EOPEN, czipfile);
   }
 
   n = allfiles ? mz_zip_reader_get_num_files(&zip_archive) : num_files;
@@ -157,6 +154,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 				       /* flags= */ 0, &idx)) {
 	      mz_zip_reader_end(&zip_archive);
 	      if (buffer) free(buffer);
+	      fclose(zfh);
 	      ZIP_ERROR(R_ZIP_ENOENTRY, key, czipfile);
       }
     }
@@ -164,6 +162,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     if (! mz_zip_reader_file_stat(&zip_archive, idx, &file_stat)) {
       mz_zip_reader_end(&zip_archive);
       if (buffer) free(buffer);
+      fclose(zfh);
       ZIP_ERROR(R_ZIP_EBROKEN, czipfile);
     }
     key = file_stat.m_filename;
@@ -171,6 +170,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     if (zip_str_file_path(cexdir, key, &buffer, &buffer_size, cjunkpaths)) {
       mz_zip_reader_end(&zip_archive);
       if (buffer) free(buffer);
+      fclose(zfh);
       ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
     }
 
@@ -178,6 +178,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
       if (! cjunkpaths && zip_mkdirp(buffer, 1)) {
 	      mz_zip_reader_end(&zip_archive);
 	      if (buffer) free(buffer);
+	      fclose(zfh);
 	      ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
       }
 
@@ -185,12 +186,14 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
       if (!coverwrite && zip_file_exists(buffer)) {
 	      mz_zip_reader_end(&zip_archive);
 	      if (buffer) free(buffer);
+	      fclose(zfh);
 	      ZIP_ERROR(R_ZIP_EOVERWRITE, key, czipfile);
       }
 
       if (! cjunkpaths && zip_mkdirp(buffer, 0)) {
 	      mz_zip_reader_end(&zip_archive);
 	      if (buffer) free(buffer);
+	      fclose(zfh);
 	      ZIP_ERROR(R_ZIP_ECREATEDIR, key, czipfile);
       }
 
@@ -203,6 +206,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
       if (fh == NULL) {
         mz_zip_reader_end(&zip_archive);
         if (buffer) free(buffer);
+        fclose(zfh);
         ZIP_ERROR(R_ZIP_EOPENX, key);
       }
 
@@ -210,6 +214,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 	      mz_zip_reader_end(&zip_archive);
 	      if (buffer) free(buffer);
 	      fclose(fh);
+	      fclose(zfh);
 	      ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
       }
       fclose(fh);
@@ -220,6 +225,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     if (chmod(buffer, mode)) {
       mz_zip_reader_end(&zip_archive);
       if (buffer) free(buffer);
+      fclose(zfh);
       ZIP_ERROR(R_ZIP_ESETPERM, key, czipfile);
     }
 #endif
@@ -249,12 +255,14 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     if (zip_set_mtime(buffer, file_stat.m_time)) {
       if (buffer) free(buffer);
       mz_zip_reader_end(&zip_archive);
+      fclose(zfh);
       ZIP_ERROR(R_ZIP_ESETMTIME, key, czipfile);
     }
   }
 
   if (buffer) free(buffer);
   mz_zip_reader_end(&zip_archive);
+  fclose(zfh);
 
   /* TODO: return info */
   return 0;
@@ -267,22 +275,31 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
   mz_uint ccompression_level = (mz_uint) compression_level;
   int i, n = num_files;
   mz_zip_archive zip_archive;
-
   memset(&zip_archive, 0, sizeof(zip_archive));
+  wchar_t *filenameu16 = NULL;
+  size_t filenameu16_len = 0;
+
+  FILE *zfh = NULL;
 
   if (cappend) {
-    if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0) ||
-	      !mz_zip_writer_init_from_reader(&zip_archive, czipfile)) {
+    zfh = zip_open_utf8(czipfile, ZIP__APPEND, &filenameu16,
+                        &filenameu16_len);
+    if (zfh == NULL) ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
+    if (!mz_zip_reader_init_cfile(&zip_archive, zfh, 0, 0) ||
+	      !mz_zip_writer_init_from_reader(&zip_archive, NULL)) {
+          if (filenameu16) free(filenameu16);
+          fclose(zfh);
           ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
     }
   } else {
-    if (!mz_zip_writer_init_file(&zip_archive, czipfile, 0)) {
+    zfh = zip_open_utf8(czipfile, ZIP__WRITE, &filenameu16,
+                        &filenameu16_len);
+    if (!mz_zip_writer_init_cfile(&zip_archive, zfh, 0)) {
+      if (filenameu16) free(filenameu16);
+      fclose(zfh);
       ZIP_ERROR(R_ZIP_EOPENWRITE, czipfile);
     }
   }
-
-  wchar_t *filenameu16 = NULL;
-  size_t filenameu16_len = 0;
 
   for (i = 0; i < n; i++) {
     const char *key = ckeys[i];
@@ -294,24 +311,17 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 				       ccompression_level, 0, 0, &cmtime, 0, 0,
 				       0, 0)) {
 	      mz_zip_writer_end(&zip_archive);
-	      ZIP_ERROR(R_ZIP_EADDDIR, key, czipfile);
+        if (filenameu16) free(filenameu16);
+        fclose(zfh);
+        ZIP_ERROR(R_ZIP_EADDDIR, key, czipfile);
       }
 
     } else {
-      FILE* fh = NULL;
-#ifdef _WIN32
-      if (zip__utf8_to_utf16(filename, &filenameu16, &filenameu16_len)) {
-        if (filenameu16) free(filenameu16);
-        ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
-      }
-      fh = _wfopen(filenameu16, L"rb");
-#else
-      fh = fopen(filename, "rb");
-#endif
+      FILE* fh = zip_open_utf8(filename, ZIP__READ, &filenameu16,
+                               &filenameu16_len);
       if (fh == NULL) {
-#ifdef _WIN32
         if (filenameu16) free(filenameu16);
-#endif
+        fclose(zfh);
         ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
       mz_uint64 uncomp_size = 0;
@@ -331,13 +341,15 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
       if (!ret) {
         if (filenameu16) free(filenameu16);
         mz_zip_writer_end(&zip_archive);
-	      ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+        fclose(zfh);
+        ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
     }
 
     if (zip_set_permissions(&zip_archive, i, filename)) {
       if (filenameu16) free(filenameu16);
       mz_zip_writer_end(&zip_archive);
+      fclose(zfh);
       ZIP_ERROR(R_ZIP_ESETZIPPERM, key, czipfile);
     }
   }
@@ -345,15 +357,18 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
   if (!mz_zip_writer_finalize_archive(&zip_archive)) {
     if (filenameu16) free(filenameu16);
     mz_zip_writer_end(&zip_archive);
+    fclose(zfh);
     ZIP_ERROR(R_ZIP_ECREATE, czipfile);
   }
 
   if (!mz_zip_writer_end(&zip_archive)) {
     if (filenameu16) free(filenameu16);
+    fclose(zfh);
     ZIP_ERROR(R_ZIP_ECREATE, czipfile);
   }
 
   if (filenameu16) free(filenameu16);
+  fclose(zfh);
 
   /* TODO: return info */
   return 0;

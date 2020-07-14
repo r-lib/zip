@@ -268,6 +268,7 @@ unzip <- function(zipfile, files = NULL, overwrite = TRUE,
     is_string(exdir))
 
   zipfile <- enc2utf8(normalizePath(zipfile))
+  if (!is.null(files)) files <- enc2utf8(files)
   mkdirp(exdir)
   exdir <- enc2utf8(normalizePath(exdir))
 
