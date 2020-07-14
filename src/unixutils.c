@@ -9,6 +9,13 @@
 
 /* -------------------------------------------------------------- */
 
+FILE *zip_open_utf8(const char *filename, const char *mode,
+                    char **buffer, size_t *buffer_size) {
+  FILE *fh = fopen(filename, mode);
+  return fh;
+}
+
+
 int zip_str_file_path(const char *cexdir, const char *key,
                       char **buffer, size_t *buffer_size,
                       int cjunkpaths) {

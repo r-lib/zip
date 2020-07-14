@@ -44,6 +44,16 @@ int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
       return 0;
 }
 
+FILE *zip_open_utf8(const char *filename, const wchar_t *mode,
+                    wchar_t **buffer, size_t *buffer_size) {
+  int ret = zip__utf8_to_utf16(filename, buffer, buffer_size);
+  if (ret) return NULL;
+
+  FILE *fh = _wfopen(*buffer, mode);
+  return fh;
+}
+
+
 int zip_str_file_path(const char *cexdir, const char *key,
                       zip_char_t **buffer, size_t *buffer_size,
                       int cjunkpaths) {
