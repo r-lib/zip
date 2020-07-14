@@ -199,7 +199,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 #ifdef _WIN32
       fh = _wfopen(buffer, L"wb");
 #else
-      fh = _fopen(buffer, "wb");
+      fh = fopen(buffer, "wb");
 #endif
       if (fh == NULL) {
         mz_zip_reader_end(&zip_archive);
