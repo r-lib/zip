@@ -39,7 +39,8 @@ static const char *zip_error_strings[] = {
   /*13 R_ZIP_EADDFILE     */ "Cannot add file `%s` to archive `%s`",
   /*14 R_ZIP_ESETZIPPERM  */
       "Cannot set permission on file `%s` in archive `%s`",
-  /*15 R_ZIP_ECREATE      */ "Could not create zip archive `%s`"
+  /*15 R_ZIP_ECREATE      */ "Could not create zip archive `%s`",
+  /*16 R_ZIP_EOPENX       */ "Cannot extract file `%s`"
 };
 
 static zip_error_handler_t *zip_error_handler = 0;
@@ -126,12 +127,6 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
   int allfiles = cfiles == NULL;
   int i, n;
   mz_zip_archive zip_archive;
-  char *buffer = 0;
-  size_t buffer_size = 0;
-#ifdef _WIN32
-  wchar_t *wbuffer = 0;
-  size_t wbuffer_size = 0;
-#endif
 
   memset(&zip_archive, 0, sizeof(zip_archive));
 
@@ -141,21 +136,12 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 
   /* We allocate a fairly large buffer for the destination file names here,
      so that we don't need to reallocated it all the time */
-  buffer_size = 1000;
-  buffer = malloc(buffer_size);
+  size_t buffer_size = 1000;
+  zip_char_t *buffer = malloc(buffer_size * sizeof(zip_char_t));
   if (!buffer) {
     mz_zip_reader_end(&zip_archive);
     ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
   }
-#ifdef _WIN32
-  wbuffer_size = 2000;
-  wbuffer = malloc(wbuffer_size);
-  if (!wbuffer) {
-    free(buffer);
-    mz_zip_reader_end(&zip_archive);
-    ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
-  }
-#endif
 
   n = allfiles ? mz_zip_reader_get_num_files(&zip_archive) : num_files;
 
@@ -209,11 +195,25 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 	      ZIP_ERROR(R_ZIP_ECREATEDIR, key, czipfile);
       }
 
-      if (!mz_zip_reader_extract_to_file(&zip_archive, idx, buffer, 0)) {
+      FILE *fh = NULL;
+#ifdef _WIN32
+      fh = _wfopen(buffer, L"wb");
+#else
+      fh = _fopen(buffer, "wb");
+#endif
+      if (fh == NULL) {
+        mz_zip_reader_end(&zip_archive);
+        if (buffer) free(buffer);
+        ZIP_ERROR(R_ZIP_EOPENX, key);
+      }
+
+      if (!mz_zip_reader_extract_to_cfile(&zip_archive, idx, fh, 0)) {
 	      mz_zip_reader_end(&zip_archive);
 	      if (buffer) free(buffer);
+	      fclose(fh);
 	      ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
       }
+      fclose(fh);
     }
 #ifndef _WIN32
     mode_t mode;
@@ -246,13 +246,11 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     mz_zip_reader_file_stat(&zip_archive, idx, &file_stat);
     key = file_stat.m_filename;
 
-    if (file_stat.m_is_directory) {
-      zip_str_file_path(cexdir, key, &buffer, &buffer_size, cjunkpaths);
-      if (zip_set_mtime(buffer, file_stat.m_time)) {
-	      if (buffer) free(buffer);
-	      mz_zip_reader_end(&zip_archive);
-	      ZIP_ERROR(R_ZIP_ESETMTIME, key, czipfile);
-      }
+    zip_str_file_path(cexdir, key, &buffer, &buffer_size, cjunkpaths);
+    if (zip_set_mtime(buffer, file_stat.m_time)) {
+      if (buffer) free(buffer);
+      mz_zip_reader_end(&zip_archive);
+      ZIP_ERROR(R_ZIP_ESETMTIME, key, czipfile);
     }
   }
 
@@ -275,8 +273,8 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 
   if (cappend) {
     if (!mz_zip_reader_init_file(&zip_archive, czipfile, 0) ||
-	!mz_zip_writer_init_from_reader(&zip_archive, czipfile)) {
-      ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
+	      !mz_zip_writer_init_from_reader(&zip_archive, czipfile)) {
+          ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
     }
   } else {
     if (!mz_zip_writer_init_file(&zip_archive, czipfile, 0)) {

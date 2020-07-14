@@ -22,7 +22,8 @@ typedef enum zip_error_codes {
   R_ZIP_EADDDIR      = 12,
   R_ZIP_EADDFILE     = 13,
   R_ZIP_ESETZIPPERM  = 14,
-  R_ZIP_ECREATE      = 15
+  R_ZIP_ECREATE      = 15,
+  R_ZIP_EOPENX       = 16
 } zip_error_codes_t;
 
 typedef void zip_error_handler_t(const char *reason, const char *file,

@@ -14,6 +14,7 @@
 
 #include "miniz.h"
 #include "zip.h"
+#include "zip-internals.h"
 
 SEXP R_zip_list(SEXP zipfile) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
@@ -23,9 +24,36 @@ SEXP R_zip_list(SEXP zipfile) {
   mz_bool status;
   mz_zip_archive zip_archive;
 
+  FILE *fh;
+  wchar_t *uzipfile = NULL;
+  size_t uzipfile_len = 0;
+
+#ifdef _WIN32
+  if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
+    if (uzipfile) free(uzipfile);
+    error("Cannot convert zip file name to unicode");
+  }
+  fh = _wfopen(uzipfile, L"rb");
+#else
+  fh = fopen(czipfile, "rb");
+#endif
+
+  if (fh == NULL) {
+    if (uzipfile) free(uzipfile);
+    error("Cannot open zip file `%s`");
+  }
+
+  fseek(fh, 0, SEEK_END);
+  size_t file_size = ftell(fh);
+  fseek(fh, 0, SEEK_SET);
+
   memset(&zip_archive, 0, sizeof(zip_archive));
-  status = mz_zip_reader_init_file(&zip_archive, czipfile, 0);
-  if (!status) error("Cannot open zip file `%s`", czipfile);
+  status = mz_zip_reader_init_cfile(&zip_archive, fh, file_size, 0);
+  if (!status) {
+    fclose(fh);
+    free(uzipfile);
+    error("Cannot open zip file `%s`", czipfile);
+  }
 
   num_files = mz_zip_reader_get_num_files(&zip_archive);
   result = PROTECT(allocVector(VECSXP, 5));
@@ -49,11 +77,14 @@ SEXP R_zip_list(SEXP zipfile) {
     INTEGER(VECTOR_ELT(result, 4))[i] = (int) mode;
   }
 
+  fclose(fh);
+  free(uzipfile);
   mz_zip_reader_end(&zip_archive);
   UNPROTECT(1);
   return result;
 
  cleanup:
+  fclose(fh);
   mz_zip_reader_end(&zip_archive);
   error("Cannot list zip entries, corrupt zip file?");
   return result;

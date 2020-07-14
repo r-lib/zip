@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <direct.h>
 #include <sys/stat.h>
+#include <stdio.h>
 #include "zip-internals.h"
 
 /* -------------------------------------------------------------- */
@@ -44,67 +45,111 @@ int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
 }
 
 int zip_str_file_path(const char *cexdir, const char *key,
-                      char **buffer, size_t *buffer_size, int cjunkpaths) {
+                      zip_char_t **buffer, size_t *buffer_size,
+                      int cjunkpaths) {
 
-  size_t len1 = strlen(cexdir);
-  size_t need_size, len2;
-  char *newbuffer;
+  int need_size, len1, len2, i;
+  wchar_t *newbuffer;
 
   if (cjunkpaths) {
     char *base = strrchr(key, '/');
     if (base) key = base;
   }
 
-  len2 = strlen(key);
-  need_size = len1 + len2 + 2;
+  len1 = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ cexdir,
+    /* cbMultiByte =    */ -1,
+    /* lpWideCharStr =  */ NULL,
+    /* cchWideChar =    */ 0
+  );
+  len2 = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ key,
+    /* cbMultiByte =    */ -1,
+    /* lpWideCharStr =  */ NULL,
+    /* cchWideChar =    */ 0
+  );
+  /* No need to +1 for '\\' because both have a terminating zero. */
+  need_size = len1 + len2;
 
-  if (*buffer_size < need_size) {
-    newbuffer = realloc((void*) *buffer, need_size);
+  if (*buffer == NULL) {
+    *buffer_size = need_size > 256 ? need_size : 256;
+    *buffer = calloc(*buffer_size, sizeof(zip_char_t));
+    if (*buffer) return 1;
+
+  } else if (*buffer_size < need_size) {
+    newbuffer = realloc((void*) *buffer, need_size * sizeof(zip_char_t));
     if (!newbuffer) return 1;
 
     *buffer = newbuffer;
     *buffer_size = need_size;
   }
 
-  strcpy(*buffer, cexdir);
-  (*buffer)[len1] = '/';
-  strcpy(*buffer + len1 + 1, key);
+  len1 = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ cexdir,
+    /* cbMultiByte =    */ -1,
+    /* lpWideCharStr =  */ *buffer,
+    /* cchWideChar =    */ len1
+  );
+  len2 = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ key,
+    /* cbMultiByte =    */ -1,
+    /* lpWideCharStr =  */ (*buffer) + len1,
+    /* cchWideChar =    */ len2
+  );
+
+  (*buffer)[len1 - 1] = L'\\';
+
+  for (i = 0; i < need_size; i++) {
+    if ((*buffer)[i] == L'/') (*buffer)[i] = L'\\';
+  }
 
   return 0;
 }
 
-int zip_mkdirp(char *path, int complete)  {
-  char *p;
-  int status;
-
-  errno = 0;
+int zip_mkdirp(zip_char_t *path, int complete)  {
+  wchar_t *p;
+  BOOL status;
+  DWORD err = 0;
 
   /* Iterate the string */
   for (p = path + 1; *p; p++) {
-    if (*p == '/') {
-      *p = '\0';
-      status = _mkdir(path);
-      *p = '/';
-      if (status && errno != EEXIST) {
-        return 1;
+    if (*p == L'/' || *p == L'\\') {
+      *p = L'\0';
+      status = CreateDirectoryW(path, NULL);
+      *p = L'\\';
+
+      if (!status) {
+        err = GetLastError();
+        if (err != ERROR_ALREADY_EXISTS) return 1;
       }
     }
   }
 
   if (complete) {
-    status = _mkdir(path);
-    if ((status && errno != EEXIST)) return 1;
+    status = CreateDirectoryW(path, NULL);
+    if (!status) {
+      err = GetLastError();
+      if (err != ERROR_ALREADY_EXISTS) return 1;
+    }
   }
 
   return 0;
 }
 
-int zip_file_exists(char *filename) {
-  struct stat st;
-  return ! stat(filename, &st);
+int zip_file_exists(zip_char_t *filename) {
+  DWORD attrib = GetFileAttributesW(filename);
+  return attrib != INVALID_FILE_ATTRIBUTES;
 }
 
-int zip_set_mtime(const char *filename, time_t mtime) {
+int zip_set_mtime(const zip_char_t *filename, time_t mtime) {
   SYSTEMTIME st;
   FILETIME modft;
   struct tm *utctm;
@@ -124,8 +169,8 @@ int zip_set_mtime(const char *filename, time_t mtime) {
   st.wMilliseconds = (WORD) 1000*(mtime - ftimei);
   if (!SystemTimeToFileTime(&st, &modft)) return 1;
 
-  hFile = CreateFile(filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-                     FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  hFile = CreateFileW(filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+                      FILE_FLAG_BACKUP_SEMANTICS, NULL);
   if (hFile == INVALID_HANDLE_VALUE) return 1;
   int res  = SetFileTime(hFile, NULL, NULL, &modft);
   CloseHandle(hFile);
