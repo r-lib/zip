@@ -276,7 +276,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
   int i, n = num_files;
   mz_zip_archive zip_archive;
   memset(&zip_archive, 0, sizeof(zip_archive));
-  wchar_t *filenameu16 = NULL;
+  zip_char_t *filenameu16 = NULL;
   size_t filenameu16_len = 0;
 
   FILE *zfh = NULL;
