@@ -14,7 +14,6 @@
 
 #include "miniz.h"
 #include "zip.h"
-#include "zip-internals.h"
 
 SEXP R_zip_list(SEXP zipfile) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));

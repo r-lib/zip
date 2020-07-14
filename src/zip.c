@@ -14,7 +14,6 @@
 
 #include "miniz.h"
 #include "zip.h"
-#include "zip-internals.h"
 
 #define ZIP_ERROR_BUFFER_SIZE 1000
 static char zip_error_buffer[ZIP_ERROR_BUFFER_SIZE];

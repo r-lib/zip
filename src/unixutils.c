@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#include "zip-internals.h"
+#include "zip.h"
 
 /* -------------------------------------------------------------- */
 

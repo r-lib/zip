@@ -3,7 +3,7 @@
 #include <direct.h>
 #include <sys/stat.h>
 #include <stdio.h>
-#include "zip-internals.h"
+#include "zip.h"
 
 /* -------------------------------------------------------------- */
 
