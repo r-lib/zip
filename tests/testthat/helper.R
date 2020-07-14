@@ -93,3 +93,18 @@ make_a_zip <- function(mtime = Sys.time(), envir = parent.frame(),
   zipr(zip, tmp, include_directories = include_directories)
   list(zip = zip, ex = tmp)
 }
+
+local_temp_dir <- function(pattern = "file", tmpdir = tempdir(),
+                           fileext = "", envir = parent.frame()) {
+  path <- tempfile(pattern = pattern, tmpdir = tmpdir, fileext = fileext)
+  dir.create(path)
+  setwd(path)
+  do.call(
+    withr::defer,
+    list(
+      bquote(unlink(.(path), recursive = TRUE)),
+      envir = envir
+    )
+  )
+  invisible(path)
+}
