@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  if ((fd = open(argv[2], O_RDONLY)) == -1) ZERROR(1);
+  if ((fd = open(argv[2], ZIP_MODE_READ)) == -1) ZERROR(1);
 
   /* Number of keys */
   if (read(fd, &num_files, sizeof(num_files)) != sizeof(num_files)) {

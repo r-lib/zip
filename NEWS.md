@@ -1,6 +1,8 @@
 
 # development version
 
+* `unzip_process()` now does not fail randomly on Windows (#60).
+
 * Now all functions handle Unicode paths correctly, on Windows
   as well (#42, #53).
 

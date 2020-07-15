@@ -59,6 +59,8 @@ int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
 #define ZIP__WRITE  L"wb"
 #define ZIP__APPEND L"r+b"
 
+#define ZIP_MODE_READ O_RDONLY | O_BINARY
+
 #else
 
 #define zip_char_t char
@@ -66,6 +68,8 @@ int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
 #define ZIP__READ   "rb"
 #define ZIP__WRITE  "wb"
 #define ZIP__APPEND "r+b"
+
+#define ZIP_MODE_READ O_RDONLY
 
 #endif
 
