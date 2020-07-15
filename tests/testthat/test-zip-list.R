@@ -1,6 +1,4 @@
 
-context("zip_list")
-
 test_that("can list a zip file", {
 
   dir.create(tmp <- tempfile())

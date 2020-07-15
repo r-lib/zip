@@ -1,6 +1,4 @@
 
-context("errors")
-
 test_that("non-existant file", {
 
   on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)))

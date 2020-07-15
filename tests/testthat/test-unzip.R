@@ -1,6 +1,4 @@
 
-context("unzip")
-
 test_that("can unzip all", {
   z <- make_a_zip()
 

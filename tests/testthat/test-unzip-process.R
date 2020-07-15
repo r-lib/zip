@@ -1,6 +1,4 @@
 
-context("unzip_process")
-
 test_that("unzip_process", {
   z <- make_a_zip()
   tmp2 <- test_temp_dir()
