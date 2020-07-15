@@ -39,7 +39,8 @@ static const char *zip_error_strings[] = {
   /*14 R_ZIP_ESETZIPPERM  */
       "Cannot set permission on file `%s` in archive `%s`",
   /*15 R_ZIP_ECREATE      */ "Could not create zip archive `%s`",
-  /*16 R_ZIP_EOPENX       */ "Cannot extract file `%s`"
+  /*16 R_ZIP_EOPENX       */ "Cannot extract file `%s`",
+  /*17 R_ZIP_FILESIZE     */ "Cannot determine size of `%s`"
 };
 
 static zip_error_handler_t *zip_error_handler = 0;
@@ -325,9 +326,11 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
         ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
       mz_uint64 uncomp_size = 0;
-      fseek(fh, 0, SEEK_END);
-      uncomp_size = ftello(fh);
-      fseek(fh, 0, SEEK_SET);
+      if (zip_file_size(fh, &uncomp_size)) {
+        if (filenameu16) free(filenameu16);
+        fclose(zfh);
+        ZIP_ERROR(R_ZIP_FILESIZE, filename);
+      }
 
       int ret = mz_zip_writer_add_cfile(&zip_archive, key, fh,
           /* size_to_all= */ uncomp_size, /* pFile_time = */ &cmtime,

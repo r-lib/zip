@@ -84,3 +84,11 @@ int zip_set_mtime(const char *filename, time_t mtime) {
   times[0].tv_usec = times[1].tv_usec = 0;
   return utimes(filename, times);
 }
+
+int zip_file_size(FILE *fh, mz_uint64 *size) {
+  if (fseek(fh, 0, SEEK_END)) return 1;
+  *size = ftello(fh);
+  if (*size == -1) return 2;
+  if (fseek(fh, 0, SEEK_SET)) return 3;
+  return 0;
+}

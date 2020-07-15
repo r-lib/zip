@@ -186,3 +186,11 @@ int zip_set_mtime(const zip_char_t *filename, time_t mtime) {
   CloseHandle(hFile);
   return res == 0; /* success is non-zero */
 }
+
+int zip_file_size(FILE *fh, mz_uint64 *size) {
+  if (_fseeki64(fh, 0, SEEK_END)) return 1;
+  *size = _ftelli64(fh);
+  if (*size == -1) return 2;
+  if (_fseeki64(fh, 0, SEEK_SET)) return 3;
+  return 0;
+}
