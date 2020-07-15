@@ -5,7 +5,8 @@ if (!file.exists("../tools/zip.exe")) {
   download.file(
     "https://github.com/rwinlib/zip/blob/master/zip.exe?raw=true",
     "../tools/zip.exe",
-    quiet = TRUE
+    quiet = TRUE,
+    mode = "wb"
   )
 }
 
