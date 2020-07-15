@@ -1,6 +1,4 @@
 
-context("large files")
-
 test_that("can compress / uncompress large files", {
 
   skip_on_cran()

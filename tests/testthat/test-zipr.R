@@ -1,6 +1,4 @@
 
-context("zipr")
-
 test_that("can compress single directory", {
 
   on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)))

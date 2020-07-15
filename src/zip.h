@@ -3,6 +3,8 @@
 #define R_ZIP_H
 
 #include <sys/types.h>
+#include <time.h>
+#include <stdio.h>
 
 #include "miniz.h"
 
@@ -22,7 +24,9 @@ typedef enum zip_error_codes {
   R_ZIP_EADDDIR      = 12,
   R_ZIP_EADDFILE     = 13,
   R_ZIP_ESETZIPPERM  = 14,
-  R_ZIP_ECREATE      = 15
+  R_ZIP_ECREATE      = 15,
+  R_ZIP_EOPENX       = 16,
+  R_ZIP_FILESIZE     = 17
 } zip_error_codes_t;
 
 typedef void zip_error_handler_t(const char *reason, const char *file,
@@ -41,5 +45,38 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 
 int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 	      int coverwrite, int cjunkpaths, const char *exdir);
+
+#ifdef _WIN32
+
+#include <windows.h>
+
+#define zip_char_t wchar_t
+
+int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
+                       size_t *buffer_size);
+
+#define ZIP__READ   L"rb"
+#define ZIP__WRITE  L"wb"
+#define ZIP__APPEND L"r+b"
+
+#else
+
+#define zip_char_t char
+
+#define ZIP__READ   "rb"
+#define ZIP__WRITE  "wb"
+#define ZIP__APPEND "r+b"
+
+#endif
+
+FILE *zip_open_utf8(const char *filename, const zip_char_t *mode,
+                    zip_char_t **buffer, size_t *buffer_size);
+int zip_str_file_path(const char *cexdir, const char *key,
+                      zip_char_t **buffer, size_t *buffer_size,
+                      int cjunkpaths);
+int zip_mkdirp(zip_char_t *path, int complete);
+int zip_set_mtime(const zip_char_t *filename, time_t mtime);
+int zip_file_exists(zip_char_t *filename);
+int zip_file_size(FILE *fh, mz_uint64 *size);
 
 #endif

@@ -4,7 +4,7 @@
 
 #include "../zip.h"
 
-#define ERROR(x) while (1) { retval = (x); goto cleanup; }
+#define ZERROR(x) while (1) { retval = (x); goto cleanup; }
 
 void cmd_zip_error_handler(const char *reason, const char *file,
 			   int line, int zip_errno, int eno) {
@@ -33,11 +33,20 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  if ((fd = open(argv[2], O_RDONLY)) == -1) ERROR(1);
+#ifdef _WIN32
+  wchar_t *fn = NULL;
+  size_t fnlen;
+  if (zip__utf8_to_utf16(argv[2], &fn, &fnlen)) ZERROR(12);
+  fd = _wopen(fn, O_RDONLY | O_BINARY);
+  if (fn) free(fn);
+#else
+  fd = open(argv[2], O_RDONLY);
+#endif
+  if (fd == -1) ZERROR(1);
 
   /* Number of keys */
   if (read(fd, &num_files, sizeof(num_files)) != sizeof(num_files)) {
-    ERROR(2);
+    ZERROR(2);
   }
 
   ckeys  = calloc(num_files, sizeof(const char*));
@@ -45,15 +54,15 @@ int main(int argc, char* argv[]) {
   cdirs  = calloc(num_files, sizeof(int));
   ctimes = calloc(num_files, sizeof(double));
 
-  if (!ckeys || !cfiles || !cdirs || !ctimes) ERROR(3);
+  if (!ckeys || !cfiles || !cdirs || !ctimes) ZERROR(3);
 
   /* keys first the total size of the buffer in bytes */
   if (read(fd, &ckeysbytes, sizeof(ckeysbytes)) != sizeof(ckeysbytes)) {
-    ERROR(4);
+    ZERROR(4);
   }
   keysbuffer = malloc(ckeysbytes);
-  if (!keysbuffer) ERROR(5);
-  if (read(fd, keysbuffer, ckeysbytes) != ckeysbytes) ERROR(6);
+  if (!keysbuffer) ZERROR(5);
+  if (read(fd, keysbuffer, ckeysbytes) != ckeysbytes) ZERROR(6);
   for (i = 0, ptr = keysbuffer; i < num_files; ptr++, i++) {
     ckeys[i] = ptr;
     while (*ptr != '\0') ++ptr;
@@ -61,11 +70,11 @@ int main(int argc, char* argv[]) {
 
   /* file names next */
   if (read(fd, &cfilesbytes, sizeof(cfilesbytes)) != sizeof(cfilesbytes)) {
-    ERROR(4);
+    ZERROR(4);
   }
   filesbuffer = malloc(cfilesbytes);
-  if (!filesbuffer) ERROR(7);
-  if (read(fd, filesbuffer, cfilesbytes) != cfilesbytes) ERROR(8);
+  if (!filesbuffer) ZERROR(7);
+  if (read(fd, filesbuffer, cfilesbytes) != cfilesbytes) ZERROR(8);
   for (i = 0, ptr = filesbuffer; i < num_files; ptr++, i++) {
     cfiles[i] = ptr;
     while (*ptr != '\0') ++ptr;
@@ -73,20 +82,20 @@ int main(int argc, char* argv[]) {
 
   /* dirs */
   if (read(fd, cdirs, num_files * sizeof(int)) != num_files * sizeof(int)) {
-    ERROR(9);
+    ZERROR(9);
   }
 
   /* mtimes */
   if (read(fd, ctimes, num_files * sizeof(double)) !=
       num_files * sizeof(double)) {
-    ERROR(10);
+    ZERROR(10);
   }
 
   zip_set_error_handler(cmd_zip_error_handler);
 
   if (zip_zip(argv[1], num_files, ckeys, cfiles, cdirs, ctimes,
 	      /* compression_level= */ 9, /* cappend= */ 0)) {
-    ERROR(11);
+    ZERROR(11);
   }
 
  cleanup:

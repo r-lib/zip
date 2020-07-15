@@ -1,6 +1,11 @@
 
 # development version
 
+* `unzip_process()` now does not fail randomly on Windows (#60).
+
+* Now all functions handle Unicode paths correctly, on Windows
+  as well (#42, #53).
+
 * `unzip_process()` now works when R library is on different drive
   than `exdir` on Windows (#45)
 

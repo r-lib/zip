@@ -23,9 +23,36 @@ SEXP R_zip_list(SEXP zipfile) {
   mz_bool status;
   mz_zip_archive zip_archive;
 
+  FILE *fh;
+  wchar_t *uzipfile = NULL;
+  size_t uzipfile_len = 0;
+
+#ifdef _WIN32
+  if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
+    if (uzipfile) free(uzipfile);
+    error("Cannot convert zip file name to unicode");
+  }
+  fh = _wfopen(uzipfile, L"rb");
+#else
+  fh = fopen(czipfile, "rb");
+#endif
+
+  if (fh == NULL) {
+    if (uzipfile) free(uzipfile);
+    error("Cannot open zip file `%s`");
+  }
+
+  fseek(fh, 0, SEEK_END);
+  size_t file_size = ftell(fh);
+  fseek(fh, 0, SEEK_SET);
+
   memset(&zip_archive, 0, sizeof(zip_archive));
-  status = mz_zip_reader_init_file(&zip_archive, czipfile, 0);
-  if (!status) error("Cannot open zip file `%s`", czipfile);
+  status = mz_zip_reader_init_cfile(&zip_archive, fh, file_size, 0);
+  if (!status) {
+    fclose(fh);
+    free(uzipfile);
+    error("Cannot open zip file `%s`", czipfile);
+  }
 
   num_files = mz_zip_reader_get_num_files(&zip_archive);
   result = PROTECT(allocVector(VECSXP, 5));
@@ -49,11 +76,14 @@ SEXP R_zip_list(SEXP zipfile) {
     INTEGER(VECTOR_ELT(result, 4))[i] = (int) mode;
   }
 
+  fclose(fh);
+  free(uzipfile);
   mz_zip_reader_end(&zip_archive);
   UNPROTECT(1);
   return result;
 
  cleanup:
+  fclose(fh);
   mz_zip_reader_end(&zip_archive);
   error("Cannot list zip entries, corrupt zip file?");
   return result;
@@ -119,46 +149,18 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   return R_NilValue;
 }
 
-#ifdef _WIN32
-
-int zip__utf8_to_utf16_alloc(const char* s, WCHAR** ws_ptr) {
-  int ws_len, r;
-  WCHAR* ws;
-
-  ws_len = MultiByteToWideChar(
-    /* CodePage =       */ CP_UTF8,
-    /* dwFlags =        */ 0,
-    /* lpMultiByteStr = */ s,
-    /* cbMultiByte =    */ -1,
-    /* lpWideCharStr =  */ NULL,
-    /* cchWideChar =    */ 0);
-
-  if (ws_len <= 0) { return GetLastError(); }
-
-  ws = (WCHAR*) R_alloc(ws_len,  sizeof(WCHAR));
-  if (ws == NULL) { return ERROR_OUTOFMEMORY; }
-
-  r = MultiByteToWideChar(
-    /* CodePage =       */ CP_UTF8,
-    /* dwFlags =        */ 0,
-    /* lpMultiByteStr = */ s,
-    /* cbMultiBytes =   */ -1,
-    /* lpWideCharStr =  */ ws,
-    /* cchWideChar =    */ ws_len);
-
-  if (r != ws_len) {
-    error("processx error interpreting UTF8 command or arguments");
-  }
-
-  *ws_ptr = ws;
-  return 0;
-}
-
-#endif
 
 #ifdef __APPLE__
 #include <fcntl.h>
 #include <unistd.h>
+#endif
+
+
+#ifdef _WIN32
+
+int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
+                       size_t *buffer_size);
+
 #endif
 
 SEXP R_make_big_file(SEXP filename, SEXP mb) {
@@ -166,10 +168,12 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
 #ifdef _WIN32
 
   const char *cfilename = CHAR(STRING_ELT(filename, 0));
-  WCHAR *wfilename = NULL;
   LARGE_INTEGER li;
 
-  if (zip__utf8_to_utf16_alloc(cfilename, &wfilename)) {
+  wchar_t *wfilename = NULL;
+  size_t wfilename_size = 0;
+
+  if (zip__utf8_to_utf16(cfilename, &wfilename, &wfilename_size)) {
     error("utf8 -> utf16 conversion");
   }
 
@@ -181,21 +185,27 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
     CREATE_NEW,
     FILE_ATTRIBUTE_NORMAL,
     NULL);
-  if (h == INVALID_HANDLE_VALUE) error("Cannot create big file");
+  if (h == INVALID_HANDLE_VALUE) {
+    if (wfilename) free(wfilename);
+    error("Cannot create big file");
+  }
 
   li.QuadPart = INTEGER(mb)[0] * 1024.0 * 1024.0;
   li.LowPart = SetFilePointer(h, li.LowPart, &li.HighPart, FILE_BEGIN);
 
   if (0xffffffff == li.LowPart && GetLastError() != NO_ERROR) {
     CloseHandle(h);
+    if (wfilename) free(wfilename);
     error("Cannot create big file");
   }
 
   if (!SetEndOfFile(h)) {
     CloseHandle(h);
+    if (wfilename) free(wfilename);
     error("Cannot create big file");
   }
 
+  if (wfilename) free(wfilename);
   CloseHandle(h);
 
 #endif

@@ -106,7 +106,7 @@ NULL
 #' @param root Change to this working directory before creating the
 #'   archive.
 #' @param mode Selects how files and directories are stored in
-#'   the archice. It can be `"mirror"` or `"cherrypick"`.
+#'   the archice. It can be `"mirror"` or `"cherry-pick"`.
 #'   See "Relative Paths" below for details.
 #' @return The name of the created zip file, invisibly.
 #'
@@ -185,8 +185,9 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
   data <- get_zip_data(files, recurse, keep_path, include_directories)
   warn_for_dotdot(data$key)
 
-  .Call(c_R_zip_zip, zipfile, data$key, data$file, data$dir,
-        file.info(data$file)$mtime, as.integer(compression_level), append)
+  .Call(c_R_zip_zip, enc2utf8(zipfile), enc2utf8(data$key),
+        enc2utf8(data$file), data$dir, file.info(data$file)$mtime,
+        as.integer(compression_level), append)
 
   invisible(zipfile)
 }
@@ -201,7 +202,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 #' @export
 
 zip_list <- function(zipfile) {
-  zipfile <- normalizePath(zipfile)
+  zipfile <- enc2utf8(normalizePath(zipfile))
   res <- .Call(c_R_zip_list, zipfile)
   df <- data.frame(
     stringsAsFactors = FALSE,
@@ -210,6 +211,7 @@ zip_list <- function(zipfile) {
     uncompressed_size = res[[3]],
     timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
   )
+  Encoding(df$filename) <- "UTF-8"
   df$permissions <- as.octmode(res[[5]])
   df
 }
@@ -265,9 +267,10 @@ unzip <- function(zipfile, files = NULL, overwrite = TRUE,
     is_flag(junkpaths),
     is_string(exdir))
 
-  zipfile <- normalizePath(zipfile)
+  zipfile <- enc2utf8(normalizePath(zipfile))
+  if (!is.null(files)) files <- enc2utf8(files)
   mkdirp(exdir)
-  exdir <- normalizePath(exdir)
+  exdir <- enc2utf8(normalizePath(exdir))
 
   .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir)
 

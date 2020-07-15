@@ -1,6 +1,4 @@
 
-context("get_zip_data_nopath")
-
 test_that("get_zip_data", {
   on.exit(try(unlink(tmp, recursive = TRUE)), add = TRUE)
   dir.create(tmp <- tempfile())
