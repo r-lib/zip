@@ -33,7 +33,16 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  if ((fd = open(argv[2], ZIP_MODE_READ)) == -1) ZERROR(1);
+#ifdef _WIN32
+  wchar_t *fn = NULL;
+  size_t fnlen;
+  if (zip__utf8_to_utf16(argv[2], &fn, &fnlen)) ZERROR(12);
+  fd = _wopen(fn, O_RDONLY | O_BINARY);
+  if (fn) free(fn);
+#else
+  fd = open(argv[2], O_RDONLY);
+#endif
+  if (fd == -1) ZERROR(1);
 
   /* Number of keys */
   if (read(fd, &num_files, sizeof(num_files)) != sizeof(num_files)) {
