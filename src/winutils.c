@@ -125,17 +125,27 @@ int zip_str_file_path(const char *cexdir, const char *key,
 }
 
 int zip_mkdirp(zip_char_t *path, int complete)  {
-  wchar_t *p;
+  wchar_t *p = path;
   BOOL status;
   DWORD err = 0;
 
+  /* Skip host part of an UNC path */
+  if ((*p == L'\\' && *(p+1) == L'\\') ||
+      (*p == L'/'  && *(p+1) == L'/' )) {
+    p += 2;
+    while (*p && *p != L'/' && *p != L'\\') p++;
+
+  /* Skip drive letter if any */
+  } else if (*(p+1) == L':' && (*(p+2) == L'/' || (*(p+2)) == L'\\')) {
+    p += 3;
+  }
+
   /* Iterate the string */
-  for (p = path + 1; *p; p++) {
+  for (; *p; p++) {
     if (*p == L'/' || *p == L'\\') {
       *p = L'\0';
       status = CreateDirectoryW(path, NULL);
       *p = L'\\';
-
       if (!status) {
         err = GetLastError();
         if (err != ERROR_ALREADY_EXISTS) return 1;
@@ -144,7 +154,10 @@ int zip_mkdirp(zip_char_t *path, int complete)  {
   }
 
   if (complete) {
+    p--;
+    if (*p == L'/' || *p == L'\\') *p = L'\0';
     status = CreateDirectoryW(path, NULL);
+    if (*p == L'\0') *p = L'\\';
     if (!status) {
       err = GetLastError();
       if (err != ERROR_ALREADY_EXISTS) return 1;
