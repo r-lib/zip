@@ -1,5 +1,5 @@
 
-# development version
+# 2.1.0
 
 * `unzip_process()` now does not fail randomly on Windows (#60).
 
