@@ -51,7 +51,9 @@ int MAIN(int argc, CHAR* argv[]) {
   zip_unzip(zipfile, /* cfiles= */ 0, /* num_files= */ 0,
 	    /* coverwrite= */ 1, /* cjunkpaths= */ 0, /* exdir= */ exdir);
 
+#ifdef _WIN32
 cleanup:
+#endif
 
   if (retval != 0) {
     fprintf(stderr, "Failed to create zip archive " CFMT, argv[1]);

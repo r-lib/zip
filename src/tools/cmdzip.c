@@ -99,30 +99,21 @@ int MAIN(int argc, CHAR* argv[]) {
 
   zip_set_error_handler(cmd_zip_error_handler);
 
-  char *fnw = 0;
-
 #ifdef _WIN32
+  char *fn = 0;
   size_t fnlen = 0;
-  if (zip__utf16_to_utf8(argv[1], &fnw, &fnlen)) ZERROR(11);
-  char *fn = fnw;
+  if (zip__utf16_to_utf8(argv[1], &fn, &fnlen)) ZERROR(11);
 #else
   char *fn = argv[1];
 #endif
 
   if (zip_zip(fn, num_files, ckeys, cfiles, cdirs, ctimes,
 	      /* compression_level= */ 9, /* cappend= */ 0)) {
-    if (fnw) free(fnw);
     ZERROR(11);
   }
 
  cleanup:
-  if (ckeys)       free(ckeys);
-  if (cfiles)      free(cfiles);
-  if (cdirs)       free(cdirs);
-  if (ctimes)      free(ctimes);
-  if (keysbuffer)  free(keysbuffer);
-  if (filesbuffer) free(filesbuffer);
-  if (fnw)         free(fnw);
+  /* No need to clean up, we are exiting */
 
   if (retval != 0) {
     fprintf(stderr, "Failed to create zip archive " CFMT, argv[1]);
