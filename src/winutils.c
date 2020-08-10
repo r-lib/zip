@@ -19,29 +19,54 @@ int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
     /* lpWideCharStr =  */ NULL,
     /* cchWideChar =    */ 0);
 
-    if (ws_len <= 0) { return GetLastError(); }
+  if (ws_len <= 0) { return GetLastError(); }
 
-    if (*buffer == NULL) {
-      /* Let's allocated something bigger, so no need to grow much */
-      *buffer_size = ws_len > 255 ? ws_len : 255;
-      *buffer = (wchar_t*) calloc(*buffer_size, sizeof(wchar_t));
-    } else if (ws_len > *buffer_size) {
-      *buffer_size = ws_len;
-      *buffer = (wchar_t*) realloc(*buffer, ws_len * sizeof(wchar_t));
-    }
-    if (*buffer == NULL) { return ERROR_OUTOFMEMORY; }
+  if (*buffer == NULL) {
+    /* Let's allocated something bigger, so no need to grow much */
+    *buffer_size = ws_len > 255 ? ws_len : 255;
+    *buffer = (wchar_t*) calloc(*buffer_size, sizeof(wchar_t));
+  } else if (ws_len > *buffer_size) {
+    *buffer_size = ws_len;
+    *buffer = (wchar_t*) realloc(*buffer, ws_len * sizeof(wchar_t));
+  }
+  if (*buffer == NULL) { return ERROR_OUTOFMEMORY; }
 
-    r = MultiByteToWideChar(
-      /* CodePage =       */ CP_UTF8,
-      /* dwFlags =        */ 0,
-      /* lpMultiByteStr = */ s,
-      /* cbMultiBytes =   */ -1,
-      /* lpWideCharStr =  */ *buffer,
-      /* cchWideChar =    */ ws_len);
+  r = MultiByteToWideChar(
+    /* CodePage =       */ CP_UTF8,
+    /* dwFlags =        */ 0,
+    /* lpMultiByteStr = */ s,
+    /* cbMultiBytes =   */ -1,
+    /* lpWideCharStr =  */ *buffer,
+    /* cchWideChar =    */ ws_len);
 
-      if (r != ws_len) { return GetLastError(); }
+  if (r != ws_len) { return GetLastError(); }
 
-      return 0;
+  return 0;
+}
+
+int zip__utf16_to_utf8(const wchar_t *ws, char** buffer, size_t *buffer_size) {
+
+  int slen, r;
+
+  slen = WideCharToMultiByte(CP_UTF8, 0, ws, -1, NULL, 0, NULL, NULL);
+
+  if (slen <= 0) { return GetLastError(); }
+
+  if (*buffer == NULL) {
+    /* Let's allocated something bigger, so no need to grow much */
+    *buffer_size = slen > 255 ? slen : 255;
+    *buffer = (char*) calloc(*buffer_size, sizeof(char));
+  } else if (slen > *buffer_size) {
+    *buffer_size = slen;
+    *buffer = (char*) realloc(*buffer, slen * sizeof(char));
+  }
+  if (*buffer == NULL) { return ERROR_OUTOFMEMORY; }
+
+  r = WideCharToMultiByte(CP_UTF8, 0, ws, -1, *buffer, slen, NULL, NULL);
+
+  if (r != slen) { return GetLastError(); }
+
+  return 0;
 }
 
 FILE *zip_open_utf8(const char *filename, const wchar_t *mode,

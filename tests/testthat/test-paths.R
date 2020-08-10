@@ -177,6 +177,8 @@ test_that("zip file with non-ASCII characters", {
 
   unlink(zipfile)
 
+  # ----------------------------------------------------------------
+
   zip::zip(zipfile, c("dir1", "dir2/file2"), mode = "cherry-pick")
   l2 <- zip_list(zipfile)
   expect_equal(l2$filename, c("dir1/", "dir1/file1", "file2"))
@@ -186,5 +188,26 @@ test_that("zip file with non-ASCII characters", {
   expect_equal(
     sort(dir("ex2", recursive = TRUE)),
     c("dir1/file1", "file2")
+  )
+
+  unlink(zipfile)
+
+  # ----------------------------------------------------------------
+
+  p <- zip::zip_process()$new(zipfile, c("dir1", "dir2"))
+  p$wait(5000)
+  p$kill()
+  expect_equal(p$get_exit_status(), 0L)
+
+  l <- zip_list(zipfile)
+  expect_equal(l$filename, c("dir1/", "dir1/file1", "dir2/", "dir2/file2"))
+
+  p2 <- zip::unzip_process()$new(zipfile, "ex3")
+  p2$wait(5000)
+  p2$kill()
+  expect_equal(p2$get_exit_status(), 0L)
+  expect_equal(
+    sort(dir("ex3", recursive = TRUE)),
+    c("dir1/file1", "dir2/file2")
   )
 })

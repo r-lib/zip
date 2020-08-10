@@ -4,6 +4,16 @@
 
 #include "../zip.h"
 
+#ifdef _WIN32
+#define CHAR wchar_t
+#define MAIN wmain
+#define CFMT "%ls"
+#else
+#define CHAR char
+#define MAIN main
+#define CFMT "%s"
+#endif
+
 #define ZERROR(x) while (1) { retval = (x); goto cleanup; }
 
 void cmd_zip_error_handler(const char *reason, const char *file,
@@ -17,7 +27,7 @@ void cmd_zip_error_handler(const char *reason, const char *file,
   exit(eno);
 }
 
-int main(int argc, char* argv[]) {
+int MAIN(int argc, CHAR* argv[]) {
   int i, num_files = 0;
   int ckeysbytes, cfilesbytes;
   char *keysbuffer = 0, *filesbuffer = 0;
@@ -29,16 +39,12 @@ int main(int argc, char* argv[]) {
   char *ptr;
 
   if (argc != 3) {
-    fprintf(stderr, "Usage: %s zip-file input-file\n", argv[0]);
+    fprintf(stderr, "Usage: " CFMT " zip-file input-file\n", argv[0]);
     return 1;
   }
 
 #ifdef _WIN32
-  wchar_t *fn = NULL;
-  size_t fnlen;
-  if (zip__utf8_to_utf16(argv[2], &fn, &fnlen)) ZERROR(12);
-  fd = _wopen(fn, O_RDONLY | O_BINARY);
-  if (fn) free(fn);
+  fd = _wopen(argv[2], O_RDONLY | O_BINARY);
 #else
   fd = open(argv[2], O_RDONLY);
 #endif
@@ -93,8 +99,19 @@ int main(int argc, char* argv[]) {
 
   zip_set_error_handler(cmd_zip_error_handler);
 
-  if (zip_zip(argv[1], num_files, ckeys, cfiles, cdirs, ctimes,
+  char *fnw = 0;
+
+#ifdef _WIN32
+  size_t fnlen = 0;
+  if (zip__utf16_to_utf8(argv[1], &fnw, &fnlen)) ZERROR(11);
+  char *fn = fnw;
+#else
+  char *fn = argv[1];
+#endif
+
+  if (zip_zip(fn, num_files, ckeys, cfiles, cdirs, ctimes,
 	      /* compression_level= */ 9, /* cappend= */ 0)) {
+    if (fnw) free(fnw);
     ZERROR(11);
   }
 
@@ -105,9 +122,10 @@ int main(int argc, char* argv[]) {
   if (ctimes)      free(ctimes);
   if (keysbuffer)  free(keysbuffer);
   if (filesbuffer) free(filesbuffer);
+  if (fnw)         free(fnw);
 
   if (retval != 0) {
-    fprintf(stderr, "Failed to create zip archive %s", argv[1]);
+    fprintf(stderr, "Failed to create zip archive " CFMT, argv[1]);
   }
 
   return retval;

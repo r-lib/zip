@@ -54,6 +54,8 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 
 int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
                        size_t *buffer_size);
+int zip__utf16_to_utf8(const wchar_t *ws, char** buffer,
+                       size_t *buffer_size);
 
 #define ZIP__READ   L"rb"
 #define ZIP__WRITE  L"wb"
