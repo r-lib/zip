@@ -134,9 +134,11 @@ int zip_mkdirp(zip_char_t *path, int complete)  {
       (*p == L'/'  && *(p+1) == L'/' )) {
     p += 2;
     while (*p && *p != L'/' && *p != L'\\') p++;
+  }
 
-  /* Skip drive letter if any */
-  } else if (*(p+1) == L':' && (*(p+2) == L'/' || (*(p+2)) == L'\\')) {
+  /* Skip drive letter if any. This _may_ be after an initial
+   *  \\?\, which we have just skipped as an UNC path */
+  if (*(p+1) == L':' && (*(p+2) == L'/' || (*(p+2)) == L'\\')) {
     p += 3;
   }
 
