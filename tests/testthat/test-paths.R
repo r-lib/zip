@@ -62,6 +62,9 @@ test_that("uncompressed path with spaces", {
 })
 
 test_that("base path with non-ASCII characters", {
+  if (tolower(Sys.info()[["sysname"]]) != "windows") {
+    skip("Only on Windows")
+  }
   local_temp_dir()
   root <- enc2native("\u00fa\u00e1\u00f6\u0151\u00e9")
   dir.create(root)
@@ -95,6 +98,9 @@ test_that("base path with non-ASCII characters", {
 })
 
 test_that("uncompressed path with non-ASCII characters", {
+  if (tolower(Sys.info()[["sysname"]]) != "windows") {
+    skip("Only on Windows")
+  }
   local_temp_dir()
   root <- enc2native("\u00fa\u00e1\u00f6\u0151\u00e9")
   ufile <- enc2native("ufile\u00fa\u00e1")
