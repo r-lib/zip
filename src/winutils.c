@@ -234,3 +234,15 @@ int zip_file_size(FILE *fh, mz_uint64 *size) {
   if (_fseeki64(fh, 0, SEEK_SET)) return 3;
   return 0;
 }
+
+FILE zip_long_wfopen(const wchar_t *filename, const wchar_t *mode) {
+  const wchar_t* temp_filename;
+  size_t len = wcslen(filename);
+
+  *temp_filename = (wchar_t*) calloc(len + 4, sizeof(char));
+  *temp_filename = L"\\\\?\\";
+  wcscat(temp_filename, filename);
+  FILE res = _wfopen(temp_filename, mode);
+  free(temp_filename);
+  return res;
+}
