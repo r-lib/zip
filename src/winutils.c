@@ -74,7 +74,7 @@ FILE *zip_open_utf8(const char *filename, const wchar_t *mode,
   int ret = zip__utf8_to_utf16(filename, buffer, buffer_size);
   if (ret) return NULL;
 
-  FILE *fh = _wfopen(*buffer, mode);
+  FILE *fh = zip_long_wfopen(*buffer, mode);
   return fh;
 }
 
@@ -235,14 +235,15 @@ int zip_file_size(FILE *fh, mz_uint64 *size) {
   return 0;
 }
 
-FILE zip_long_wfopen(const wchar_t *filename, const wchar_t *mode) {
-  const wchar_t* temp_filename;
+FILE* zip_long_wfopen(const wchar_t *filename, const wchar_t *mode) {
+  wchar_t* temp_filename;
+  FILE* res;
   size_t len = wcslen(filename);
 
-  *temp_filename = (wchar_t*) calloc(len + 4, sizeof(char));
-  *temp_filename = L"\\\\?\\";
+  temp_filename = (wchar_t*) calloc(len + 5, sizeof(wchar_t));
+  wcscat(temp_filename, L"\\\\?\\");
   wcscat(temp_filename, filename);
-  FILE res = _wfopen(temp_filename, mode);
-  free(temp_filename);
+  res = _wfopen(temp_filename, mode);
+  free((void*) temp_filename);
   return res;
 }

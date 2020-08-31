@@ -200,7 +200,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 
       FILE *fh = NULL;
 #ifdef _WIN32
-      fh = _wfopen(buffer, L"wb");
+      fh = zip_long_wfopen(buffer, L"wb");
 #else
       fh = fopen(buffer, "wb");
 #endif
