@@ -219,8 +219,15 @@ int zip_set_mtime(const zip_char_t *filename, time_t mtime) {
   st.wMilliseconds = (WORD) 1000*(mtime - ftimei);
   if (!SystemTimeToFileTime(&st, &modft)) return 1;
 
-  hFile = CreateFileW(filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+  size_t len = wcslen(filename);
+  wchar_t* temp_filename = (wchar_t*) calloc(len + 5, sizeof(wchar_t));
+  wcscat(temp_filename, L"\\\\?\\");
+  wcscat(temp_filename, filename);
+
+  hFile = CreateFileW(temp_filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
                       FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  free(temp_filename);
+
   if (hFile == INVALID_HANDLE_VALUE) return 1;
   int res  = SetFileTime(hFile, NULL, NULL, &modft);
   CloseHandle(hFile);
