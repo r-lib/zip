@@ -74,7 +74,7 @@ FILE *zip_open_utf8(const char *filename, const wchar_t *mode,
   int ret = zip__utf8_to_utf16(filename, buffer, buffer_size);
   if (ret) return NULL;
 
-  FILE *fh = zip_long_wfopen(*buffer, mode);
+  FILE *fh = _wfopen(*buffer, mode);
   return fh;
 }
 
