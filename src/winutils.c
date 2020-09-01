@@ -219,8 +219,15 @@ int zip_set_mtime(const zip_char_t *filename, time_t mtime) {
   st.wMilliseconds = (WORD) 1000*(mtime - ftimei);
   if (!SystemTimeToFileTime(&st, &modft)) return 1;
 
-  hFile = CreateFileW(filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+  size_t len = wcslen(filename);
+  wchar_t* temp_filename = (wchar_t*) calloc(len + 5, sizeof(wchar_t));
+  wcscat(temp_filename, L"\\\\?\\");
+  wcscat(temp_filename, filename);
+
+  hFile = CreateFileW(temp_filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
                       FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  free(temp_filename);
+
   if (hFile == INVALID_HANDLE_VALUE) return 1;
   int res  = SetFileTime(hFile, NULL, NULL, &modft);
   CloseHandle(hFile);
@@ -233,4 +240,17 @@ int zip_file_size(FILE *fh, mz_uint64 *size) {
   if (*size == -1) return 2;
   if (_fseeki64(fh, 0, SEEK_SET)) return 3;
   return 0;
+}
+
+FILE* zip_long_wfopen(const wchar_t *filename, const wchar_t *mode) {
+  wchar_t* temp_filename;
+  FILE* res;
+  size_t len = wcslen(filename);
+
+  temp_filename = (wchar_t*) calloc(len + 5, sizeof(wchar_t));
+  wcscat(temp_filename, L"\\\\?\\");
+  wcscat(temp_filename, filename);
+  res = _wfopen(temp_filename, mode);
+  free((void*) temp_filename);
+  return res;
 }

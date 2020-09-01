@@ -57,6 +57,9 @@ int zip__utf8_to_utf16(const char* s, wchar_t** buffer,
 int zip__utf16_to_utf8(const wchar_t *ws, char** buffer,
                        size_t *buffer_size);
 
+FILE* zip_long_wfopen(const wchar_t *filename,
+                     const wchar_t *mode);
+
 #define ZIP__READ   L"rb"
 #define ZIP__WRITE  L"wb"
 #define ZIP__APPEND L"r+b"

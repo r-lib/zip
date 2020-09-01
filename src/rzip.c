@@ -32,7 +32,7 @@ SEXP R_zip_list(SEXP zipfile) {
     if (uzipfile) free(uzipfile);
     error("Cannot convert zip file name to unicode");
   }
-  fh = _wfopen(uzipfile, L"rb");
+  fh = zip_long_wfopen(uzipfile, L"rb");
 #else
   fh = fopen(czipfile, "rb");
 #endif
