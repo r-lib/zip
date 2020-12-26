@@ -7568,7 +7568,7 @@ int mz_zip_get_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
 
   if (!p) return 0;
 
-  memcpy(value, p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS, sizeof(mz_uint16));
+  *value = MZ_READ_LE16(p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS);
   return 1;
 }
 
@@ -7578,7 +7578,7 @@ int mz_zip_set_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
 
   if (!p) return 0;
 
-  memcpy(p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS, &value, sizeof(mz_uint16));
+  MZ_WRITE_LE16(p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS, value);
   return 1;
 }
 
@@ -7588,7 +7588,7 @@ int mz_zip_get_external_attr(mz_zip_archive *pZip, mz_uint file_index,
 
   if (!p) return 0;
 
-  memcpy(value, p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS, sizeof(mz_uint32));
+  *value = MZ_READ_LE32(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
   return 1;
 }
 
@@ -7598,7 +7598,7 @@ int mz_zip_set_external_attr(mz_zip_archive *pZip, mz_uint file_index,
 
   if (!p) return 0;
 
-  memcpy(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS, &value, sizeof(mz_uint32));
+  MZ_WRITE_LE32(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS, value);
   return 1;
 }
 
