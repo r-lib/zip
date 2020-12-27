@@ -1,3 +1,7 @@
+# 2.1.2
+
+* Header values (of version made by and external attributes) are now correctly
+  read and written on big-endian systems (#68).
 
 # 2.1.1
 
