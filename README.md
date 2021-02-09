@@ -5,15 +5,16 @@
 
 > Cross-Platform ‘zip’ Compression
 
-[![Linux Build
-Status](https://travis-ci.org/r-lib/zip.svg?branch=master)](https://travis-ci.org/r-lib/zip)
-[![Windows Build
-status](https://ci.appveyor.com/api/projects/status/github/r-lib/zip?svg=true)](https://ci.appveyor.com/project/gaborcsardi/zip)
+<!-- badges: start -->
+
+[![R build
+status](https://github.com/r-lib/zip/workflows/R-CMD-check/badge.svg)](https://github.com/r-lib/zip/actions)
 [![](https://www.r-pkg.org/badges/version/zip)](https://www.r-pkg.org/pkg/zip)
 [![CRAN RStudio mirror
 downloads](https://cranlogs.r-pkg.org/badges/zip)](https://www.r-pkg.org/pkg/zip)
 [![Coverage
 Status](https://img.shields.io/codecov/c/github/r-lib/zip/master.svg)](https://codecov.io/github/r-lib/zip?branch=master)
+<!-- badges: end -->
 
 ## Installation
 
