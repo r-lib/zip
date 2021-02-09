@@ -108,12 +108,13 @@ int zip_str_file_path(const char *cexdir, const char *key,
     /* cchWideChar =    */ 0
   );
   /* No need to +1 for '\\' because both have a terminating zero. */
-  need_size = len1 + len2;
+  int offset = cjunkpaths ? 0 : 4;
+  need_size = len1 + len2 + offset;
 
   if (*buffer == NULL) {
     *buffer_size = need_size > 256 ? need_size : 256;
     *buffer = calloc(*buffer_size, sizeof(zip_char_t));
-    if (*buffer) return 1;
+    if (!*buffer) return 1;
 
   } else if (*buffer_size < need_size) {
     newbuffer = realloc((void*) *buffer, need_size * sizeof(zip_char_t));
@@ -123,12 +124,20 @@ int zip_str_file_path(const char *cexdir, const char *key,
     *buffer_size = need_size;
   }
 
+  /* work around path length limitations */
+  if (!cjunkpaths) {
+    (*buffer)[0] = L'\\';
+    (*buffer)[1] = L'\\';
+    (*buffer)[2] = L'?';
+    (*buffer)[3] = L'\\';
+  }
+
   len1 = MultiByteToWideChar(
     /* CodePage =       */ CP_UTF8,
     /* dwFlags =        */ 0,
     /* lpMultiByteStr = */ cexdir,
     /* cbMultiByte =    */ -1,
-    /* lpWideCharStr =  */ *buffer,
+    /* lpWideCharStr =  */ (*buffer) + offset,
     /* cchWideChar =    */ len1
   );
   len2 = MultiByteToWideChar(
@@ -136,13 +145,13 @@ int zip_str_file_path(const char *cexdir, const char *key,
     /* dwFlags =        */ 0,
     /* lpMultiByteStr = */ key,
     /* cbMultiByte =    */ -1,
-    /* lpWideCharStr =  */ (*buffer) + len1,
+    /* lpWideCharStr =  */ (*buffer) + len1 + offset,
     /* cchWideChar =    */ len2
   );
 
-  (*buffer)[len1 - 1] = L'\\';
+  (*buffer)[offset + len1 - 1] = L'\\';
 
-  for (i = 0; i < need_size; i++) {
+  for (i = offset; i < need_size; i++) {
     if ((*buffer)[i] == L'/') (*buffer)[i] = L'\\';
   }
 
@@ -154,6 +163,12 @@ int zip_mkdirp(zip_char_t *path, int complete)  {
   BOOL status;
   DWORD err = 0;
 
+  /* Skip \\?\ if any */
+  if (*p == L'\\' && *(p+1) == L'\\' && *(p+2) == L'?' &&
+      *(p+3) == L'\\') {
+    p += 4;
+  }
+
   /* Skip host part of an UNC path */
   if ((*p == L'\\' && *(p+1) == L'\\') ||
       (*p == L'/'  && *(p+1) == L'/' )) {
@@ -161,8 +176,7 @@ int zip_mkdirp(zip_char_t *path, int complete)  {
     while (*p && *p != L'/' && *p != L'\\') p++;
   }
 
-  /* Skip drive letter if any. This _may_ be after an initial
-   *  \\?\, which we have just skipped as an UNC path */
+  /* Skip drive letter if any. */
   if (*(p+1) == L':' && (*(p+2) == L'/' || (*(p+2)) == L'\\')) {
     p += 3;
   }
@@ -219,14 +233,8 @@ int zip_set_mtime(const zip_char_t *filename, time_t mtime) {
   st.wMilliseconds = (WORD) 1000*(mtime - ftimei);
   if (!SystemTimeToFileTime(&st, &modft)) return 1;
 
-  size_t len = wcslen(filename);
-  wchar_t* temp_filename = (wchar_t*) calloc(len + 5, sizeof(wchar_t));
-  wcscat(temp_filename, L"\\\\?\\");
-  wcscat(temp_filename, filename);
-
-  hFile = CreateFileW(temp_filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+  hFile = CreateFileW(filename, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
                       FILE_FLAG_BACKUP_SEMANTICS, NULL);
-  free(temp_filename);
 
   if (hFile == INVALID_HANDLE_VALUE) return 1;
   int res  = SetFileTime(hFile, NULL, NULL, &modft);
@@ -243,14 +251,6 @@ int zip_file_size(FILE *fh, mz_uint64 *size) {
 }
 
 FILE* zip_long_wfopen(const wchar_t *filename, const wchar_t *mode) {
-  wchar_t* temp_filename;
-  FILE* res;
-  size_t len = wcslen(filename);
-
-  temp_filename = (wchar_t*) calloc(len + 5, sizeof(wchar_t));
-  wcscat(temp_filename, L"\\\\?\\");
-  wcscat(temp_filename, filename);
-  res = _wfopen(temp_filename, mode);
-  free((void*) temp_filename);
+  FILE* res = _wfopen(filename, mode);
   return res;
 }
