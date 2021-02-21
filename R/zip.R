@@ -213,6 +213,7 @@ zip_list <- function(zipfile) {
   )
   Encoding(df$filename) <- "UTF-8"
   df$permissions <- as.octmode(res[[5]])
+  df$crc32 <- as.hexmode(res[[6]])
   df
 }
 
