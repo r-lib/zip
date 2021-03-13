@@ -4,7 +4,7 @@ test_that("can list a zip file", {
   dir.create(tmp <- tempfile())
   cat("first file", file = file.path(tmp, "file1"))
   cat("second file", file = file.path(tmp, "file2"))
-  
+
   zipfile <- tempfile(fileext = ".zip")
 
   expect_silent(
@@ -15,7 +15,7 @@ test_that("can list a zip file", {
   )
 
   expect_true(file.exists(zipfile))
-  
+
   list <- zip_list(zipfile)
   expect_equal(
     basename(list$filename),
@@ -27,4 +27,10 @@ test_that("can list a zip file", {
     c("filename", "compressed_size", "uncompressed_size", "timestamp",
       "permissions")
   )
+
+  list2 <- zip_list(zipfile, extra = TRUE)
+  expect_equal(list2[colnames(list)], list)
+  expect_equal(colnames(list2), c(colnames(list), "crc32", "offset"))
+  expect_equal(list2$offset[1], 0)
+  expect_equal(list2$crc32[1], as.hexmode(0))
 })

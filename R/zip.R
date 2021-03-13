@@ -195,15 +195,17 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 #' List Files in a 'zip' Archive
 #'
 #' @param zipfile Path to an existing ZIP file.
+#' @param extra Whether to return the crc32 and offset for each zip entry (default `FALSE`).
 #' @return A data frame with columns: `filename`, `compressed_size`,
-#'   `uncompressed_size`, `timestamp`, `permissions`.
+#'   `uncompressed_size`, `timestamp`, `permissions`. When `extra=TRUE` also
+#'   `crc32` and `offset`.
 #'
 #' @family zip/unzip functions
 #' @export
 
-zip_list <- function(zipfile) {
+zip_list <- function(zipfile, extra=FALSE) {
   zipfile <- enc2utf8(normalizePath(zipfile))
-  res <- .Call(c_R_zip_list, zipfile)
+  res <- .Call(c_R_zip_list, zipfile, extra)
   df <- data.frame(
     stringsAsFactors = FALSE,
     filename = res[[1]],
@@ -213,8 +215,10 @@ zip_list <- function(zipfile) {
   )
   Encoding(df$filename) <- "UTF-8"
   df$permissions <- as.octmode(res[[5]])
-  df$crc32 <- as.hexmode(res[[6]])
-  df$offset <- res[[7]]
+  if(extra){
+    df$crc32 <- as.hexmode(res[[6]])
+    df$offset <- res[[7]]
+  }
   df
 }
 
