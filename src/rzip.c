@@ -15,9 +15,8 @@
 #include "miniz.h"
 #include "zip.h"
 
-SEXP R_zip_list(SEXP zipfile, SEXP extra) {
+SEXP R_zip_list(SEXP zipfile) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
-  int cextra = LOGICAL(extra)[0];
   size_t num_files;
   unsigned int i;
   SEXP result = R_NilValue;
@@ -56,16 +55,14 @@ SEXP R_zip_list(SEXP zipfile, SEXP extra) {
   }
 
   num_files = mz_zip_reader_get_num_files(&zip_archive);
-  result = PROTECT(allocVector(VECSXP, cextra?7:5));
+  result = PROTECT(allocVector(VECSXP, 7));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP, num_files));
   SET_VECTOR_ELT(result, 1, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 2, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 3, allocVector(INTSXP, num_files));
   SET_VECTOR_ELT(result, 4, allocVector(INTSXP, num_files));
-  if(cextra) {
-    SET_VECTOR_ELT(result, 5, allocVector(INTSXP, num_files));
-    SET_VECTOR_ELT(result, 6, allocVector(REALSXP, num_files));
-  }
+  SET_VECTOR_ELT(result, 5, allocVector(INTSXP, num_files));
+  SET_VECTOR_ELT(result, 6, allocVector(REALSXP, num_files));
 
   for (i = 0; i < num_files; i++) {
     mz_zip_archive_file_stat file_stat;
@@ -79,10 +76,8 @@ SEXP R_zip_list(SEXP zipfile, SEXP extra) {
     INTEGER(VECTOR_ELT(result, 3))[i] = (int) file_stat.m_time;
     zip_get_permissions(&file_stat, &mode);
     INTEGER(VECTOR_ELT(result, 4))[i] = (int) mode;
-    if(cextra) {
-      INTEGER(VECTOR_ELT(result, 5))[i] = (int) file_stat.m_crc32;
-      REAL(VECTOR_ELT(result, 6))[i] = (double) file_stat.m_local_header_ofs;
-    }
+    INTEGER(VECTOR_ELT(result, 5))[i] = (int) file_stat.m_crc32;
+    REAL(VECTOR_ELT(result, 6))[i] = (double) file_stat.m_local_header_ofs;
   }
 
   fclose(fh);

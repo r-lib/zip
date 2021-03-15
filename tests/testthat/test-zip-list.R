@@ -25,12 +25,8 @@ test_that("can list a zip file", {
   expect_equal(
     colnames(list),
     c("filename", "compressed_size", "uncompressed_size", "timestamp",
-      "permissions")
+      "permissions", "crc32", "offset")
   )
-
-  list2 <- zip_list(zipfile, extra = TRUE)
-  expect_equal(list2[colnames(list)], list)
-  expect_equal(colnames(list2), c(colnames(list), "crc32", "offset"))
-  expect_equal(list2$offset[1], 0)
-  expect_equal(list2$crc32[1], as.hexmode(0))
+  expect_equal(list$offset[1], 0)
+  expect_equal(list$crc32[1], as.hexmode(0))
 })

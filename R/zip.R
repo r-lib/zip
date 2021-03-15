@@ -194,18 +194,20 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 
 #' List Files in a 'zip' Archive
 #'
+#' @details Note that `crc32` is formatted using `as.hexmode()`. `offset` refers
+#'   to the start of the local zip header for each entry. Following the approach
+#'   of `seek()` it is stored as a `numeric` rather than an `integer` vector and
+#'   can therefore represent values up to `2^53-1` (9 PB).
 #' @param zipfile Path to an existing ZIP file.
-#' @param extra Whether to return the crc32 and offset for each zip entry (default `FALSE`).
 #' @return A data frame with columns: `filename`, `compressed_size`,
-#'   `uncompressed_size`, `timestamp`, `permissions`. When `extra=TRUE` also
-#'   `crc32` and `offset`.
+#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32` and `offset`.
 #'
 #' @family zip/unzip functions
 #' @export
 
-zip_list <- function(zipfile, extra=FALSE) {
+zip_list <- function(zipfile) {
   zipfile <- enc2utf8(normalizePath(zipfile))
-  res <- .Call(c_R_zip_list, zipfile, extra)
+  res <- .Call(c_R_zip_list, zipfile)
   df <- data.frame(
     stringsAsFactors = FALSE,
     filename = res[[1]],
@@ -215,10 +217,8 @@ zip_list <- function(zipfile, extra=FALSE) {
   )
   Encoding(df$filename) <- "UTF-8"
   df$permissions <- as.octmode(res[[5]])
-  if(extra){
-    df$crc32 <- as.hexmode(res[[6]])
-    df$offset <- res[[7]]
-  }
+  df$crc32 <- as.hexmode(res[[6]])
+  df$offset <- res[[7]]
   df
 }
 
