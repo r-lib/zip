@@ -1,9 +1,9 @@
 # development version
 
-* Header values (of version made by and external attributes) are now correctly
-  read and written on big-endian systems (#68).
+* Header values (of version made by and external attributes) are now
+  correctly read and written on big-endian systems (#68).
 
-* `zip_list()` now also returns `crc32` and `offset` (#74, thanks @jefferis).
+* `zip_list()` now also returns `crc32` and `offset` (#74, @jefferis).
 
 # 2.1.1
 
