@@ -11,7 +11,7 @@ zip_list(zipfile)
 }
 \value{
 A data frame with columns: \code{filename}, \code{compressed_size},
-\code{uncompressed_size}, \code{timestamp}, \code{permissions}.
+\code{uncompressed_size}, \code{timestamp}, \code{permissions}, \code{crc32} and \code{offset}.
 }
 \description{
 List Files in a 'zip' Archive
@@ -19,5 +19,11 @@ List Files in a 'zip' Archive
 \if{html}{\out{<link rel="stylesheet" type="text/css" href="../doc/assets/extra.css">}}
 
 \if{html}{\out{<script src="../doc/assets/rd.js"></script>}}
+}
+\details{
+Note that \code{crc32} is formatted using \code{as.hexmode()}. \code{offset} refers
+to the start of the local zip header for each entry. Following the approach
+of \code{seek()} it is stored as a \code{numeric} rather than an \code{integer} vector and
+can therefore represent values up to \code{2^53-1} (9 PB).
 }
 \concept{zip/unzip functions}

@@ -67,7 +67,7 @@ reading docx files, so set this to \code{FALSE} for creating them.}
 archive.}
 
 \item{mode}{Selects how files and directories are stored in
-the archice. It can be \code{"mirror"} or \code{"cherrypick"}.
+the archice. It can be \code{"mirror"} or \code{"cherry-pick"}.
 See "Relative Paths" below for details.}
 }
 \value{

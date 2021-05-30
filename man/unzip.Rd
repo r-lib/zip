@@ -54,5 +54,5 @@ zip_list(zipfile)
 ## Extract
 tmp2 <- tempfile()
 unzip(zipfile, exdir = tmp2)
-dir(tmp2)
+dir(tmp2, recursive = TRUE)
 }
