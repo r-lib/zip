@@ -163,6 +163,7 @@ test_that("zip file with spaces", {
 })
 
 test_that("zip file with non-ASCII characters", {
+  skip_on_cran()
   local_temp_dir()
   zipfile <- enc2native("x-\u00fa\u00e1\u00f6\u0151\u00e9.zip")
   dir.create("dir1")
