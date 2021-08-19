@@ -43,7 +43,7 @@ SEXP R_zip_list(SEXP zipfile) {
 
   if (fh == NULL) {
     if (uzipfile) free(uzipfile);
-    error("Cannot open zip file `%s`");
+    error("Cannot open zip file `%s`", czipfile);
   }
 
   R_ZIP_FSEEK64(fh, 0, SEEK_END);
