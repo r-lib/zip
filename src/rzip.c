@@ -36,8 +36,8 @@ SEXP R_zip_list(SEXP zipfile) {
   }
   fh = zip_long_wfopen(uzipfile, L"rb");
 #else
-  #define R_ZIP_FSEEK64 fseeko64
-  #define R_ZIP_FTELL64 ftello64
+  #define R_ZIP_FSEEK64 fseek
+  #define R_ZIP_FTELL64 ftell
   fh = fopen(czipfile, "rb");
 #endif
 
