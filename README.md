@@ -13,7 +13,7 @@ status](https://github.com/r-lib/zip/workflows/R-CMD-check/badge.svg)](https://g
 [![CRAN RStudio mirror
 downloads](https://cranlogs.r-pkg.org/badges/zip)](https://www.r-pkg.org/pkg/zip)
 [![Coverage
-Status](https://img.shields.io/codecov/c/github/r-lib/zip/master.svg)](https://codecov.io/github/r-lib/zip?branch=master)
+Status](https://img.shields.io/codecov/c/github/r-lib/zip/main.svg)](https://codecov.io/github/r-lib/zip?branch=main)
 <!-- badges: end -->
 
 ## Installation
