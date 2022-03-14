@@ -17,8 +17,10 @@ Roxygen: list(
 Config/testthat/edition: 3
 Suggests:
     covr,
+    fs,
     processx,
     R6,
     testthat,
+    tibble,
     withr
 Encoding: UTF-8
