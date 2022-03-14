@@ -131,3 +131,39 @@ need_packages <- function(pkgs, what = "this function") {
     }
   }
 }
+
+as_tibble <- function(x) {
+  if (getOption("zip.use_tibble", TRUE) && is_installed("tibble")) {
+    tibble::as_tibble(x)
+  } else {
+    x
+  }
+}
+
+as_fs_path <- function(x) {
+  if (getOption("zip.use_fs", TRUE) && is_installed("tibble")) {
+    fs::as_fs_path(x)
+  } else {
+    x
+  }
+}
+
+as_fs_perms <- function(x) {
+  if (getOption("zip.use_fs", TRUE) && is_installed("tibble")) {
+    fs::as_fs_perms(x)
+  } else {
+    x
+  }
+}
+
+as_fs_bytes <- function(x) {
+  if (getOption("zip.use_fs", TRUE) && is_installed("tibble")) {
+    fs::as_fs_bytes(x)
+  } else {
+    x
+  }
+}
+
+is_installed <- function(pkg) {
+  isTRUE(requireNamespace(pkg, quietly = TRUE))
+}
