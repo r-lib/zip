@@ -210,16 +210,16 @@ zip_list <- function(zipfile) {
   res <- .Call(c_R_zip_list, zipfile)
   df <- data.frame(
     stringsAsFactors = FALSE,
-    filename = res[[1]],
-    compressed_size = res[[2]],
-    uncompressed_size = res[[3]],
+    filename = as_fs_path(res[[1]]),
+    compressed_size = as_fs_bytes(res[[2]]),
+    uncompressed_size = as_fs_bytes(res[[3]]),
     timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
   )
   Encoding(df$filename) <- "UTF-8"
-  df$permissions <- as.octmode(res[[5]])
+  df$permissions <- as_fs_perms(as.octmode(res[[5]]))
   df$crc32 <- as.hexmode(res[[6]])
   df$offset <- res[[7]]
-  df
+  as_tibble(df)
 }
 
 #' Uncompress 'zip' Archives
