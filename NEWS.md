@@ -1,5 +1,6 @@
+# zip 2.2.1
 
-# development version
+* No user visible changes.
 
 # 2.2.0
 
