@@ -26,10 +26,6 @@ exist, it will be created.}
 \description{
 \code{unzip()} always restores modification times of the extracted files and
 directories.
-
-\if{html}{\out{<link rel="stylesheet" type="text/css" href="../doc/assets/extra.css">}}
-
-\if{html}{\out{<script src="../doc/assets/rd.js"></script>}}
 }
 \section{Permissions}{
 

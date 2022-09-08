@@ -1,5 +1,4 @@
 
-#' @theme assets/extra.css assets/rd.js
 #' @useDynLib zip, .registration = TRUE, .fixes = "c_"
 NULL
 

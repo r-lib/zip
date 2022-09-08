@@ -9,7 +9,7 @@ Description: Cross-Platform 'zip' Compression Library. A replacement
 License: MIT + file LICENSE
 URL: https://github.com/r-lib/zip#readme
 BugReports: https://github.com/r-lib/zip/issues
-RoxygenNote: 7.1.1.9001
+RoxygenNote: 7.2.1.9000
 Roxygen: list(
     packages = "roxygenlabs",
     markdown = TRUE,
