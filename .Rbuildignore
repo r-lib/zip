@@ -20,3 +20,4 @@
 ^r-packages$
 ^LICENSE\.md$
 ^\.github$
+^codecov\.yml$
