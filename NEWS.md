@@ -1,5 +1,7 @@
 # zip (development version)
 
+* Fix segmentation fault when zip file can't be created (#91, @zeehio)
+
 # zip 2.2.2
 
 * No user visible changes.
