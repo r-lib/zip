@@ -176,6 +176,7 @@ zipr_append <- function(zipfile, files, recurse = TRUE,
 
 zip_internal <- function(zipfile, files, recurse, compression_level,
                          append, root, keep_path, include_directories) {
+  zipfile <- force(zipfile)
   oldwd <- setwd(root)
   on.exit(setwd(oldwd), add = TRUE)
 
