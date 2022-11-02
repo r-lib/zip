@@ -295,6 +295,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
   } else {
     zfh = zip_open_utf8(czipfile, ZIP__WRITE, &filenameu16,
                         &filenameu16_len);
+    if (zfh == NULL) ZIP_ERROR(R_ZIP_EOPENWRITE, czipfile);
     if (!mz_zip_writer_init_cfile(&zip_archive, zfh, 0)) {
       if (filenameu16) free(filenameu16);
       fclose(zfh);
