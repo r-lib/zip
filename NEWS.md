@@ -1,8 +1,11 @@
 # zip (development version)
 
 * Fix segmentation fault when zip file can't be created (#91, @zeehio)
+
 * Fix delayed evaluation error on zipfile when `zip::zip()`
   is used (#92, @zeehio)
+
+* New `inflate()` function to uncompress a GZIP stream.
 
 # zip 2.2.2
 

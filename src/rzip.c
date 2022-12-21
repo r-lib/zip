@@ -25,9 +25,9 @@ SEXP R_zip_list(SEXP zipfile) {
 
   FILE *fh;
   wchar_t *uzipfile = NULL;
-  size_t uzipfile_len = 0;
 
 #ifdef _WIN32
+  size_t uzipfile_len = 0;
   if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
     if (uzipfile) free(uzipfile);
     error("Cannot convert zip file name to unicode");
@@ -245,4 +245,61 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
 #endif
 
   return R_NilValue;
+}
+
+SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size) {
+  int status;
+  mz_stream stream;
+  size_t cpos = INTEGER(pos)[0] - 1;
+  size_t csize = INTEGER(size)[0];
+  const char *nms[] = { "output", "bytes_read", "bytes_written", "" };
+  SEXP result = PROTECT(Rf_mkNamed(VECSXP, nms));
+  SEXP output = PROTECT(allocVector(RAWSXP, csize));
+  memset(&stream, 0, sizeof(stream));
+  stream.next_in = RAW(buffer) + cpos;
+  stream.avail_in = LENGTH(buffer) - cpos;
+  stream.next_out = RAW(output);
+  stream.avail_out = csize;
+
+  status = mz_inflateInit2(&stream, MZ_DEFAULT_WINDOW_BITS);
+
+  if (status != 0) {
+    error("Failed to initiaalize decompressor");
+  }
+
+  for (;;) {
+    if (!stream.avail_in) {
+      mz_inflateEnd(&stream);
+      error("Unexpected end of data");
+    }
+
+    status = mz_inflate(&stream, MZ_FINISH);
+
+    if (status == MZ_STREAM_END) {
+      mz_inflateEnd(&stream);
+      break;
+    } else if (status == MZ_STREAM_ERROR) {
+      mz_inflateEnd(&stream);
+      error("Input stream is bogus");
+    } else if (status == MZ_DATA_ERROR) {
+      mz_inflateEnd(&stream);
+      error("Input data is ivalid");
+    }
+
+    if (!stream.avail_out) {
+      mz_inflateEnd(&stream);
+      error("Output buffer too small");
+    }
+
+    if (status != MZ_OK) {
+      mz_inflateEnd(&stream);
+      error("Failed to inflate data");
+    }
+  }
+
+  SET_VECTOR_ELT(result, 0, output);
+  SET_VECTOR_ELT(result, 1, Rf_ScalarInteger(stream.total_in));
+  SET_VECTOR_ELT(result, 2, Rf_ScalarInteger(stream.total_out));
+  UNPROTECT(2);
+  return result;
 }
