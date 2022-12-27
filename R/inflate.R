@@ -55,3 +55,16 @@ inflate <- function(buffer, pos = 1L, size) {
   )
   .Call(c_R_inflate, buffer, as.integer(pos), as.integer(size))
 }
+
+#' @export
+
+deflate <- function(buffer, level = 6L, pos = 1L, size) {
+  stopifnot(
+    is.raw(buffer),
+    is_count(level),
+    level >= 1L && level <= 9L,
+    is_count(pos),
+    is_count(size)
+  )
+  .Call(c_R_deflate, buffer, as.integer(level), as.integer(pos), as.integer(size))
+}

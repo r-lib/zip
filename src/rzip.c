@@ -303,3 +303,68 @@ SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size) {
   UNPROTECT(2);
   return result;
 }
+
+SEXP R_deflate(SEXP buffer, SEXP level, SEXP pos, SEXP size) {
+  int clevel = INTEGER(level)[0];
+  int status;
+  mz_stream stream;
+  size_t cpos = INTEGER(pos)[0] - 1;
+  size_t csize = INTEGER(size)[0];
+  const char *nms[] = { "output", "bytes_read", "bytes_written", "" };
+  SEXP result = PROTECT(Rf_mkNamed(VECSXP, nms));
+  SEXP output = PROTECT(allocVector(RAWSXP, csize));
+  memset(&stream, 0, sizeof(stream));
+  stream.next_in = RAW(buffer) + cpos;
+  stream.avail_in = LENGTH(buffer) - cpos;
+  stream.next_out = RAW(output);
+  stream.avail_out = csize;
+
+  status = mz_deflateInit2(
+    &stream,
+    clevel,
+    MZ_DEFLATED,
+    MZ_DEFAULT_WINDOW_BITS,
+    /* mem_level= */ 9,
+    MZ_DEFAULT_STRATEGY
+  );
+
+  if (status != 0) {
+    error("Failed to initiaalize compressor");
+  }
+
+  for (;;) {
+    if (!stream.avail_in) {
+      mz_deflateEnd(&stream);
+      error("Unexpected end of data");
+    }
+
+    status = mz_deflate(&stream, MZ_FINISH);
+
+    if (status == MZ_STREAM_END) {
+      mz_deflateEnd(&stream);
+      break;
+    } else if (status == MZ_STREAM_ERROR) {
+      mz_deflateEnd(&stream);
+      error("Input stream is bogus");
+    } else if (status == MZ_DATA_ERROR) {
+      mz_deflateEnd(&stream);
+      error("Input data is ivalid");
+    }
+
+    if (!stream.avail_out) {
+      mz_deflateEnd(&stream);
+      error("Output buffer too small");
+    }
+
+    if (status != MZ_OK) {
+      mz_deflateEnd(&stream);
+      error("Failed to deflate data");
+    }
+  }
+
+  SET_VECTOR_ELT(result, 0, output);
+  SET_VECTOR_ELT(result, 1, Rf_ScalarInteger(stream.total_in));
+  SET_VECTOR_ELT(result, 2, Rf_ScalarInteger(stream.total_out));
+  UNPROTECT(2);
+  return result;
+}
