@@ -28,7 +28,7 @@ test_that("inflate", {
   if (l10n_info()[["UTF-8"]]) {
     variant <- "utf8"
   } else {
-    out <- iconv(out, "UTF-8", "ASCII", sub = "Unicode")
+    out <- iconv(out, "UTF-8", "ASCII", sub = "byte")
     variant <- "ascii"
   }
   expect_snapshot(
