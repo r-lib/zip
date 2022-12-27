@@ -23,8 +23,17 @@ test_that("inflate", {
   ))
 
   data <- inflate(data_gz, 1L, 245L)
+  out <- rawToChar(data$output)
+  Encoding(out) <- "UTF-8"
+  if (l10n_info()[["UTF-8"]]) {
+    variant <- "utf8"
+  } else {
+    out <- iconv(out, "UTF-8", "ASCII//TRANSLIT")
+    variant <- "ascii"
+  }
   expect_snapshot(
-    cat(rawToChar(data$output))
+    cat(out),
+    variant = variant
   )
 
   # buffer too short
