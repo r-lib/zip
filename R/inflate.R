@@ -32,6 +32,7 @@ inflate <- function(buffer, pos = 1L, size = NULL) {
 #' Compress a raw GZIP stream
 #'
 #' @param buffer Raw vector, containing the data to compress.
+#' @param level Compression level, integer between 1 (fatest) and 9 (best).
 #' @param pos Start position of data to compress in `buffer`.
 #' @param size Compressed size estimate, or `NULL`. If not given, or too
 #'   small, the output buffer is resized multiple times.

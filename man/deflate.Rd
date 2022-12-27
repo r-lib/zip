@@ -9,6 +9,8 @@ deflate(buffer, level = 6L, pos = 1L, size = NULL)
 \arguments{
 \item{buffer}{Raw vector, containing the data to compress.}
 
+\item{level}{Compression level, integer between 1 (fatest) and 9 (best).}
+
 \item{pos}{Start position of data to compress in \code{buffer}.}
 
 \item{size}{Compressed size estimate, or \code{NULL}. If not given, or too
