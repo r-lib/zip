@@ -15,9 +15,8 @@
 #'
 #' @export
 #' @examples
-#'
 #' data_gz <- deflate(charToRaw("Hello world!"))
-#' inflate(data_gz)
+#' inflate(data_gz$output)
 
 inflate <- function(buffer, pos = 1L, size = NULL) {
   stopifnot(
@@ -45,6 +44,9 @@ inflate <- function(buffer, pos = 1L, size = NULL) {
 #'   but it does not tell you the number of bytes read from the input.
 #'
 #' @export
+#' @examples
+#' data_gz <- deflate(charToRaw("Hello world!"))
+#' inflate(data_gz$output)
 
 deflate <- function(buffer, level = 6L, pos = 1L, size = NULL) {
   stopifnot(

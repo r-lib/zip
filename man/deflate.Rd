@@ -27,6 +27,10 @@ Named list with three entries:
 \description{
 Compress a raw GZIP stream
 }
+\examples{
+data_gz <- deflate(charToRaw("Hello world!"))
+inflate(data_gz$output)
+}
 \seealso{
 \code{\link[base:memCompress]{base::memCompress()}} does the same with \code{type = "gzip"},
 but it does not tell you the number of bytes read from the input.
