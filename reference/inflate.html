@@ -53,7 +53,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">inflate</span><span class="op">(</span><span class="va">buffer</span>, pos <span class="op">=</span> <span class="fl">1L</span>, <span class="va">size</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">inflate</span><span class="op">(</span><span class="va">buffer</span>, pos <span class="op">=</span> <span class="fl">1L</span>, size <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -67,19 +67,17 @@
 
 
 <dt>size</dt>
-<dd><p>Uncompressed size estimate. This currently has to be
-bigger than the real uncompressed size, otherwise the function fails.
-(This will be probably improved later.)</p></dd>
+<dd><p>Uncompressed size estimate, or <code>NULL</code>. If not given, or too
+small, the output buffer is resized multiple times.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
     
 
-<p>Named list with three entries:</p><ul><li><p><code>output</code>: raw vector of length <code>size</code>, the uncompressed data,</p></li>
+<p>Named list with three entries:</p><ul><li><p><code>output</code>: raw vector, the uncompressed data,</p></li>
 <li><p><code>bytes_read</code>: number of bytes used from <code>buffer</code>,</p></li>
-<li><p><code>bytes_written</code>: number of bytes written to the output buffer.
-(This is less than or equal to <code>size</code>.)</p></li>
+<li><p><code>bytes_written</code>: number of bytes written to the output buffer.</p></li>
 </ul></div>
     <div id="see-also">
     <h2>See also</h2>
@@ -89,59 +87,17 @@ but it does not tell you the number of bytes read from the input.</p></div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A somewhat artificial example, create compressed data first</span></span></span>
-<span class="r-in"><span><span class="va">data_gz</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/raw.html" class="external-link">as.raw</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fl">0x78</span>, <span class="fl">0x9c</span>, <span class="fl">0xa5</span>, <span class="fl">0xcc</span>, <span class="fl">0x4d</span>, <span class="fl">0x0a</span>, <span class="fl">0x83</span>, <span class="fl">0x30</span>, <span class="fl">0x10</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x40</span>, <span class="fl">0xe1</span>, <span class="fl">0x7d</span>, <span class="fl">0x4e</span>, <span class="fl">0x31</span>, <span class="fl">0xfb</span>, <span class="fl">0x82</span>, <span class="fl">0x4c</span>, <span class="fl">0xfe</span>, <span class="fl">0x34</span>, <span class="fl">0x42</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x29</span>, <span class="fl">0xa5</span>, <span class="fl">0x2e</span>, <span class="fl">0xba</span>, <span class="fl">0xef</span>, <span class="fl">0x0d</span>, <span class="fl">0xc6</span>, <span class="fl">0x64</span>, <span class="fl">0x62</span>, <span class="fl">0x85</span>, <span class="fl">0x46</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x25</span>, <span class="fl">0xc6</span>, <span class="fl">0xde</span>, <span class="fl">0xc7</span>, <span class="fl">0xb3</span>, <span class="fl">0x78</span>, <span class="fl">0xb1</span>, <span class="fl">0x7a</span>, <span class="fl">0x87</span>, <span class="fl">0xae</span>, <span class="fl">0x1e</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x7c</span>, <span class="fl">0x8b</span>, <span class="fl">0x57</span>, <span class="fl">0x32</span>, <span class="fl">0x33</span>, <span class="fl">0x38</span>, <span class="fl">0x6e</span>, <span class="fl">0x94</span>, <span class="fl">0x37</span>, <span class="fl">0x9e</span>, <span class="fl">0x6a</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0xe7</span>, <span class="fl">0xb1</span>, <span class="fl">0xb5</span>, <span class="fl">0x68</span>, <span class="fl">0x75</span>, <span class="fl">0xaf</span>, <span class="fl">0xbc</span>, <span class="fl">0x0a</span>, <span class="fl">0x3d</span>, <span class="fl">0xa3</span>, <span class="fl">0x8b</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x8d</span>, <span class="fl">0x6a</span>, <span class="fl">0x49</span>, <span class="fl">0x6b</span>, <span class="fl">0xa4</span>, <span class="fl">0x28</span>, <span class="fl">0x23</span>, <span class="fl">0x93</span>, <span class="fl">0x58</span>, <span class="fl">0x28</span>, <span class="fl">0xf3</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x54</span>, <span class="fl">0x20</span>, <span class="fl">0x44</span>, <span class="fl">0x43</span>, <span class="fl">0xca</span>, <span class="fl">0xd5</span>, <span class="fl">0xc6</span>, <span class="fl">0xb4</span>, <span class="fl">0x88</span>, <span class="fl">0x36</span>, <span class="fl">0x78</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0xe4</span>, <span class="fl">0x68</span>, <span class="fl">0x0d</span>, <span class="fl">0x73</span>, <span class="fl">0x4d</span>, <span class="fl">0xec</span>, <span class="fl">0x90</span>, <span class="fl">0x42</span>, <span class="fl">0xb4</span>, <span class="fl">0x51</span>, <span class="fl">0x9a</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x80</span>, <span class="fl">0xec</span>, <span class="fl">0x83</span>, <span class="fl">0x16</span>, <span class="fl">0xb4</span>, <span class="fl">0x95</span>, <span class="fl">0xf7</span>, <span class="fl">0x9c</span>, <span class="fl">0xe1</span>, <span class="fl">0x79</span>, <span class="fl">0xec</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0xfd</span>, <span class="fl">0x99</span>, <span class="fl">0x6e</span>, <span class="fl">0x3d</span>, <span class="fl">0xf6</span>, <span class="fl">0x1c</span>, <span class="fl">0x46</span>, <span class="fl">0xb8</span>, <span class="fl">0xfa</span>, <span class="fl">0x95</span>, <span class="fl">0xce</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x56</span>, <span class="fl">0x03</span>, <span class="fl">0x9d</span>, <span class="fl">0x7a</span>, <span class="fl">0x1f</span>, <span class="fl">0x12</span>, <span class="fl">0x8d</span>, <span class="fl">0x9f</span>, <span class="fl">0xca</span>, <span class="fl">0xcf</span>, <span class="fl">0xe9</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x06</span>, <span class="fl">0xb2</span>, <span class="fl">0x6e</span>, <span class="fl">0xa4</span>, <span class="fl">0x6a</span>, <span class="fl">0x14</span>, <span class="fl">0x6a</span>, <span class="fl">0x84</span>, <span class="fl">0x0b</span>, <span class="fl">0x4a</span>, <span class="fl">0x44</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x71</span>, <span class="fl">0x6a</span>, <span class="fl">0x1a</span>, <span class="fl">0x4b</span>, <span class="fl">0xe1</span>, <span class="fl">0x3f</span>, <span class="fl">0x16</span>, <span class="fl">0xe2</span>, <span class="fl">0xb1</span>, <span class="fl">0xa5</span>, <span class="fl">0x05</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0xca</span>, <span class="fl">0x0c</span>, <span class="fl">0xaf</span>, <span class="fl">0x0e</span>, <span class="fl">0xbe</span>, <span class="fl">0x9c</span>, <span class="fl">0xd7</span>, <span class="fl">0x71</span>, <span class="fl">0x9e</span>, <span class="fl">0xc4</span>, <span class="fl">0x0f</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x2b</span>, <span class="fl">0x30</span>, <span class="fl">0x4d</span>, <span class="fl">0xe3</span>, <span class="fl">0xa0</span>, <span class="fl">0x31</span>, <span class="fl">0x78</span>, <span class="fl">0x9c</span>, <span class="fl">0x33</span>, <span class="fl">0x34</span>, <span class="fl">0x30</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x30</span>, <span class="fl">0x33</span>, <span class="fl">0x31</span>, <span class="fl">0x51</span>, <span class="fl">0xd0</span>, <span class="fl">0x0b</span>, <span class="fl">0x4a</span>, <span class="fl">0x2a</span>, <span class="fl">0xcd</span>, <span class="fl">0xcc</span>, <span class="fl">0x49</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0xc9</span>, <span class="fl">0x4c</span>, <span class="fl">0xcf</span>, <span class="fl">0xcb</span>, <span class="fl">0x2f</span>, <span class="fl">0x4a</span>, <span class="fl">0x65</span>, <span class="fl">0xa8</span>, <span class="fl">0x48</span>, <span class="fl">0xae</span>, <span class="fl">0x29</span>,</span></span>
-<span class="r-in"><span>    <span class="fl">0x77</span>, <span class="fl">0xfc</span>, <span class="fl">0x78</span>, <span class="fl">0x21</span></span></span>
-<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Happen to know that this is 245 bytes uncompressed</span></span></span>
-<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">inflate</span><span class="op">(</span><span class="va">data_gz</span>, <span class="fl">1L</span>, <span class="fl">245L</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">data</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">data_gz</span> <span class="op">&lt;-</span> <span class="fu"><a href="deflate.html">deflate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html" class="external-link">charToRaw</a></span><span class="op">(</span><span class="st">"Hello world!"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">inflate</span><span class="op">(</span><span class="va">data_gz</span><span class="op">$</span><span class="va">output</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $output</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   [1] 74 72 65 65 20 38 65 37 32 63 34 63 61 36 38 63 30 39 35 30 35 33 62 32 63</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [26] 32 64 62 65 30 38 66 37 32 39 61 33 33 30 61 66 31 66 65 61 0a 70 61 72 65</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [51] 6e 74 20 64 66 34 61 32 38 36 34 34 39 30 30 35 64 63 30 65 66 35 34 65 65</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [76] 36 61 65 38 30 61 64 66 35 66 31 34 64 30 65 63 64 33 0a 61 75 74 68 6f 72</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [101] 20 47 c3 a1 62 6f 72 20 43 73 c3 a1 72 64 69 20 3c 63 73 61 72 64 69 2e 67</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [126] 61 62 6f 72 40 67 6d 61 69 6c 2e 63 6f 6d 3e 20 31 36 37 31 32 37 32 30 33</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [151] 30 20 2b 30 31 30 30 0a 63 6f 6d 6d 69 74 74 65 72 20 47 c3 a1 62 6f 72 20</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [176] 43 73 c3 a1 72 64 69 20 3c 63 73 61 72 64 69 2e 67 61 62 6f 72 40 67 6d 61</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [201] 69 6c 2e 63 6f 6d 3e 20 31 36 37 31 32 37 32 30 33 30 20 2b 30 31 30 30 0a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [226] 0a 42 75 6d 70 20 74 6f 20 52 43 20 76 65 72 73 69 6f 6e 0a</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 48 65 6c 6c 6f 20 77 6f 72 6c 64 21</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $bytes_read</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 167</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 24</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $bytes_written</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 245</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 12</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># This is actually a git commit object</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html" class="external-link">rawToChar</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">output</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> tree 8e72c4ca68c095053b2c2dbe08f729a330af1fea</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> parent df4a286449005dc0ef54ee6ae80adf5f14d0ecd3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> author Gábor Csárdi &lt;csardi.gabor@gmail.com&gt; 1671272030 +0100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> committer Gábor Csárdi &lt;csardi.gabor@gmail.com&gt; 1671272030 +0100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bump to RC version</span>
 </code></pre></div>
     </div>
   </div>
