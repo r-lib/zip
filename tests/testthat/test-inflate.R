@@ -36,8 +36,8 @@ test_that("inflate", {
     variant = variant
   )
 
-  # buffer too short
-  expect_error(inflate(data_gz, 1L, 200L))
+  # buffer is resized
+  expect_silent(inflate(data_gz, 1L, 200L))
 
   # bad format
   expect_error(inflate(data_gz, 10L, 300L))

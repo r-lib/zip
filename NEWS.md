@@ -5,7 +5,8 @@
 * Fix delayed evaluation error on zipfile when `zip::zip()`
   is used (#92, @zeehio)
 
-* New `inflate()` function to uncompress a GZIP stream.
+* New `deflate()` and `inflate()` functions to compress and uncompress
+  GZIP streams in memory.
 
 # zip 2.2.2
 
