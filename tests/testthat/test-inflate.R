@@ -42,3 +42,17 @@ test_that("inflate", {
   # bad format
   expect_error(inflate(data_gz, 10L, 300L))
 })
+
+test_that("deflate", {
+  data_gz <- deflate(charToRaw("Hello world!"))
+  data <- inflate(data_gz$output)
+  expect_equal(data_gz$bytes_written, data$bytes_read)
+  expect_equal(data_gz$bytes_read, data$bytes_written)
+  expect_snapshot(rawToChar(data$output))
+
+  # output is resized
+  data_gz_2 <- deflate(charToRaw("Hello world!"), size = 5)
+  expect_equal(data_gz, data_gz_2)
+  data_gz_3 <- deflate(charToRaw("Hello world!"), size = 500)
+  expect_equal(data_gz, data_gz_3)
+})
