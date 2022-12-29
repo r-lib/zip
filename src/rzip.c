@@ -25,11 +25,11 @@ SEXP R_zip_list(SEXP zipfile) {
 
   FILE *fh;
   wchar_t *uzipfile = NULL;
-  size_t uzipfile_len = 0;
 
 #ifdef _WIN32
   #define R_ZIP_FSEEK64 _fseeki64
   #define R_ZIP_FTELL64 _ftelli64
+  size_t uzipfile_len = 0;
   if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
     if (uzipfile) free(uzipfile);
     error("Cannot convert zip file name to unicode");
@@ -249,4 +249,159 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
 #endif
 
   return R_NilValue;
+}
+
+SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size) {
+  int status;
+  mz_stream stream;
+  size_t cpos = INTEGER(pos)[0] - 1;
+  size_t csize;
+  const char *nms[] = { "output", "bytes_read", "bytes_written", "" };
+  SEXP result = PROTECT(Rf_mkNamed(VECSXP, nms));
+  if (isNull(size)) {
+    csize = (LENGTH(buffer) - cpos) * 2;
+  } else {
+    csize = INTEGER(size)[0];
+  }
+  if (csize < 10) csize = 10;
+  SEXP output = PROTECT(allocVector(RAWSXP, csize));
+
+  memset(&stream, 0, sizeof(stream));
+  stream.next_in = RAW(buffer) + cpos;
+  stream.avail_in = LENGTH(buffer) - cpos;
+  stream.next_out = RAW(output);
+  stream.avail_out = csize;
+
+  status = mz_inflateInit2(&stream, MZ_DEFAULT_WINDOW_BITS);
+
+  if (status != 0) {
+    error("Failed to initiaalize decompressor");
+  }
+
+  for (;;) {
+    status = mz_inflate(&stream, MZ_SYNC_FLUSH);
+
+    if (status == MZ_STREAM_END) {
+      mz_inflateEnd(&stream);
+      break;
+    } else if (status == MZ_STREAM_ERROR) {
+      mz_inflateEnd(&stream);
+      error("Input stream is bogus");
+    } else if (status == MZ_DATA_ERROR) {
+      mz_deflateEnd(&stream);
+      error("Input data is ivalid");
+    }
+
+    if ((status == MZ_OK || status == MZ_BUF_ERROR) &&
+        stream.avail_out == 0) {
+      int newsize = csize * 1.5;
+      output = Rf_lengthgets(output, newsize);
+      UNPROTECT(1);
+      PROTECT(output);
+      stream.next_out = RAW(output) + csize;
+      stream.avail_out = newsize - csize;
+      csize = newsize;
+      continue;
+    }
+
+    if (status == MZ_OK) {
+      mz_inflateEnd(&stream);
+      break;
+    }
+
+    if (status != MZ_OK) {
+      mz_inflateEnd(&stream);
+      error("Failed to inflate data");
+    }
+  }
+
+  output = PROTECT(Rf_lengthgets(output, stream.total_out));
+
+  SET_VECTOR_ELT(result, 0, output);
+  SET_VECTOR_ELT(result, 1, Rf_ScalarInteger(stream.total_in));
+  SET_VECTOR_ELT(result, 2, Rf_ScalarInteger(stream.total_out));
+  UNPROTECT(3);
+  return result;
+}
+
+SEXP R_deflate(SEXP buffer, SEXP level, SEXP pos, SEXP size) {
+  int clevel = INTEGER(level)[0];
+  int status;
+  mz_stream stream;
+  size_t cpos = INTEGER(pos)[0] - 1;
+  size_t csize;
+  const char *nms[] = { "output", "bytes_read", "bytes_written", "" };
+  SEXP result = PROTECT(Rf_mkNamed(VECSXP, nms));
+
+  if (isNull(size)) {
+    csize = (LENGTH(buffer) - cpos);
+  } else {
+    csize = INTEGER(size)[0];
+  }
+  if (csize < 10) csize = 10;
+  SEXP output = PROTECT(allocVector(RAWSXP, csize));
+
+  memset(&stream, 0, sizeof(stream));
+  stream.next_in = RAW(buffer) + cpos;
+  stream.avail_in = LENGTH(buffer) - cpos;
+  stream.next_out = RAW(output);
+  stream.avail_out = csize;
+
+  status = mz_deflateInit2(
+    &stream,
+    clevel,
+    MZ_DEFLATED,
+    MZ_DEFAULT_WINDOW_BITS,
+    /* mem_level= */ 9,
+    MZ_DEFAULT_STRATEGY
+  );
+
+  if (status != 0) {
+    error("Failed to initiaalize compressor");
+  }
+
+  for (;;) {
+    status = mz_deflate(&stream, MZ_SYNC_FLUSH);
+
+    if (status == MZ_STREAM_END) {
+      mz_deflateEnd(&stream);
+      break;
+    } else if (status == MZ_STREAM_ERROR) {
+      mz_deflateEnd(&stream);
+      error("Input stream is bogus");
+    } else if (status == MZ_DATA_ERROR) {
+      mz_deflateEnd(&stream);
+      error("Input data is ivalid");
+    }
+
+    if ((status == MZ_OK || status == MZ_BUF_ERROR) &&
+        stream.avail_out == 0) {
+      int newsize = csize * 1.5;
+      output = Rf_lengthgets(output, newsize);
+      UNPROTECT(1);
+      PROTECT(output);
+      stream.next_out = RAW(output) + csize;
+      stream.avail_out = newsize - csize;
+      csize = newsize;
+      continue;
+    }
+
+    if (status == MZ_OK) {
+      mz_deflateEnd(&stream);
+      break;
+    }
+
+    if (status != MZ_OK) {
+      mz_deflateEnd(&stream);
+      error("Failed to deflate data");
+    }
+  }
+
+  output = PROTECT(Rf_lengthgets(output, stream.total_out));
+
+  SET_VECTOR_ELT(result, 0, output);
+  SET_VECTOR_ELT(result, 1, Rf_ScalarInteger(stream.total_in));
+  SET_VECTOR_ELT(result, 2, Rf_ScalarInteger(stream.total_out));
+  UNPROTECT(3);
+  return result;
 }

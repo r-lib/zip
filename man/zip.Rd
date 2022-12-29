@@ -67,7 +67,7 @@ reading docx files, so set this to \code{FALSE} for creating them.}
 archive.}
 
 \item{mode}{Selects how files and directories are stored in
-the archice. It can be \code{"mirror"} or \code{"cherry-pick"}.
+the archive. It can be \code{"mirror"} or \code{"cherry-pick"}.
 See "Relative Paths" below for details.}
 }
 \value{
@@ -75,10 +75,6 @@ The name of the created zip file, invisibly.
 }
 \description{
 \code{zip()} creates a new zip archive file.
-
-\if{html}{\out{<link rel="stylesheet" type="text/css" href="../doc/assets/extra.css">}}
-
-\if{html}{\out{<script src="../doc/assets/rd.js"></script>}}
 }
 \details{
 \code{zip_append()} appends compressed files to an existing 'zip' file.
@@ -100,7 +96,9 @@ non-portable archives: some zip tools do not handle zip archives that
 contain absolute file names, or file names that start with \verb{../} or
 \verb{./}. zip warns you if this should happen.)
 
-E.g. consider the following directory structure:\preformatted{.
+E.g. consider the following directory structure:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{.
 |-- foo
 |   |-- bar
 |   |   |-- file1
@@ -108,20 +106,22 @@ E.g. consider the following directory structure:\preformatted{.
 |   `-- bar2
 `-- foo2
     `-- file3
-}
+}\if{html}{\out{</div>}}
 
 Assuming the current working directory is \code{foo}, the following zip
-entries are created by \code{zip}:\if{html}{\out{<div class="r">}}\preformatted{setwd("foo")
+entries are created by \code{zip}:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{setwd("foo")
 zip::zip("../test.zip", c("bar/file1", "bar2", "../foo2"))
-}\if{html}{\out{</div>}}\preformatted{## Warning in warn_for_dotdot(data$key): Some paths reference parent directory,
-## creating non-portable zip file
-}\if{html}{\out{<div class="r">}}\preformatted{zip_list("../test.zip")[, "filename", drop = FALSE]
-}\if{html}{\out{</div>}}\preformatted{##        filename
-## 1     bar/file1
-## 2         bar2/
-## 3      ../foo2/
-## 4 ../foo2/file3
-}
+#> Warning in warn_for_dotdot(data$key): Some paths reference parent directory,
+#> creating non-portable zip file
+zip_list("../test.zip")[, "filename", drop = FALSE]
+#>        filename
+#> 1     bar/file1
+#> 2         bar2/
+#> 3      ../foo2/
+#> 4 ../foo2/file3
+}\if{html}{\out{</div>}}
 }
 
 \subsection{Cherry picking mode}{
@@ -132,18 +132,20 @@ want to select a subset of files and directories, possibly from
 different paths and put all of the in the archive, at the top
 level.
 
-Here is an example with the same directory structure as above:\if{html}{\out{<div class="r">}}\preformatted{zip::zip(
+Here is an example with the same directory structure as above:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{zip::zip(
   "../test2.zip",
   c("bar/file1", "bar2", "../foo2"),
   mode = "cherry-pick"
 )
 zip_list("../test2.zip")[, "filename", drop = FALSE]
-}\if{html}{\out{</div>}}\preformatted{##     filename
-## 1      file1
-## 2      bar2/
-## 3      foo2/
-## 4 foo2/file3
-}
+#>     filename
+#> 1      file1
+#> 2      bar2/
+#> 3      foo2/
+#> 4 foo2/file3
+}\if{html}{\out{</div>}}
 }
 
 }
@@ -167,7 +169,7 @@ to \code{zip()} and \code{zipr_append()} with a different default for the
 }
 }
 \examples{
-## Some files to zip up. We will run all this in the R sesion's
+## Some files to zip up. We will run all this in the R session's
 ## temporary directory, to avoid messing up the user's workspace.
 dir.create(tmp <- tempfile())
 dir.create(file.path(tmp, "mydir"))

@@ -1,5 +1,4 @@
 
-#' @theme assets/extra.css assets/rd.js
 #' @useDynLib zip, .registration = TRUE, .fixes = "c_"
 NULL
 
@@ -106,13 +105,13 @@ NULL
 #' @param root Change to this working directory before creating the
 #'   archive.
 #' @param mode Selects how files and directories are stored in
-#'   the archice. It can be `"mirror"` or `"cherry-pick"`.
+#'   the archive. It can be `"mirror"` or `"cherry-pick"`.
 #'   See "Relative Paths" below for details.
 #' @return The name of the created zip file, invisibly.
 #'
 #' @export
 #' @examples
-#' ## Some files to zip up. We will run all this in the R sesion's
+#' ## Some files to zip up. We will run all this in the R session's
 #' ## temporary directory, to avoid messing up the user's workspace.
 #' dir.create(tmp <- tempfile())
 #' dir.create(file.path(tmp, "mydir"))
@@ -177,6 +176,7 @@ zipr_append <- function(zipfile, files, recurse = TRUE,
 
 zip_internal <- function(zipfile, files, recurse, compression_level,
                          append, root, keep_path, include_directories) {
+  zipfile <- force(zipfile)
   oldwd <- setwd(root)
   on.exit(setwd(oldwd), add = TRUE)
 
