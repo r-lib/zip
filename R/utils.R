@@ -131,3 +131,11 @@ need_packages <- function(pkgs, what = "this function") {
     }
   }
 }
+
+enc2c <- function(x) {
+  if (.Platform$OS.type == "windows") {
+    enc2utf8(x)
+  } else {
+    enc2native(x)
+  }
+}

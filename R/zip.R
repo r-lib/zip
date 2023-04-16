@@ -189,8 +189,8 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
   data <- get_zip_data(files, recurse, keep_path, include_directories)
   warn_for_dotdot(data$key)
 
-  .Call(c_R_zip_zip, enc2utf8(zipfile), enc2utf8(data$key),
-        enc2utf8(data$file), data$dir, file.info(data$file)$mtime,
+  .Call(c_R_zip_zip, enc2c(zipfile), enc2c(data$key),
+        enc2c(data$file), data$dir, file.info(data$file)$mtime,
         as.integer(compression_level), append)
 
   invisible(zipfile)
@@ -210,7 +210,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
 #' @export
 
 zip_list <- function(zipfile) {
-  zipfile <- enc2utf8(normalizePath(zipfile))
+  zipfile <- enc2c(normalizePath(zipfile))
   res <- .Call(c_R_zip_list, zipfile)
   df <- data.frame(
     stringsAsFactors = FALSE,
@@ -277,10 +277,10 @@ unzip <- function(zipfile, files = NULL, overwrite = TRUE,
     is_flag(junkpaths),
     is_string(exdir))
 
-  zipfile <- enc2utf8(normalizePath(zipfile))
-  if (!is.null(files)) files <- enc2utf8(files)
+  zipfile <- enc2c(normalizePath(zipfile))
+  if (!is.null(files)) files <- enc2c(files)
   mkdirp(exdir)
-  exdir <- enc2utf8(normalizePath(exdir))
+  exdir <- enc2c(normalizePath(exdir))
 
   .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir)
 

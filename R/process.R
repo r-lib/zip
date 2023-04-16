@@ -80,7 +80,7 @@ unzip_process <- function() {
             is_string(zipfile),
             is_string(exdir))
           exdir <- normalizePath(exdir, winslash = "\\", mustWork = FALSE)
-          super$initialize(unzip_exe(), enc2utf8(c(zipfile, exdir)),
+          super$initialize(unzip_exe(), enc2c(c(zipfile, exdir)),
                            poll_connection = poll_connection,
                            stderr = stderr, ...)
         }
@@ -153,7 +153,7 @@ zip_process <- function() {
           private$params_file <- tempfile()
           write_zip_params(files, recurse, include_directories,
                            private$params_file)
-          super$initialize(zip_exe(), enc2utf8(c(zipfile, private$params_file)),
+          super$initialize(zip_exe(), enc2c(c(zipfile, private$params_file)),
                            poll_connection = poll_connection,
                            stderr = stderr, ...)
         }
