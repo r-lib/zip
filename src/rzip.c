@@ -95,7 +95,7 @@ SEXP R_zip_list(SEXP zipfile) {
 
 void R_zip_error_handler(const char *reason, const char *file,
 			 int line, int zip_errno, int eno) {
-  error("zip error: `%s` in file `%s:%i`", reason, file, line);
+  error("zip error: %s in file %s:%i", reason, file, line);
 }
 
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
