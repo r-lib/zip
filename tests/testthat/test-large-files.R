@@ -1,4 +1,30 @@
 
+test_that("large zip files", {
+  skip_on_cran()
+
+  tmp <- tempfile("zip-test-large-")
+  tmpzip <- tempfile("zip-test-large-", fileext = ".zip")
+  on.exit(unlink(c(tmp, tmpzip)), add = TRUE)
+
+  oc <- file(tmp, open = "wb")
+  for (i in 1:6) {
+    data <- runif(1e7)
+    writeBin(data, oc)
+  }
+  close(oc)
+
+  zip::zip(tmpzip, tmp, compression_level = 0, mode = "cherry-pick")
+  zip::zip_list(tmpzip)
+
+  unlink(tmp)
+  zip::unzip(tmpzip, exdir = dirname(tmp))
+
+  expect_true(file.exists(tmp))
+
+  expect_true(file.size(tmp) > 450000000)
+  expect_true(file.size(tmpzip) > 450000000)
+})
+
 test_that("can compress / uncompress large files", {
 
   skip_on_cran()
