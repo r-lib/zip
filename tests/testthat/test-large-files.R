@@ -2,26 +2,29 @@
 test_that("large zip files", {
   skip_on_cran()
 
-  tmp <- tempfile("zip-test-large-")
+  dir.create(tmp <- tempfile("zip-test-large-"))
   tmpzip <- tempfile("zip-test-large-", fileext = ".zip")
-  on.exit(unlink(c(tmp, tmpzip)), add = TRUE)
+  on.exit(unlink(c(tmp, tmpzip), recursive = TRUE), add = TRUE)
 
-  oc <- file(tmp, open = "wb")
+  oc <- file(file.path(tmp, "file1"), open = "wb")
   for (i in 1:6) {
     data <- runif(1e7)
     writeBin(data, oc)
   }
   close(oc)
+  writeLines("hi there", file.path(tmp, "file2"))
 
   zip::zip(tmpzip, tmp, compression_level = 0, mode = "cherry-pick")
   zip::zip_list(tmpzip)
 
-  unlink(tmp)
+  unlink(tmp, recursive = TRUE)
   zip::unzip(tmpzip, exdir = dirname(tmp))
 
   expect_true(file.exists(tmp))
+  expect_true(file.exists(file.path(tmp, "file1")))
+  expect_true(file.exists(file.path(tmp, "file2")))
 
-  expect_true(file.size(tmp) > 450000000)
+  expect_true(file.size(file.path(tmp, "file1")) > 450000000)
   expect_true(file.size(tmpzip) > 450000000)
 })
 
