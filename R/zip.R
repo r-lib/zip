@@ -93,7 +93,8 @@ NULL
 #' `mode` argument.
 #'
 #' @param zipfile The zip file to create. If the file exists, `zip`
-#'   overwrites it, but `zip_append` appends to it.
+#'   overwrites it, but `zip_append` appends to it. If it is a directory
+#'   an error is thrown.
 #' @param files List of file to add to the archive. See details below
 #'    about absolute and relative path names.
 #' @param recurse Whether to add the contents of directories recursively.
@@ -177,6 +178,9 @@ zipr_append <- function(zipfile, files, recurse = TRUE,
 zip_internal <- function(zipfile, files, recurse, compression_level,
                          append, root, keep_path, include_directories) {
   zipfile <- force(zipfile)
+  if (dir.exists(zipfile)) {
+    stop("zip file at `", zipfile, "` already exists and it is a directory")
+  }
   oldwd <- setwd(root)
   on.exit(setwd(oldwd), add = TRUE)
 

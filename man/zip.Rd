@@ -49,7 +49,8 @@ zipr_append(
 }
 \arguments{
 \item{zipfile}{The zip file to create. If the file exists, \code{zip}
-overwrites it, but \code{zip_append} appends to it.}
+overwrites it, but \code{zip_append} appends to it. If it is a directory
+an error is thrown.}
 
 \item{files}{List of file to add to the archive. See details below
 about absolute and relative path names.}
