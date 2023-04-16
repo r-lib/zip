@@ -359,7 +359,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
         if (filenameu16) free(filenameu16);
         int err = mz_zip_get_last_error(&zip_archive);
         mz_zip_writer_end(&zip_archive);
-        if (err == 25) {
+        if (err == 25 && key[0] == '/') {
           ZIP_ERROR(R_ZIP_EADDFILE_IF, key, czipfile);
         } else {
           ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
