@@ -2,7 +2,10 @@
 test_that("can compress / uncompress large files", {
 
   skip_on_cran()
-  if (! nzchar(Sys.getenv("ZIP_LONG_TESTS"))) skip("takes long")
+  if (! nzchar(Sys.getenv("ZIP_LONG_TESTS")) &&
+      ! nzchar(Sys.getenv("CI"))) {
+    skip("takes long")
+  }
 
   ## Note: it will be also skipped if we cannot find a reasonable quick
   ## way to create a 5GB file.
@@ -33,7 +36,10 @@ test_that("can compress / uncompress large files", {
 test_that("can compress / uncompress many files", {
 
   skip_on_cran()
-  if (! nzchar(Sys.getenv("ZIP_LONG_TESTS"))) skip("takes long")
+  if (! nzchar(Sys.getenv("ZIP_LONG_TESTS")) &&
+      ! nzchar(Sys.getenv("CI"))) {
+    skip("takes long")
+  }
 
   tmp <- test_temp_dir()
   for (i in 1:70000) cat("file", i, file = file.path(tmp, i))
