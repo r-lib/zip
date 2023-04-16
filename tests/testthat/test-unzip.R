@@ -166,3 +166,21 @@ test_that("permissions as kept on Unix", {
   check_perm("0755", basename(tmp), "dir", "file2")
   check_perm("0777", basename(tmp), "dir", "file3")
 })
+
+test_that("umask if no permissions", {
+  msdos <- test_path("fixtures/msdos.zip")
+  dir.create(tmp <- tempfile("zip-test-noperm"))
+  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+
+  zip::unzip(msdos, exdir = tmp)
+  dsc <- file.path(tmp, "DESCRIPT")
+  expect_true(file.exists(dsc))
+
+  if (.Platform$OS.type == "unix") {
+    mode <- file.mode(dsc)
+    umask <- system("umask", intern = TRUE)
+    expect_equal(as.integer(format(mode)) + as.integer(umask), 666)
+  } else {
+    expect_true(true)
+  }
+})

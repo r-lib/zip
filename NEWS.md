@@ -1,5 +1,8 @@
 # zip (development version)
 
+* `zip::unzip()` now uses the process's umask value (see `umask(2)`) on Unix
+  if the zip file does not contain Unix permissions (#67).
+
 * Fix segmentation fault when zip file can't be created (#91, @zeehio)
 
 * Fix delayed evaluation error on zipfile when `zip::zip()`

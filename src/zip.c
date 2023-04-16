@@ -113,6 +113,7 @@ int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
      we ignore them. */
   if (version_by != 3 || external_attr == 0) {
     *mode = stat->m_is_directory ? 0700 : 0600;
+    return 1;
   } else {
     *mode = (mode_t) external_attr & 0777;
   }
@@ -222,12 +223,17 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     }
 #ifndef _WIN32
     mode_t mode;
-    zip_get_permissions(&file_stat, &mode);
-    if (chmod(buffer, mode)) {
-      mz_zip_reader_end(&zip_archive);
-      if (buffer) free(buffer);
-      fclose(zfh);
-      ZIP_ERROR(R_ZIP_ESETPERM, key, czipfile);
+    /* returns 1 if there are no permissions. In that case we don't call
+       call chmod() and leave the permissions as they are, the file was
+       created with the default umask. */
+    int ret = zip_get_permissions(&file_stat, &mode);
+    if (!ret) {
+      if (chmod(buffer, mode)) {
+        mz_zip_reader_end(&zip_archive);
+        if (buffer) free(buffer);
+        fclose(zfh);
+        ZIP_ERROR(R_ZIP_ESETPERM, key, czipfile);
+      }
     }
 #endif
   }
