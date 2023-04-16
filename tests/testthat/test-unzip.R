@@ -181,6 +181,6 @@ test_that("umask if no permissions", {
     umask <- system("umask", intern = TRUE)
     expect_equal(as.integer(format(mode)) + as.integer(umask), 666)
   } else {
-    expect_true(true)
+    expect_true(TRUE)
   }
 })
