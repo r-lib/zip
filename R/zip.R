@@ -177,7 +177,7 @@ zipr_append <- function(zipfile, files, recurse = TRUE,
 
 zip_internal <- function(zipfile, files, recurse, compression_level,
                          append, root, keep_path, include_directories) {
-  zipfile <- force(zipfile)
+  zipfile <- path.expand(zipfile)
   if (dir.exists(zipfile)) {
     stop("zip file at `", zipfile, "` already exists and it is a directory")
   }
