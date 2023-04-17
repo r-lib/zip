@@ -280,6 +280,7 @@ unzip <- function(zipfile, files = NULL, overwrite = TRUE,
 
   zipfile <- enc2c(normalizePath(zipfile))
   if (!is.null(files)) files <- enc2c(files)
+  exdir <- sub("/+$", "", exdir)
   mkdirp(exdir)
   exdir <- enc2c(normalizePath(exdir))
 
