@@ -1,5 +1,7 @@
 # zip (development version)
 
+* zip now handles large zip files on Windows (#65, #75, #79, @weshinsley).
+
 * zip now behaves better for absolute paths in mirror mode, and when the
   paths contain a `:` character (#69, #70).
 
