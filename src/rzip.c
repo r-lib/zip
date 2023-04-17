@@ -27,6 +27,8 @@ SEXP R_zip_list(SEXP zipfile) {
   wchar_t *uzipfile = NULL;
 
 #ifdef _WIN32
+  #define R_ZIP_FSEEK64 _fseeki64
+  #define R_ZIP_FTELL64 _ftelli64
   size_t uzipfile_len = 0;
   if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
     if (uzipfile) free(uzipfile);
@@ -34,17 +36,19 @@ SEXP R_zip_list(SEXP zipfile) {
   }
   fh = zip_long_wfopen(uzipfile, L"rb");
 #else
+  #define R_ZIP_FSEEK64 fseek
+  #define R_ZIP_FTELL64 ftell
   fh = fopen(czipfile, "rb");
 #endif
 
   if (fh == NULL) {
     if (uzipfile) free(uzipfile);
-    error("Cannot open zip file `%s`");
+    error("Cannot open zip file `%s`", czipfile);
   }
 
-  fseek(fh, 0, SEEK_END);
-  size_t file_size = ftell(fh);
-  fseek(fh, 0, SEEK_SET);
+  R_ZIP_FSEEK64(fh, 0, SEEK_END);
+  mz_uint64 file_size = R_ZIP_FTELL64(fh);
+  R_ZIP_FSEEK64(fh, 0, SEEK_SET);
 
   memset(&zip_archive, 0, sizeof(zip_archive));
   status = mz_zip_reader_init_cfile(&zip_archive, fh, file_size, 0);
