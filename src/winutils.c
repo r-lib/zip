@@ -89,6 +89,8 @@ int zip_str_file_path(const char *cexdir, const char *key,
   if (cjunkpaths) {
     char *base = strrchr(key, '/');
     if (base) key = base;
+  } else if (key[0] == '/') {
+    key = key + 1;
   }
 
   len1 = MultiByteToWideChar(

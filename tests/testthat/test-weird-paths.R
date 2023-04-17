@@ -49,3 +49,17 @@ test_that("backslash is an error", {
   writeLines("boo", file.path(tmp, "real\\bad"))
   expect_error(zip(tmpzip, tmp, mode = "cherry-pick"))
 })
+
+test_that("extracting absolute path", {
+  abs <- test_path("fixtures", "abs.zip")
+  dir.create(tmp <- tempfile("zip-test-xabs-"))
+  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+
+  unzip(abs, exdir = tmp)
+  expect_true(file.exists(file.path(tmp, "tmp")))
+  expect_true(file.exists(file.path(tmp, "tmp", "boo")))
+  expect_equal(
+    readLines(file.path(tmp, "tmp", "boo")),
+    "boo"
+  )
+})
