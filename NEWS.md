@@ -1,5 +1,8 @@
 # zip (development version)
 
+* zip now behaves better for absolute paths in mirror mode, and when the
+  paths contain a `:` character (#69, #70).
+
 * `zip::unzip()` now uses the process's umask value (see `umask(2)`) on Unix
   if the zip file does not contain Unix permissions (#67).
 

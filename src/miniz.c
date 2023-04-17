@@ -5978,7 +5978,10 @@ static mz_bool mz_zip_writer_validate_archive_name(const char *pArchive_name)
 
     while (*pArchive_name)
     {
-        if ((*pArchive_name == '\\') || (*pArchive_name == ':'))
+        /* We warn for colons in keys, but allow them in zip files.
+           macos command line `zip` adds files with colons without any
+           problems. */
+        if ((*pArchive_name == '\\')/* || (*pArchive_name == ':')*/)
             return MZ_FALSE;
 
         pArchive_name++;

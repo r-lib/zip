@@ -44,6 +44,22 @@ warn_for_dotdot <- function(files) {
   files
 }
 
+warn_for_colon <- function(files) {
+  if (any(grepl(":", files, fixed = TRUE))) {
+    warning("Some paths include a `:` character, this might cause issues ",
+            "when uncompressing the zip file on Windows.")
+  }
+}
+
+fix_absolute_paths <- function(files) {
+  if (any(substr(files, 1, 1) == "/")) {
+    warning("Dropping leading `/` from paths, all paths in a zip file ",
+            "must be relative paths.")
+    files <- sub("^/", "", files)
+  }
+  files
+}
+
 get_zip_data_nopath <- function(files, recurse) {
   if (recurse && length(files)) {
     data <- do.call(rbind, lapply(files, get_zip_data_nopath_recursive))

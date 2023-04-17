@@ -182,6 +182,9 @@ write_zip_params <- function(files, recurse, include_directories, outfile) {
   writeBin(con = con, as.integer(nrow(data)))
 
   ## Key, first total length
+  data$key <-   data$key <- fix_absolute_paths(data$key)
+  warn_for_colon(data$key)
+  warn_for_dotdot(data$key)
   writeBin(con = con, as.integer(sum(nchar(data$key, type = "bytes") + 1L)))
   writeBin(con = con, data$key)
 

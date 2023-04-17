@@ -22,11 +22,6 @@ NULL
 #' zip changes the current directory to `root` before creating the
 #' archive.
 #'
-#' (Absolute paths are also kept. Note that this might result
-#' non-portable archives: some zip tools do not handle zip archives that
-#' contain absolute file names, or file names that start with `../` or
-#' `./`. zip warns you if this should happen.)
-#'
 #' E.g. consider the following directory structure:
 #'
 #' ```{r echo = FALSE, comment = ""}
@@ -53,6 +48,10 @@ NULL
 #' zip_list("../test.zip")[, "filename", drop = FALSE]
 #' setwd(oldwd)
 #' ```
+#'
+#' Note that zip refuses to store files with absolute paths, and chops
+#' off the leading `/` character from these file names. This is because
+#' only relative paths are allowed in zip files.
 #'
 #' ### Cherry picking mode
 #'
@@ -187,6 +186,8 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
   if (any(! file.exists(files))) stop("Some files do not exist")
 
   data <- get_zip_data(files, recurse, keep_path, include_directories)
+  data$key <- fix_absolute_paths(data$key)
+  warn_for_colon(data$key)
   warn_for_dotdot(data$key)
 
   .Call(c_R_zip_zip, enc2c(zipfile), enc2c(data$key),

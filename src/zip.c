@@ -40,8 +40,7 @@ static const char *zip_error_strings[] = {
       "Cannot set permission on file `%s` in archive `%s`",
   /*15 R_ZIP_ECREATE      */ "Could not create zip archive `%s`",
   /*16 R_ZIP_EOPENX       */ "Cannot extract file `%s`",
-  /*17 R_ZIP_FILESIZE     */ "Cannot determine size of `%s`",
-  /*18 R_ZIP_EADDFILE_IF  */ "Invalid file name `%s`, cannot add to archive `%s`. Maybe you need `mode = \"cherry-pick\"` for absolute files?",
+  /*17 R_ZIP_FILESIZE     */ "Cannot determine size of `%s`"
 };
 
 static zip_error_handler_t *zip_error_handler = 0;
@@ -357,13 +356,8 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
       fclose(fh);
       if (!ret) {
         if (filenameu16) free(filenameu16);
-        int err = mz_zip_get_last_error(&zip_archive);
         mz_zip_writer_end(&zip_archive);
-        if (err == 25 && key[0] == '/') {
-          ZIP_ERROR(R_ZIP_EADDFILE_IF, key, czipfile);
-        } else {
-          ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
-        }
+        ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
     }
 
