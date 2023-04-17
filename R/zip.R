@@ -75,6 +75,11 @@ NULL
 #' setwd(oldwd)
 #' ```
 #'
+#' From zip version 2.3.0, `"."` has a special meaning in the `files`
+#' argument: it will include the files (and possibly directories) within
+#' the current working directory, but **not** the working directory itself.
+#' Note that this only applies to cherry picking mode.
+#'
 #' ## Permissions:
 #'
 #' `zip()` (and `zip_append()`, etc.) add the permissions of

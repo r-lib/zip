@@ -61,6 +61,9 @@ fix_absolute_paths <- function(files) {
 }
 
 get_zip_data_nopath <- function(files, recurse) {
+  if ("." %in% files) {
+    files <- c(setdiff(files, "."), dir(all.files=TRUE, no.. = TRUE))
+  }
   if (recurse && length(files)) {
     data <- do.call(rbind, lapply(files, get_zip_data_nopath_recursive))
     dup <- duplicated(data$files)
@@ -109,6 +112,9 @@ get_zip_data_path_recursive <- function(x) {
 }
 
 get_zip_data_nopath_recursive <- function(x) {
+  if ("." %in% x) {
+    x <- c(setdiff(x, "."), dir(all.files=TRUE, no.. = TRUE))
+  }
   x <- normalizePath(x)
   wd <- getwd()
   on.exit(setwd(wd))

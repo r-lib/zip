@@ -29,10 +29,7 @@ test_that("get_zip_data", {
 
   expect_equal(
     withr::with_dir(tmp, get_zip_data_nopath_recursive(".")),
-    df(c(paste0(basename(tmp), "/"), file.path(basename(tmp), "foobar")),
-       normalizePath(c(tmp, foobar)),
-       c(TRUE, FALSE)
-       )
+    df("foobar", normalizePath(foobar), FALSE)
   )
   withr::with_dir(tmp,
     expect_equal(get_zip_data_nopath_recursive("."), get_zip_data_nopath(".", TRUE))
