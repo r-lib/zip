@@ -156,10 +156,6 @@ exactly as it is on the disk. The current working directory will
 be the root of the archive, and the paths will be fully kept.
 zip changes the current directory to <code>root</code> before creating the
 archive.</p>
-<p>(Absolute paths are also kept. Note that this might result
-non-portable archives: some zip tools do not handle zip archives that
-contain absolute file names, or file names that start with <code>../</code> or
-<code>./</code>. zip warns you if this should happen.)</p>
 <p>E.g. consider the following directory structure:</p>
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>.</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="sc">|--</span> foo</span>
@@ -181,6 +177,9 @@ entries are created by <code>zip</code>:</p>
 <span><span class="co">#&gt; 2         bar2/</span></span>
 <span><span class="co">#&gt; 3      ../foo2/</span></span>
 <span><span class="co">#&gt; 4 ../foo2/file3</span></span></code></pre><p></p></div>
+<p>Note that zip refuses to store files with absolute paths, and chops
+off the leading <code>/</code> character from these file names. This is because
+only relative paths are allowed in zip files.</p>
 </div>
 
 <div class="section">
@@ -247,9 +246,9 @@ to <code>zip()</code> and <code>zipr_append()</code> with a different default fo
 <span class="r-in"><span><span class="co">## List contents</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="zip_list.html">zip_list</a></span><span class="op">(</span><span class="va">zipfile</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      filename compressed_size uncompressed_size           timestamp permissions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      mydir/               0                 0 2023-04-16 17:46:58         755</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 mydir/file1              15                10 2023-04-16 17:46:58         644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 mydir/file2              16                11 2023-04-16 17:46:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      mydir/               0                 0 2023-04-17 08:53:58         755</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 mydir/file1              15                10 2023-04-17 08:53:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 mydir/file2              16                11 2023-04-17 08:53:58         644</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      crc32 offset</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 00000000      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 00effe3a     36</span>
@@ -260,10 +259,10 @@ to <code>zip()</code> and <code>zipr_append()</code> with a different default fo
 <span class="r-in"><span><span class="fu">zip_append</span><span class="op">(</span><span class="va">zipfile</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"mydir"</span>, <span class="st">"file3"</span><span class="op">)</span>, root <span class="op">=</span> <span class="va">tmp</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="zip_list.html">zip_list</a></span><span class="op">(</span><span class="va">zipfile</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      filename compressed_size uncompressed_size           timestamp permissions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      mydir/               0                 0 2023-04-16 17:46:58         644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 mydir/file1              15                10 2023-04-16 17:46:58         644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 mydir/file2              16                11 2023-04-16 17:46:58         644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 mydir/file3              15                10 2023-04-16 17:46:58         600</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      mydir/               0                 0 2023-04-17 08:53:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 mydir/file1              15                10 2023-04-17 08:53:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 mydir/file2              16                11 2023-04-17 08:53:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 mydir/file3              15                10 2023-04-17 08:53:58         600</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      crc32 offset</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 00000000      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 00effe3a     36</span>
