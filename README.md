@@ -162,4 +162,4 @@ pollable.
 
 ## License
 
-CC0
+MIT
