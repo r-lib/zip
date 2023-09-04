@@ -85,4 +85,4 @@ on top of the `processx::process` class, so they are pollable.
 
 ## License
 
-CC0
+MIT
