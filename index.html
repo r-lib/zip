@@ -20,7 +20,7 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><script defer data-domain="r-lib.github.io/zip,all.tidyverse.org" src="https://plausible.io/js/plausible.js"></script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -30,7 +30,7 @@
     
     <a class="navbar-brand me-2" href="index.html">zip</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">2.3.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,17 +86,17 @@
 <div class="section level3">
 <h3 id="creating-zip-files">Creating ZIP files<a class="anchor" aria-label="anchor" href="#creating-zip-files"></a>
 </h3>
-<p><code><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip()</a></code> creates a new ZIP archive. (It overwrites the output file if it exists.) Simply supply all directories and files that you want to include in the archive.</p>
+<p><code><a href="reference/zip.html">zip()</a></code> creates a new ZIP archive. (It overwrites the output file if it exists.) Simply supply all directories and files that you want to include in the archive.</p>
 <p>It makes sense to change to the top-level directory of the files before archiving them, so that the files are stored using a relative path name.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip</a></span><span class="op">(</span><span class="st">"sources.zip"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"src"</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/zip.html">zip</a></span><span class="op">(</span><span class="st">"sources.zip"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"src"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.info</a></span><span class="op">(</span><span class="st">"sources.zip"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               size isdir mode               mtime               ctime</span></span>
 <span><span class="co">#&gt; sources.zip 580179 FALSE  644 2023-04-17 13:49:31 2023-04-17 13:49:31</span></span>
 <span><span class="co">#&gt;                           atime uid gid       uname grname</span></span>
 <span><span class="co">#&gt; sources.zip 2023-04-17 13:49:31 501  20 gaborcsardi  staff</span></span></code></pre></div>
 <p>Directories are added recursively by default.</p>
-<p><code><a href="reference/zip.html">zip_append()</a></code> is similar to <code><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip()</a></code>, but it appends files to an existing ZIP archive.</p>
+<p><code><a href="reference/zip.html">zip_append()</a></code> is similar to <code><a href="reference/zip.html">zip()</a></code>, but it appends files to an existing ZIP archive.</p>
 </div>
 <div class="section level3">
 <h3 id="listing-zip-files">Listing ZIP files<a class="anchor" aria-label="anchor" href="#listing-zip-files"></a>
@@ -208,7 +208,7 @@
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
-<p>MIT</p>
+<p>CC0</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -240,19 +240,12 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Gábor Csárdi <br><small class="roles"> Author, maintainer </small>  </li>
+<li>Posit Software, PBC <br><small class="roles"> Copyright holder, funder </small>  </li>
 <li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
 
-<div class="dev-status">
-<h2 data-toc-skip>Dev status</h2>
-<ul class="list-unstyled">
-<li><a href="https://github.com/r-lib/zip/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/r-lib/zip/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="https://www.r-pkg.org/pkg/zip" class="external-link"><img src="https://www.r-pkg.org/badges/version/zip"></a></li>
-<li><a href="https://www.r-pkg.org/pkg/zip" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/zip" alt="CRAN RStudio mirror downloads"></a></li>
-<li><a href="https://app.codecov.io/gh/r-lib/zip?branch=main" class="external-link"><img src="https://codecov.io/gh/r-lib/zip/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
-</ul>
-</div>
+
 
   </aside>
 </div>
@@ -260,7 +253,7 @@
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Gábor Csárdi.</p>
+<p>Developed by Gábor Csárdi, Posit Software, PBC.</p>
 </div>
 
 <div class="pkgdown-footer-right">
