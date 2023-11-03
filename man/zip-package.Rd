@@ -24,6 +24,7 @@ Other contributors:
 \itemize{
   \item Kuba Podgórski [contributor]
   \item Rich Geldreich [contributor]
+  \item Posit Software, PBC [copyright holder, funder]
 }
 
 }
