@@ -17,8 +17,16 @@ coverage](https://codecov.io/gh/r-lib/zip/branch/main/graph/badge.svg)](https://
 
 ## Installation
 
+Stable version:
+
 ``` r
 install.packages("zip")
+```
+
+Development version:
+
+``` r
+pak::pak("r-lib/zip")
 ```
 
 ## Usage

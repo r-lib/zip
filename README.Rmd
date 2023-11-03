@@ -26,8 +26,16 @@ knitr::opts_chunk$set(
 
 ## Installation
 
+Stable version:
+
 ```{r eval = FALSE}
 install.packages("zip")
+```
+
+Development version:
+
+```{r eval = FALSE}
+pak::pak("r-lib/zip")
 ```
 
 ## Usage
