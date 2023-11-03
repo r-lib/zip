@@ -1,8 +1,11 @@
 Package: zip
 Title: Cross-Platform 'zip' Compression
 Version: 2.3.0
-Author: Gábor Csárdi, Kuba Podgórski, Rich Geldreich
-Maintainer: Gábor Csárdi <csardi.gabor@gmail.com>
+Authors@R: c(
+    person("Gábor", "Csárdi", , "csardi.gabor@gmail.com", role = c("aut", "cre")),
+    person("Kuba", "Podgórski",  role = "ctb"),
+    person("Rich", "Geldreich", role = "ctb")
+    )
 Description: Cross-Platform 'zip' Compression Library. A replacement
     for the 'zip' function, that does not require any additional
     external tools on any platform.
