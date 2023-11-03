@@ -3,24 +3,24 @@ Title: Cross-Platform 'zip' Compression
 Version: 2.3.0.9000
 Authors@R: c(
     person("Gábor", "Csárdi", , "csardi.gabor@gmail.com", role = c("aut", "cre")),
-    person("Kuba", "Podgórski",  role = "ctb"),
+    person("Kuba", "Podgórski", role = "ctb"),
     person("Rich", "Geldreich", role = "ctb"),
     person("Posit Software, PBC", role = c("cph", "fnd"))
-    )
-Description: Cross-Platform 'zip' Compression Library. A replacement
-    for the 'zip' function, that does not require any additional
-    external tools on any platform.
+  )
+Description: Cross-Platform 'zip' Compression Library. A replacement for
+    the 'zip' function, that does not require any additional external
+    tools on any platform.
 License: MIT + file LICENSE
 URL: https://github.com/r-lib/zip#readme, https://r-lib.github.io/zip/
 BugReports: https://github.com/r-lib/zip/issues
-RoxygenNote: 7.2.3
-Roxygen: list(markdown = TRUE)
-Config/testthat/edition: 3
 Suggests:
     covr,
     processx,
     R6,
     testthat,
     withr
-Encoding: UTF-8
 Config/Needs/website: tidyverse/tidytemplate
+Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
