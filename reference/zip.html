@@ -46,12 +46,12 @@
     </div>
 
     <div class="ref-description section level2">
-    <p><code>zip()</code> creates a new zip archive file.</p>
+    <p><code><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip()</a></code> creates a new zip archive file.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">zip</span><span class="op">(</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu"><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip</a></span><span class="op">(</span></span>
 <span>  <span class="va">zipfile</span>,</span>
 <span>  <span class="va">files</span>,</span>
 <span>  recurse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -143,7 +143,7 @@ See "Relative Paths" below for details.</p></dd>
 <h3 id="relative-paths">Relative paths<a class="anchor" aria-label="anchor" href="#relative-paths"></a></h3>
 
 
-<p><code>zip()</code> and <code>zip_append()</code> can run in two different modes: mirror
+<p><code><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip()</a></code> and <code>zip_append()</code> can run in two different modes: mirror
 mode and cherry picking mode. They handle the specified <code>files</code>
 differently.</p><div class="section">
 <h4 id="mirror-mode">Mirror mode<a class="anchor" aria-label="anchor" href="#mirror-mode"></a></h4>
@@ -166,7 +166,7 @@ archive.</p>
 <p>Assuming the current working directory is <code>foo</code>, the following zip
 entries are created by <code>zip</code>:</p>
 <p></p><div class="sourceCode r"><pre><code><span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="st">"foo"</span><span class="op">)</span></span>
-<span><span class="fu">zip</span><span class="fu">::</span><span class="fu"><a href="../reference/zip.html">zip</a></span><span class="op">(</span><span class="st">"../test.zip"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bar/file1"</span>, <span class="st">"bar2"</span>, <span class="st">"../foo2"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">zip</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip</a></span><span class="op">(</span><span class="st">"../test.zip"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bar/file1"</span>, <span class="st">"bar2"</span>, <span class="st">"../foo2"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in warn_for_dotdot(data$key): Some paths reference parent directory,</span></span>
 <span><span class="co">#&gt; creating non-portable zip file</span></span>
 <span><span class="fu"><a href="../reference/zip_list.html">zip_list</a></span><span class="op">(</span><span class="st">"../test.zip"</span><span class="op">)</span><span class="op">[</span>, <span class="st">"filename"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
@@ -190,7 +190,7 @@ want to select a subset of files and directories, possibly from
 different paths and put all of the in the archive, at the top
 level.</p>
 <p>Here is an example with the same directory structure as above:</p>
-<p></p><div class="sourceCode r"><pre><code><span><span class="fu">zip</span><span class="fu">::</span><span class="fu"><a href="../reference/zip.html">zip</a></span><span class="op">(</span></span>
+<p></p><div class="sourceCode r"><pre><code><span><span class="fu">zip</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip</a></span><span class="op">(</span></span>
 <span>  <span class="st">"../test2.zip"</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bar/file1"</span>, <span class="st">"bar2"</span>, <span class="st">"../foo2"</span><span class="op">)</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"cherry-pick"</span></span>
@@ -214,7 +214,7 @@ Note that this only applies to cherry picking mode.</p>
 <h3 id="permissions-">Permissions:<a class="anchor" aria-label="anchor" href="#permissions-"></a></h3>
 
 
-<p><code>zip()</code> (and <code>zip_append()</code>, etc.) add the permissions of
+<p><code><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip()</a></code> (and <code>zip_append()</code>, etc.) add the permissions of
 the archived files and directories to the ZIP archive, on Unix systems.
 Most zip and unzip implementations support these, so they will be
 recovered after extracting the archive.</p>
@@ -227,7 +227,7 @@ omitted, even on Unix.</p>
 
 
 <p>These function exist for historical reasons. They are identical
-to <code>zip()</code> and <code>zipr_append()</code> with a different default for the
+to <code><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip()</a></code> and <code>zipr_append()</code> with a different default for the
 <code>mode</code> argument.</p>
 </div>
 
@@ -243,14 +243,14 @@ to <code>zip()</code> and <code>zipr_append()</code> with a different default fo
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"second file"</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tmp</span>, <span class="st">"mydir"</span>, <span class="st">"file2"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">zipfile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".zip"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">zip</span><span class="fu">::</span><span class="fu">zip</span><span class="op">(</span><span class="va">zipfile</span>, <span class="st">"mydir"</span>, root <span class="op">=</span> <span class="va">tmp</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">zip</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip</a></span><span class="op">(</span><span class="va">zipfile</span>, <span class="st">"mydir"</span>, root <span class="op">=</span> <span class="va">tmp</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## List contents</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="zip_list.html">zip_list</a></span><span class="op">(</span><span class="va">zipfile</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      filename compressed_size uncompressed_size           timestamp permissions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      mydir/               0                 0 2023-11-03 16:02:18         755</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 mydir/file1              15                10 2023-11-03 16:02:18         644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 mydir/file2              16                11 2023-11-03 16:02:18         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      mydir/               0                 0 2023-11-03 16:09:58         755</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 mydir/file1              15                10 2023-11-03 16:09:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 mydir/file2              16                11 2023-11-03 16:09:58         644</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      crc32 offset</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 00000000      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 00effe3a     36</span>
@@ -261,10 +261,10 @@ to <code>zip()</code> and <code>zipr_append()</code> with a different default fo
 <span class="r-in"><span><span class="fu">zip_append</span><span class="op">(</span><span class="va">zipfile</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"mydir"</span>, <span class="st">"file3"</span><span class="op">)</span>, root <span class="op">=</span> <span class="va">tmp</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="zip_list.html">zip_list</a></span><span class="op">(</span><span class="va">zipfile</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      filename compressed_size uncompressed_size           timestamp permissions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      mydir/               0                 0 2023-11-03 16:02:18         644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 mydir/file1              15                10 2023-11-03 16:02:18         644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 mydir/file2              16                11 2023-11-03 16:02:18         644</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 mydir/file3              15                10 2023-11-03 16:02:18         600</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      mydir/               0                 0 2023-11-03 16:09:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 mydir/file1              15                10 2023-11-03 16:09:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 mydir/file2              16                11 2023-11-03 16:09:58         644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 mydir/file3              15                10 2023-11-03 16:09:58         600</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      crc32 offset</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 00000000      0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 00effe3a     36</span>

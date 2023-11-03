@@ -86,17 +86,17 @@
 <div class="section level3">
 <h3 id="creating-zip-files">Creating ZIP files<a class="anchor" aria-label="anchor" href="#creating-zip-files"></a>
 </h3>
-<p><code><a href="reference/zip.html">zip()</a></code> creates a new ZIP archive. (It overwrites the output file if it exists.) Simply supply all directories and files that you want to include in the archive.</p>
+<p><code><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip()</a></code> creates a new ZIP archive. (It overwrites the output file if it exists.) Simply supply all directories and files that you want to include in the archive.</p>
 <p>It makes sense to change to the top-level directory of the files before archiving them, so that the files are stored using a relative path name.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/zip.html">zip</a></span><span class="op">(</span><span class="st">"sources.zip"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"src"</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip</a></span><span class="op">(</span><span class="st">"sources.zip"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"src"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.info</a></span><span class="op">(</span><span class="st">"sources.zip"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               size isdir mode               mtime               ctime</span></span>
 <span><span class="co">#&gt; sources.zip 580179 FALSE  644 2023-04-17 13:49:31 2023-04-17 13:49:31</span></span>
 <span><span class="co">#&gt;                           atime uid gid       uname grname</span></span>
 <span><span class="co">#&gt; sources.zip 2023-04-17 13:49:31 501  20 gaborcsardi  staff</span></span></code></pre></div>
 <p>Directories are added recursively by default.</p>
-<p><code><a href="reference/zip.html">zip_append()</a></code> is similar to <code><a href="reference/zip.html">zip()</a></code>, but it appends files to an existing ZIP archive.</p>
+<p><code><a href="reference/zip.html">zip_append()</a></code> is similar to <code><a href="https://r-lib.github.io/zip/reference/zip-package.html">zip()</a></code>, but it appends files to an existing ZIP archive.</p>
 </div>
 <div class="section level3">
 <h3 id="listing-zip-files">Listing ZIP files<a class="anchor" aria-label="anchor" href="#listing-zip-files"></a>
