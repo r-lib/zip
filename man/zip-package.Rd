@@ -2,7 +2,6 @@
 % Please edit documentation in R/zip-package.R
 \docType{package}
 \name{zip-package}
-\alias{zip}
 \alias{zip-package}
 \title{zip: Cross-Platform 'zip' Compression}
 \description{

@@ -1,3 +1,4 @@
+#' @aliases zip-package NULL
 #' @keywords internal
 "_PACKAGE"
 
