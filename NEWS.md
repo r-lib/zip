@@ -1,4 +1,4 @@
-# zip (development version)
+# zip 2.3.1
 
 * The zip shared library now hides its symbols (on platforms that support
   this), to avoid name clashes with other libraries (#98).
