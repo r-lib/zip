@@ -11,7 +11,7 @@ Description: Cross-Platform 'zip' Compression Library. A replacement for
     the 'zip' function, that does not require any additional external
     tools on any platform.
 License: MIT + file LICENSE
-URL: https://github.com/r-lib/zip#readme, https://r-lib.github.io/zip/
+URL: https://github.com/r-lib/zip, https://r-lib.github.io/zip/
 BugReports: https://github.com/r-lib/zip/issues
 Suggests:
     covr,
