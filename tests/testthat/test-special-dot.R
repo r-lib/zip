@@ -14,5 +14,5 @@ test_that("`.` is special in cherry picking mode", {
 
   zip::zip("../out.zip", ".", mode="cherry-pick", include_directories = FALSE)
 
-  expect_equal(sort(zip_list("../out.zip")$file), sort(c("bar", "foo")))
+  expect_equal(sort(zip_list("../out.zip")$filename), sort(c("bar", "foo")))
 })
