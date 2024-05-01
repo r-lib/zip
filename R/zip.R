@@ -223,13 +223,13 @@ zip_list <- function(zipfile) {
     filename = res[[1]],
     compressed_size = res[[2]],
     uncompressed_size = res[[3]],
-    timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01"),
-    permissions = as.octmode(res[[5]]),
-    crc32 = as.hexmode(res[[6]]),
-    offset = res[[7]]
+    timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
   )
   Encoding(df$filename) <- "UTF-8"
-  as_tibble(df)
+  df$permissions <- as.octmode(res[[5]])
+  df$crc32 <- as.hexmode(res[[6]])
+  df$offset <- res[[7]]
+  df
 }
 
 #' Uncompress 'zip' Archives

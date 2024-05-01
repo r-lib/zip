@@ -18,7 +18,6 @@ Suggests:
     processx,
     R6,
     testthat,
-    tibble,
     withr
 Config/Needs/website: tidyverse/tidytemplate
 Config/testthat/edition: 3

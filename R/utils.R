@@ -161,15 +161,3 @@ enc2c <- function(x) {
     enc2native(x)
   }
 }
-
-is_installed <- function(pkg) {
-  isTRUE(requireNamespace(pkg, quietly = TRUE))
-}
-
-as_tibble <- function(x) {
-  if (getOption("zip.use_tibble", TRUE) && is_installed("tibble")) {
-    tibble::as_tibble(x)
-  } else {
-    x
-  }
-}
