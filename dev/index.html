@@ -93,9 +93,9 @@
 <code class="sourceCode R"><span><span class="fu"><a href="reference/zip.html">zip</a></span><span class="op">(</span><span class="st">"sources.zip"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"src"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html" class="external-link">file.info</a></span><span class="op">(</span><span class="st">"sources.zip"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               size isdir mode               mtime               ctime</span></span>
-<span><span class="co">#&gt; sources.zip 570766 FALSE  644 2024-05-01 13:47:37 2024-05-01 13:47:37</span></span>
-<span><span class="co">#&gt;                           atime uid gid   uname grname</span></span>
-<span><span class="co">#&gt; sources.zip 2024-05-01 13:43:53 501  20 mmuecke  staff</span></span></code></pre></div>
+<span><span class="co">#&gt; sources.zip 580179 FALSE  644 2023-04-17 13:49:31 2023-04-17 13:49:31</span></span>
+<span><span class="co">#&gt;                           atime uid gid       uname grname</span></span>
+<span><span class="co">#&gt; sources.zip 2023-04-17 13:49:31 501  20 gaborcsardi  staff</span></span></code></pre></div>
 <p>Directories are added recursively by default.</p>
 <p><code><a href="reference/zip.html">zip_append()</a></code> is similar to <code><a href="reference/zip.html">zip()</a></code>, but it appends files to an existing ZIP archive.</p>
 </div>
@@ -105,16 +105,90 @@
 <p><code><a href="reference/zip_list.html">zip_list()</a></code> lists files in a ZIP archive. It returns a data frame:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/zip_list.html">zip_list</a></span><span class="op">(</span><span class="st">"sources.zip"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 48 × 7</span></span>
-<span><span class="co">#&gt;   filename     compressed_size uncompressed_size timestamp           permissions</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;                  &lt;dbl&gt;             &lt;dbl&gt; &lt;dttm&gt;              &lt;octmode&gt;  </span></span>
-<span><span class="co">#&gt; 1 R/                         0                 0 2024-05-01 11:47:26 755        </span></span>
-<span><span class="co">#&gt; 2 R/assertion…             151               398 2024-05-01 11:23:38 644        </span></span>
-<span><span class="co">#&gt; 3 R/inflate.R              627              2174 2024-05-01 11:00:32 644        </span></span>
-<span><span class="co">#&gt; 4 R/process.R             1793              6585 2024-05-01 11:00:32 644        </span></span>
-<span><span class="co">#&gt; 5 R/utils.R               1272              4143 2024-05-01 11:29:40 644        </span></span>
-<span><span class="co">#&gt; # ℹ 43 more rows</span></span>
-<span><span class="co">#&gt; # ℹ 2 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;                                                     filename compressed_size</span></span>
+<span><span class="co">#&gt; 1                                                         R/               0</span></span>
+<span><span class="co">#&gt; 2                                             R/assertions.R             151</span></span>
+<span><span class="co">#&gt; 3                                                R/inflate.R             627</span></span>
+<span><span class="co">#&gt; 4                                                R/process.R            1793</span></span>
+<span><span class="co">#&gt; 5                                                  R/utils.R            1202</span></span>
+<span><span class="co">#&gt; 6                                                    R/zip.R            3274</span></span>
+<span><span class="co">#&gt; 7                                                       src/               0</span></span>
+<span><span class="co">#&gt; 8                                                 src/init.c             367</span></span>
+<span><span class="co">#&gt; 9                                                 src/init.o            1648</span></span>
+<span><span class="co">#&gt; 10                                        src/install.libs.R             272</span></span>
+<span><span class="co">#&gt; 11                                              src/Makevars             199</span></span>
+<span><span class="co">#&gt; 12                                          src/Makevars.win             273</span></span>
+<span><span class="co">#&gt; 13                                               src/miniz.c           55268</span></span>
+<span><span class="co">#&gt; 14                                               src/miniz.h           18115</span></span>
+<span><span class="co">#&gt; 15                                               src/miniz.o          120248</span></span>
+<span><span class="co">#&gt; 16                                                src/rzip.c            2853</span></span>
+<span><span class="co">#&gt; 17                                                src/rzip.o           10431</span></span>
+<span><span class="co">#&gt; 18                                                src/tools/               0</span></span>
+<span><span class="co">#&gt; 19                                        src/tools/cmdunzip           62958</span></span>
+<span><span class="co">#&gt; 20                                      src/tools/cmdunzip.c             590</span></span>
+<span><span class="co">#&gt; 21                                  src/tools/cmdunzip.dSYM/               0</span></span>
+<span><span class="co">#&gt; 22                         src/tools/cmdunzip.dSYM/Contents/               0</span></span>
+<span><span class="co">#&gt; 23               src/tools/cmdunzip.dSYM/Contents/Info.plist             304</span></span>
+<span><span class="co">#&gt; 24               src/tools/cmdunzip.dSYM/Contents/Resources/               0</span></span>
+<span><span class="co">#&gt; 25         src/tools/cmdunzip.dSYM/Contents/Resources/DWARF/               0</span></span>
+<span><span class="co">#&gt; 26 src/tools/cmdunzip.dSYM/Contents/Resources/DWARF/cmdunzip           70680</span></span>
+<span><span class="co">#&gt; 27                                          src/tools/cmdzip           63367</span></span>
+<span><span class="co">#&gt; 28                                        src/tools/cmdzip.c            1066</span></span>
+<span><span class="co">#&gt; 29                                    src/tools/cmdzip.dSYM/               0</span></span>
+<span><span class="co">#&gt; 30                           src/tools/cmdzip.dSYM/Contents/               0</span></span>
+<span><span class="co">#&gt; 31                 src/tools/cmdzip.dSYM/Contents/Info.plist             303</span></span>
+<span><span class="co">#&gt; 32                 src/tools/cmdzip.dSYM/Contents/Resources/               0</span></span>
+<span><span class="co">#&gt; 33           src/tools/cmdzip.dSYM/Contents/Resources/DWARF/               0</span></span>
+<span><span class="co">#&gt; 34     src/tools/cmdzip.dSYM/Contents/Resources/DWARF/cmdzip           71098</span></span>
+<span><span class="co">#&gt; 35                                           src/unixutils.c             724</span></span>
+<span><span class="co">#&gt; 36                                           src/unixutils.o            4329</span></span>
+<span><span class="co">#&gt; 37                                            src/winutils.c            1949</span></span>
+<span><span class="co">#&gt; 38                                                 src/zip.c            2830</span></span>
+<span><span class="co">#&gt; 39                                                 src/zip.h             808</span></span>
+<span><span class="co">#&gt; 40                                                 src/zip.o           10541</span></span>
+<span><span class="co">#&gt; 41                                                src/zip.so           66645</span></span>
+<span><span class="co">#&gt;    uncompressed_size           timestamp permissions    crc32 offset</span></span>
+<span><span class="co">#&gt; 1                  0 2023-04-17 10:58:10         755 00000000      0</span></span>
+<span><span class="co">#&gt; 2                398 2023-04-17 10:20:40         644 7f73a9e4     32</span></span>
+<span><span class="co">#&gt; 3               2174 2023-04-17 10:20:40         644 3b0fdb9e    243</span></span>
+<span><span class="co">#&gt; 4               6585 2023-04-17 10:20:40         644 99447436    927</span></span>
+<span><span class="co">#&gt; 5               3915 2023-04-17 10:58:10         644 e653bff7   2777</span></span>
+<span><span class="co">#&gt; 6              10369 2023-04-17 10:51:34         644 4d620f14   4034</span></span>
+<span><span class="co">#&gt; 7                  0 2023-04-17 10:20:46         755 00000000   7361</span></span>
+<span><span class="co">#&gt; 8                962 2023-04-17 10:20:40         644 e1c62c7d   7395</span></span>
+<span><span class="co">#&gt; 9               3744 2023-04-17 10:20:46         644 6da275de   7818</span></span>
+<span><span class="co">#&gt; 10               587 2022-03-04 14:05:04         644 4f80df1a   9522</span></span>
+<span><span class="co">#&gt; 11               525 2022-12-19 13:17:12         644 c8789e48   9858</span></span>
+<span><span class="co">#&gt; 12               700 2022-03-04 14:05:04         644 373232f9  10115</span></span>
+<span><span class="co">#&gt; 13            314933 2023-04-17 10:20:40         644 450881b2  10450</span></span>
+<span><span class="co">#&gt; 14             66871 2023-04-17 10:20:40         644 6c5a6c1e  65775</span></span>
+<span><span class="co">#&gt; 15            333800 2023-04-17 10:20:46         644 887d9996  83947</span></span>
+<span><span class="co">#&gt; 16             10857 2023-04-17 10:20:40         644 a2c358b5 204252</span></span>
+<span><span class="co">#&gt; 17             23448 2023-04-17 10:20:46         644 ea86cde3 207161</span></span>
+<span><span class="co">#&gt; 18                 0 2023-04-17 10:20:46         755 00000000 217648</span></span>
+<span><span class="co">#&gt; 19            228469 2023-04-17 10:20:46         755 57376bd5 217688</span></span>
+<span><span class="co">#&gt; 20              1343 2022-03-04 14:05:04         644 1a6e34f1 280710</span></span>
+<span><span class="co">#&gt; 21                 0 2023-04-17 09:50:00         755 00000000 281366</span></span>
+<span><span class="co">#&gt; 22                 0 2023-04-17 09:50:00         755 00000000 281420</span></span>
+<span><span class="co">#&gt; 23               637 2023-04-17 10:20:46         644 294928f0 281483</span></span>
+<span><span class="co">#&gt; 24                 0 2023-04-17 09:50:00         755 00000000 281876</span></span>
+<span><span class="co">#&gt; 25                 0 2023-04-17 09:50:00         755 00000000 281949</span></span>
+<span><span class="co">#&gt; 26            177363 2023-04-17 10:20:46         644 9d6e0672 282028</span></span>
+<span><span class="co">#&gt; 27            228627 2023-04-17 10:20:46         755 0aa7342d 352811</span></span>
+<span><span class="co">#&gt; 28              2909 2022-03-04 14:05:04         644 bfb4d8f3 416240</span></span>
+<span><span class="co">#&gt; 29                 0 2023-04-17 09:50:00         755 00000000 417370</span></span>
+<span><span class="co">#&gt; 30                 0 2023-04-17 09:50:00         755 00000000 417422</span></span>
+<span><span class="co">#&gt; 31               635 2023-04-17 10:20:46         644 c3375fb9 417483</span></span>
+<span><span class="co">#&gt; 32                 0 2023-04-17 09:50:00         755 00000000 417873</span></span>
+<span><span class="co">#&gt; 33                 0 2023-04-17 09:50:00         755 00000000 417944</span></span>
+<span><span class="co">#&gt; 34            178267 2023-04-17 10:20:46         644 d905adc8 418021</span></span>
+<span><span class="co">#&gt; 35              1944 2022-03-04 14:05:04         644 d38da4b6 489218</span></span>
+<span><span class="co">#&gt; 36              9592 2023-04-17 10:20:46         644 f55ccd93 490003</span></span>
+<span><span class="co">#&gt; 37              6880 2023-04-17 10:20:40         644 4f65da62 494393</span></span>
+<span><span class="co">#&gt; 38             11643 2023-04-17 10:20:40         644 119a0ee7 496402</span></span>
+<span><span class="co">#&gt; 39              2349 2023-04-17 08:32:08         644 92f80ead 499287</span></span>
+<span><span class="co">#&gt; 40             25288 2023-04-17 10:20:46         644 b69779f4 500150</span></span>
+<span><span class="co">#&gt; 41            247235 2023-04-17 10:20:46         755 2090ba35 510746</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="uncompressing-zip-files">Uncompressing ZIP files<a class="anchor" aria-label="anchor" href="#uncompressing-zip-files"></a>
