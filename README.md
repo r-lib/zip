@@ -48,7 +48,7 @@ archiving them, so that the files are stored using a relative path name.
 zip("sources.zip", c("R", "src"))
 file.info("sources.zip")
 #>               size isdir mode               mtime               ctime
-#> sources.zip 570761 FALSE  644 2024-05-01 13:43:53 2024-05-01 13:43:53
+#> sources.zip 570761 FALSE  644 2024-05-01 13:37:47 2024-05-01 13:37:47
 #>                           atime uid gid   uname grname
 #> sources.zip 2024-05-01 13:37:47 501  20 mmuecke  staff
 ```
@@ -65,14 +65,19 @@ existing ZIP archive.
 ``` r
 zip_list("sources.zip")
 #> # A tibble: 48 × 7
-#>   filename     compressed_size uncompressed_size timestamp           permissions
-#>   <chr>                  <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 R/                         0                 0 2024-05-01 11:33:26 755        
-#> 2 R/assertion…             151               398 2024-05-01 11:23:38 644        
-#> 3 R/inflate.R              627              2174 2024-05-01 11:00:32 644        
-#> 4 R/process.R             1793              6585 2024-05-01 11:00:32 644        
-#> 5 R/utils.R               1272              4143 2024-05-01 11:29:40 644        
-#> # ℹ 43 more rows
+#>    filename    compressed_size uncompressed_size timestamp           permissions
+#>    <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
+#>  1 R/                        0                 0 2024-05-01 11:33:26 755        
+#>  2 R/assertio…             151               398 2024-05-01 11:23:38 644        
+#>  3 R/inflate.R             627              2174 2024-05-01 11:00:32 644        
+#>  4 R/process.R            1793              6585 2024-05-01 11:00:32 644        
+#>  5 R/utils.R              1272              4143 2024-05-01 11:29:40 644        
+#>  6 R/zip-pack…              99               122 2024-05-01 11:00:32 644        
+#>  7 R/zip.R                3277             10377 2024-05-01 11:33:26 644        
+#>  8 src/                      0                 0 2024-05-01 11:34:56 755        
+#>  9 src/init.c              406              1043 2024-05-01 11:00:32 644        
+#> 10 src/init.o             1696              3880 2024-05-01 11:34:56 644        
+#> # ℹ 38 more rows
 #> # ℹ 2 more variables: crc32 <hexmode>, offset <dbl>
 ```
 
