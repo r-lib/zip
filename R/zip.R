@@ -229,7 +229,7 @@ zip_list <- function(zipfile) {
   df$permissions <- as.octmode(res[[5]])
   df$crc32 <- as.hexmode(res[[6]])
   df$offset <- res[[7]]
-  df
+  as_tibble(df)
 }
 
 #' Uncompress 'zip' Archives
