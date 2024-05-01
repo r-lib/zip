@@ -48,9 +48,9 @@ archiving them, so that the files are stored using a relative path name.
 zip("sources.zip", c("R", "src"))
 file.info("sources.zip")
 #>               size isdir mode               mtime               ctime
-#> sources.zip 570766 FALSE  644 2024-05-01 13:47:37 2024-05-01 13:47:37
+#> sources.zip 570761 FALSE  644 2024-05-01 13:43:53 2024-05-01 13:43:53
 #>                           atime uid gid   uname grname
-#> sources.zip 2024-05-01 13:43:53 501  20 mmuecke  staff
+#> sources.zip 2024-05-01 13:37:47 501  20 mmuecke  staff
 ```
 
 Directories are added recursively by default.
@@ -67,7 +67,7 @@ zip_list("sources.zip")
 #> # A tibble: 48 × 7
 #>   filename     compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                  <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 R/                         0                 0 2024-05-01 11:47:26 755        
+#> 1 R/                         0                 0 2024-05-01 11:33:26 755        
 #> 2 R/assertion…             151               398 2024-05-01 11:23:38 644        
 #> 3 R/inflate.R              627              2174 2024-05-01 11:00:32 644        
 #> 4 R/process.R             1793              6585 2024-05-01 11:00:32 644        
