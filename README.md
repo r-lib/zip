@@ -12,7 +12,7 @@
 [![CRAN RStudio mirror
 downloads](https://cranlogs.r-pkg.org/badges/zip)](https://www.r-pkg.org/pkg/zip)
 [![Codecov test
-coverage](https://codecov.io/gh/r-lib/zip/branch/main/graph/badge.svg)](https://app.codecov.io/gh/r-lib/zip?branch=main)
+coverage](https://codecov.io/gh/r-lib/zip/graph/badge.svg)](https://app.codecov.io/gh/r-lib/zip)
 <!-- badges: end -->
 
 ## Installation
