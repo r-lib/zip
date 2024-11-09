@@ -1,9 +1,8 @@
 pandoc: 3.1.11
-pkgdown: 2.0.9
+pkgdown: 2.1.1
 pkgdown_sha: ~
 articles: {}
-last_built: 2024-05-01T12:44Z
+last_built: 2024-11-09T12:15Z
 urls:
   reference: https://r-lib.github.io/zip/reference
   article: https://r-lib.github.io/zip/articles
-
