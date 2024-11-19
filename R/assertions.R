@@ -4,7 +4,7 @@ is_string <- function(x) {
 }
 
 is_character <- function(x) {
-  is.character(x) && !any(is.na(x))
+  is.character(x) && !anyNA(x)
 }
 
 is_character_or_null <- function(x) {
