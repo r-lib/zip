@@ -188,7 +188,7 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
   oldwd <- setwd(root)
   on.exit(setwd(oldwd), add = TRUE)
 
-  if (any(! file.exists(files))) stop("Some files do not exist")
+  if (!all(file.exists(files))) stop("Some files do not exist")
 
   data <- get_zip_data(files, recurse, keep_path, include_directories)
   data$key <- fix_absolute_paths(data$key)
