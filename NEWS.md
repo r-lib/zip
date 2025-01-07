@@ -1,5 +1,8 @@
 # zip (development version)
 
+* `zip_list()` now returns a `tbl` object, and loads the pillar package,
+  if installed, to produce the nicer output for long data frames.
+
 # zip 2.3.1
 
 * The zip shared library now hides its symbols (on platforms that support

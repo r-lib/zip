@@ -1,7 +1,6 @@
 
 df <- function(key, file, dir = FALSE) {
-  data.frame(
-    stringsAsFactors = FALSE,
+  data_frame(
     key = key,
     file = file,
     dir = dir
