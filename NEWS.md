@@ -1,4 +1,4 @@
-# zip (development version)
+# zip 2.3.2
 
 * `zip_list()` now returns a `tbl` object, and loads the pillar package,
   if installed, to produce the nicer output for long data frames.
