@@ -5,7 +5,7 @@
 ^.travis.yml$
 ^appveyor.yml$
 ^revdep$
-^sources\.zip$
+^[^/]*[.]zip$
 ^README\.html$
 ^src/.*\.o$
 ^src/zip.dll$
