@@ -51,7 +51,7 @@ warn_for_colon <- function(files) {
 }
 
 fix_absolute_paths <- function(files) {
-  if (any(substr(files, 1, 1) == "/")) {
+  if (any(startsWith(files, "/"))) {
     warning("Dropping leading `/` from paths, all paths in a zip file ",
             "must be relative paths.")
     files <- sub("^/", "", files)
