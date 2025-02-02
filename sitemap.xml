@@ -1,51 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://r-lib.github.io/zip/404.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/CODE_OF_CONDUCT.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/index.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/deflate.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/inflate.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/unzip.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/unzip_process.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/zip-package.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/zip.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/zip_list.html</loc>
-  </url>
-  <url>
-    <loc>https://r-lib.github.io/zip/reference/zip_process.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://r-lib.github.io/zip/404.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/CODE_OF_CONDUCT.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/LICENSE-text.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/LICENSE.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/authors.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/index.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/news/index.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/deflate.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/index.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/inflate.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/unzip.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/unzip_process.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/zip-package.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/zip.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/zip_list.html</loc></url>
+<url><loc>https://r-lib.github.io/zip/reference/zip_process.html</loc></url>
 </urlset>
+
