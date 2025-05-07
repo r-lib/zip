@@ -125,6 +125,7 @@ test_that("overwrite is FALSE", {
       x <- transform_tempdir(x)
       x <- sub("test-dir-[^/]+/", "test-dir-<random>/", x)
       x <- sub("test-file-[^.]+[.]", "test-file-<random>.", x)
+      x <- sub("\\", "/", x, fixed = TRUE)
       x
     }
   )
