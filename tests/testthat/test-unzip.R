@@ -118,9 +118,15 @@ test_that("overwrite is FALSE", {
   tmp <- test_temp_dir()
   zip::unzip(z$zip, exdir = tmp)
   zip::unzip(z$zip, exdir = tmp)
-  expect_error(
+  expect_snapshot(
+    error = TRUE,
     zip::unzip(z$zip, overwrite = FALSE, exdir = tmp),
-    "Not overwriting"
+    transform = function(x) {
+      x <- transform_tempdir(x)
+      x <- sub("test-dir-[^/]+/", "test-dir-<random>/", x)
+      x <- sub("test-file-[^.]+[.]", "test-file-<random>.", x)
+      x
+    }
   )
 })
 

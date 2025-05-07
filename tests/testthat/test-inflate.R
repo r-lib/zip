@@ -220,7 +220,7 @@ test_that("inflate", {
   expect_silent(inflate(data_gz, 1L, 200L))
 
   # bad format
-  expect_error(inflate(data_gz, 10L, 300L))
+  expect_snapshot(error = TRUE, inflate(data_gz, 10L, 300L))
 })
 
 test_that("deflate", {

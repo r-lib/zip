@@ -46,7 +46,14 @@ test_that("backslash is an error", {
   on.exit(unlink(c(tmp, tmpzip), recursive = TRUE), add = TRUE)
 
   writeLines("boo", file.path(tmp, "real\\bad"))
-  expect_error(zip(tmpzip, tmp, mode = "cherry-pick"))
+  expect_snapshot(
+    error = TRUE,
+    zip(tmpzip, tmp, mode = "cherry-pick"),
+    transform = function(x) {
+      x <- transform_tempdir(x)
+      gsub("zip-test-bs-[^./]+\\b", "zip-test-bs-<random>", x)
+    }
+  )
 })
 
 test_that("extracting absolute path", {
