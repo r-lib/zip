@@ -1,4 +1,3 @@
-
 test_that("warning for colon", {
   skip_on_os("windows")
 

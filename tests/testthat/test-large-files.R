@@ -1,4 +1,3 @@
-
 test_that("large zip files", {
   skip_on_cran()
 
@@ -29,10 +28,11 @@ test_that("large zip files", {
 })
 
 test_that("can compress / uncompress large files", {
-
   skip_on_cran()
-  if (! nzchar(Sys.getenv("ZIP_LONG_TESTS")) &&
-      ! nzchar(Sys.getenv("CI"))) {
+  if (
+    !nzchar(Sys.getenv("ZIP_LONG_TESTS")) &&
+      !nzchar(Sys.getenv("CI"))
+  ) {
     skip("takes long")
   }
 
@@ -63,10 +63,11 @@ test_that("can compress / uncompress large files", {
 })
 
 test_that("can compress / uncompress many files", {
-
   skip_on_cran()
-  if (! nzchar(Sys.getenv("ZIP_LONG_TESTS")) &&
-      ! nzchar(Sys.getenv("CI"))) {
+  if (
+    !nzchar(Sys.getenv("ZIP_LONG_TESTS")) &&
+      !nzchar(Sys.getenv("CI"))
+  ) {
     skip("takes long")
   }
 
@@ -83,5 +84,6 @@ test_that("can compress / uncompress many files", {
   zip::unzip(zip, exdir = tmp2)
   expect_equal(
     length(dir(file.path(tmp2, basename(tmp)))),
-    70000)
+    70000
+  )
 })

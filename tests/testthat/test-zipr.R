@@ -1,6 +1,4 @@
-
 test_that("can compress single directory", {
-
   on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)))
 
   dir.create(tmp <- tempfile())
@@ -26,7 +24,6 @@ test_that("can compress single directory", {
 })
 
 test_that("can compress single file", {
-
   on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)))
 
   tmp <- tempfile()
@@ -48,7 +45,6 @@ test_that("can compress single file", {
 })
 
 test_that("can compress multiple files", {
-
   on.exit(try(unlink(c(zipfile, tmp1, tmp2), recursive = TRUE)))
 
   cat("compress this if you can!", file = tmp1 <- tempfile())
@@ -70,7 +66,6 @@ test_that("can compress multiple files", {
 })
 
 test_that("can compress multiple directories", {
-
   on.exit(try(unlink(c(zipfile, tmp1, tmp2), recursive = TRUE)))
 
   dir.create(tmp1 <- tempfile())
@@ -94,13 +89,16 @@ test_that("can compress multiple directories", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(bns(tmp1), file.path(basename(tmp1), c("file1", "file2")),
-      bns(tmp2), file.path(basename(tmp2), c("file3", "file4")))
+    c(
+      bns(tmp1),
+      file.path(basename(tmp1), c("file1", "file2")),
+      bns(tmp2),
+      file.path(basename(tmp2), c("file3", "file4"))
+    )
   )
 })
 
 test_that("can compress files and directories", {
-
   on.exit(try(unlink(c(zipfile, tmp, file1, file2), recursive = TRUE)))
 
   dir.create(tmp <- tempfile())
@@ -123,14 +121,16 @@ test_that("can compress files and directories", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(basename(file1), bns(tmp),
+    c(
+      basename(file1),
+      bns(tmp),
       file.path(basename(tmp), c("file1", "file2")),
-      basename(file2))
+      basename(file2)
+    )
   )
 })
 
 test_that("warning for directories in non-recursive mode", {
-
   on.exit(try(unlink(c(zipfile, tmp, file1, file2), recursive = TRUE)))
 
   dir.create(tmp <- tempfile())
@@ -159,7 +159,6 @@ test_that("warning for directories in non-recursive mode", {
 })
 
 test_that("compression level is used", {
-
   on.exit(try(unlink(c(zipfile1, zipfile2, file), recursive = TRUE)))
 
   tmp <- tempfile()
@@ -195,7 +194,6 @@ test_that("compression level is used", {
 })
 
 test_that("can append a directory to an archive", {
-
   on.exit(try(unlink(c(zipfile, tmp, tmp2), recursive = TRUE)))
 
   dir.create(tmp <- tempfile())
@@ -233,13 +231,16 @@ test_that("can append a directory to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")),
-      bns(tmp2), file.path(basename(tmp2), c("file3", "file4")))
+    c(
+      bns(tmp),
+      file.path(basename(tmp), c("file1", "file2")),
+      bns(tmp2),
+      file.path(basename(tmp2), c("file3", "file4"))
+    )
   )
 })
 
 test_that("can append a file to an archive", {
-
   on.exit(try(unlink(c(zipfile, tmp, file1), recursive = TRUE)))
 
   dir.create(tmp <- tempfile())
@@ -275,13 +276,11 @@ test_that("can append a file to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")),
-      basename(file1))
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")), basename(file1))
   )
 })
 
 test_that("can append files and directories to an archive", {
-
   on.exit(try(unlink(c(zipfile, tmp, tmp2, file1), recursive = TRUE)))
 
   dir.create(tmp <- tempfile())
@@ -320,14 +319,17 @@ test_that("can append files and directories to an archive", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")),
+    c(
+      bns(tmp),
+      file.path(basename(tmp), c("file1", "file2")),
       basename(file1),
-      bns(tmp2), file.path(basename(tmp2), c("file3", "file4")))
+      bns(tmp2),
+      file.path(basename(tmp2), c("file3", "file4"))
+    )
   )
 })
 
 test_that("empty directories are archived as directories", {
-
   on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)), add = TRUE)
   dir.create(tmp <- tempfile())
   zipfile <- tempfile(fileext = ".zip")
@@ -347,8 +349,13 @@ test_that("empty directories are archived as directories", {
   list <- zip_list(zipfile)
   expect_equal(
     list$filename,
-    c(paste0(bt, "/"), paste0(bt, "/foo/"), paste0(bt, "/foo/bar/"),
-      paste0(bt, "/foo/bar2/"), paste0(bt, "/foo/file1"))
+    c(
+      paste0(bt, "/"),
+      paste0(bt, "/foo/"),
+      paste0(bt, "/foo/bar/"),
+      paste0(bt, "/foo/bar2/"),
+      paste0(bt, "/foo/file1")
+    )
   )
 
   on.exit(unlink(tmp2, recursive = TRUE), add = TRUE)
@@ -357,12 +364,19 @@ test_that("empty directories are archived as directories", {
   files <- sort(dir(tmp2, recursive = TRUE, include.dirs = TRUE))
   expect_equal(
     files,
-    c(bt, file.path(bt, "foo"), file.path(bt, "foo", "bar"),
-      file.path(bt, "foo", "bar2"), file.path(bt, "foo", "file1"))
+    c(
+      bt,
+      file.path(bt, "foo"),
+      file.path(bt, "foo", "bar"),
+      file.path(bt, "foo", "bar2"),
+      file.path(bt, "foo", "file1")
+    )
   )
 
-  expect_equal(file.info(file.path(tmp2, files))$isdir,
-               c(TRUE, TRUE, TRUE, TRUE, FALSE))
+  expect_equal(
+    file.info(file.path(tmp2, files))$isdir,
+    c(TRUE, TRUE, TRUE, TRUE, FALSE)
+  )
 
   expect_equal(readLines(file.path(tmp2, bt, "foo", "file1")), "contents")
 })
@@ -380,10 +394,10 @@ test_that("Permissions are kept on Unix", {
   Sys.chmod(f, "0700", FALSE)
 
   cat("foobar2\n", file = f <- file.path(tmp, "dir", "file2"))
-  Sys.chmod(f, "0755",  FALSE)
+  Sys.chmod(f, "0755", FALSE)
 
   cat("foobar3\n", file = f <- file.path(tmp, "dir", "file3"))
-  Sys.chmod(f, "0777",  FALSE)
+  Sys.chmod(f, "0777", FALSE)
 
   zip <- test_temp_file(".zip", create = FALSE)
   zipr(zip, tmp)

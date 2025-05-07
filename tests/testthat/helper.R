@@ -1,4 +1,3 @@
-
 df <- function(key, file, dir = FALSE) {
   data_frame(
     key = key,
@@ -20,18 +19,14 @@ make_big_file <- function(file, mb) {
 make_big_file1 <- function(file, mb) {
   if (.Platform$OS.type == "windows") {
     .Call(c_R_make_big_file, file, as.integer(mb))
-
   } else if (Sys.info()["sysname"] == "Darwin") {
     .Call(c_R_make_big_file, file, as.integer(mb))
-
   } else if (nzchar(Sys.which("fallocate"))) {
     status <- system2("fallocate", c("-l", paste0(mb, "m"), shQuote(file)))
     if (status != 0) stop("Cannot create big files")
-
   } else if (nzchar(Sys.which("mkfile"))) {
     status <- system2("mkfile", c(paste0(mb, "m"), shQuote(file)))
     if (status != 0) stop("Cannot create big files")
-
   } else {
     stop("Cannot create big files")
   }
@@ -43,15 +38,20 @@ bns <- function(x) {
   paste0(basename(x), "/")
 }
 
-test_temp_file <- function(fileext = "", pattern = "test-file-",
-                           envir = parent.frame(), create = TRUE) {
+test_temp_file <- function(
+  fileext = "",
+  pattern = "test-file-",
+  envir = parent.frame(),
+  create = TRUE
+) {
   tmp <- tempfile(pattern = pattern, fileext = fileext)
   if (identical(envir, .GlobalEnv)) {
     message("Temporary files will _not_ be cleaned up")
   } else {
     withr::defer(
       try(unlink(tmp, recursive = TRUE, force = TRUE), silent = TRUE),
-      envir = envir)
+      envir = envir
+    )
   }
   if (create) {
     cat("", file = tmp)
@@ -61,8 +61,11 @@ test_temp_file <- function(fileext = "", pattern = "test-file-",
   }
 }
 
-test_temp_dir <- function(pattern = "test-dir-", envir = parent.frame(),
-                          create = TRUE) {
+test_temp_dir <- function(
+  pattern = "test-dir-",
+  envir = parent.frame(),
+  create = TRUE
+) {
   tmp <- test_temp_file(pattern = pattern, envir = envir, create = FALSE)
   if (create) {
     dir.create(tmp, recursive = TRUE, showWarnings = FALSE)
@@ -72,8 +75,11 @@ test_temp_dir <- function(pattern = "test-dir-", envir = parent.frame(),
   }
 }
 
-make_a_zip <- function(mtime = Sys.time(), envir = parent.frame(),
-                       include_directories = TRUE) {
+make_a_zip <- function(
+  mtime = Sys.time(),
+  envir = parent.frame(),
+  include_directories = TRUE
+) {
   tmp <- test_temp_dir(envir = envir)
   cat("file1\n", file = file.path(tmp, "file1"))
   cat("file11\n", file = file.path(tmp, "file11"))
@@ -93,8 +99,12 @@ make_a_zip <- function(mtime = Sys.time(), envir = parent.frame(),
   list(zip = zip, ex = tmp)
 }
 
-local_temp_dir <- function(pattern = "file", tmpdir = tempdir(),
-                           fileext = "", envir = parent.frame()) {
+local_temp_dir <- function(
+  pattern = "file",
+  tmpdir = tempdir(),
+  fileext = "",
+  envir = parent.frame()
+) {
   path <- tempfile(pattern = pattern, tmpdir = tmpdir, fileext = fileext)
   dir.create(path)
   setwd(path)

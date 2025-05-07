@@ -1,6 +1,4 @@
-
 test_that("non-existant file", {
-
   on.exit(try(unlink(c(zipfile, tmp), recursive = TRUE)))
   tmp <- tempfile()
 
@@ -16,7 +14,6 @@ test_that("non-existant file", {
 })
 
 test_that("appending non-existant file", {
-
   on.exit(try(unlink(c(zipfile, tmp, tmp2), recursive = TRUE)))
   cat("compress this if you can!", file = tmp <- tempfile())
 
@@ -45,7 +42,6 @@ test_that("appending non-existant file", {
 })
 
 test_that("non readable file", {
-
   skip_on_os("windows")
   skip_on_os("linux")
 
@@ -125,7 +121,6 @@ test_that("single empty directory, non-recursive", {
 })
 
 test_that("appending single empty directory", {
-
   on.exit(try(unlink(c(zipfile, tmp, tmp2), recursive = TRUE)))
 
   dir.create(tmp <- tempfile())
@@ -168,7 +163,6 @@ test_that("appending single empty directory", {
 })
 
 test_that("appending single empty directory, non-recursive", {
-
   on.exit(try(unlink(c(zipfile, tmp, tmp2), recursive = TRUE)))
 
   dir.create(tmp <- tempfile())

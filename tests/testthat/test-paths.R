@@ -1,4 +1,3 @@
-
 test_that("base path with spaces", {
   local_temp_dir()
   dir.create("space 1 2")

@@ -1,4 +1,3 @@
-
 test_that("unzip_process", {
   z <- make_a_zip()
   tmp2 <- test_temp_dir()
@@ -14,5 +13,7 @@ test_that("unzip_process", {
 
   expect_equal(readLines(file.path(tmp2, basename(z$ex), "file1")), "file1")
   expect_equal(
-    readLines(file.path(tmp2, basename(z$ex), "dir", "file2")), "file2")
+    readLines(file.path(tmp2, basename(z$ex), "dir", "file2")),
+    "file2"
+  )
 })

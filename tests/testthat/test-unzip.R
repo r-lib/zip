@@ -1,4 +1,3 @@
-
 test_that("can unzip all", {
   z <- make_a_zip()
 
@@ -11,7 +10,9 @@ test_that("can unzip all", {
 
   expect_equal(readLines(file.path(tmp2, basename(z$ex), "file1")), "file1")
   expect_equal(
-    readLines(file.path(tmp2, basename(z$ex), "dir", "file2")), "file2")
+    readLines(file.path(tmp2, basename(z$ex), "dir", "file2")),
+    "file2"
+  )
 })
 
 test_that("unzip creates exdir if needed", {
@@ -29,7 +30,9 @@ test_that("unzip creates exdir if needed", {
 
   expect_equal(readLines(file.path(tmp2, basename(z$ex), "file1")), "file1")
   expect_equal(
-    readLines(file.path(tmp2, basename(z$ex), "dir", "file2")), "file2")
+    readLines(file.path(tmp2, basename(z$ex), "dir", "file2")),
+    "file2"
+  )
 })
 
 test_that("unzip certain files only", {
@@ -69,8 +72,11 @@ test_that("unzip certain files only", {
 
   ## Files and dirs
   tmp6 <- test_temp_dir()
-  zip::unzip(z$zip, paste0(basename(z$ex), c("/dir/file2", "/file1")),
-            exdir = tmp6)
+  zip::unzip(
+    z$zip,
+    paste0(basename(z$ex), c("/dir/file2", "/file1")),
+    exdir = tmp6
+  )
 
   expect_true(file.exists(file.path(tmp6, basename(z$ex), "file1")))
   expect_true(file.exists(file.path(tmp6, basename(z$ex), "dir")))
@@ -78,7 +84,9 @@ test_that("unzip certain files only", {
 
   expect_equal(readLines(file.path(tmp6, basename(z$ex), "file1")), "file1")
   expect_equal(
-    readLines(file.path(tmp6, basename(z$ex), "dir", "file2")), "file2")
+    readLines(file.path(tmp6, basename(z$ex), "dir", "file2")),
+    "file2"
+  )
 })
 
 test_that("unzip sets mtime correctly", {
@@ -112,7 +120,8 @@ test_that("overwrite is FALSE", {
   zip::unzip(z$zip, exdir = tmp)
   expect_error(
     zip::unzip(z$zip, overwrite = FALSE, exdir = tmp),
-    "Not overwriting")
+    "Not overwriting"
+  )
 })
 
 test_that("junkpaths is TRUE", {
@@ -144,10 +153,10 @@ test_that("permissions as kept on Unix", {
   Sys.chmod(f, "0700", FALSE)
 
   cat("foobar2\n", file = f <- file.path(tmp, "dir", "file2"))
-  Sys.chmod(f, "0755",  FALSE)
+  Sys.chmod(f, "0755", FALSE)
 
   cat("foobar3\n", file = f <- file.path(tmp, "dir", "file3"))
-  Sys.chmod(f, "0777",  FALSE)
+  Sys.chmod(f, "0777", FALSE)
 
   zip <- test_temp_file(".zip", create = FALSE)
   zipr(zip, tmp)
