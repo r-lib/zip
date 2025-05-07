@@ -4,7 +4,8 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, include = FALSE}
+```{r}
+#| include: false
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -28,19 +29,24 @@ knitr::opts_chunk$set(
 
 Stable version:
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
 install.packages("zip")
 ```
 
 Development version:
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
 pak::pak("r-lib/zip")
 ```
 
 ## Usage
 
-```{r, include = FALSE, echo = FALSE, results = "hide"}
+```{r}
+#| include: false
+#| echo: false
+#| results: hide
 library(zip)
 ```
 
