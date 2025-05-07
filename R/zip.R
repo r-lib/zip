@@ -1,4 +1,3 @@
-
 #' @useDynLib zip, .registration = TRUE, .fixes = "c_"
 NULL
 
@@ -134,53 +133,113 @@ NULL
 #' zip_append(zipfile, file.path("mydir", "file3"), root = tmp)
 #' zip_list(zipfile)
 
-zip <- function(zipfile, files, recurse = TRUE, compression_level = 9,
-                include_directories = TRUE, root = ".",
-                mode = c("mirror", "cherry-pick")) {
+zip <- function(
+  zipfile,
+  files,
+  recurse = TRUE,
+  compression_level = 9,
+  include_directories = TRUE,
+  root = ".",
+  mode = c("mirror", "cherry-pick")
+) {
   mode <- match.arg(mode)
-  zip_internal(zipfile, files, recurse, compression_level, append = FALSE,
-               root = root, keep_path = (mode == "mirror"),
-               include_directories = include_directories)
+  zip_internal(
+    zipfile,
+    files,
+    recurse,
+    compression_level,
+    append = FALSE,
+    root = root,
+    keep_path = (mode == "mirror"),
+    include_directories = include_directories
+  )
 }
 
 #' @rdname zip
 #' @export
 
-zipr <- function(zipfile, files, recurse = TRUE, compression_level = 9,
-                 include_directories = TRUE, root = ".",
-                 mode = c("cherry-pick", "mirror")) {
+zipr <- function(
+  zipfile,
+  files,
+  recurse = TRUE,
+  compression_level = 9,
+  include_directories = TRUE,
+  root = ".",
+  mode = c("cherry-pick", "mirror")
+) {
   mode <- match.arg(mode)
-  zip_internal(zipfile, files, recurse, compression_level, append = FALSE,
-               root = root, keep_path = (mode == "mirror"),
-               include_directories = include_directories)
+  zip_internal(
+    zipfile,
+    files,
+    recurse,
+    compression_level,
+    append = FALSE,
+    root = root,
+    keep_path = (mode == "mirror"),
+    include_directories = include_directories
+  )
 }
 
 #' @rdname zip
 #' @export
 
-zip_append <- function(zipfile, files, recurse = TRUE,
-                       compression_level = 9, include_directories = TRUE,
-                       root = ".", mode = c("mirror", "cherry-pick")) {
+zip_append <- function(
+  zipfile,
+  files,
+  recurse = TRUE,
+  compression_level = 9,
+  include_directories = TRUE,
+  root = ".",
+  mode = c("mirror", "cherry-pick")
+) {
   mode <- match.arg(mode)
-  zip_internal(zipfile, files, recurse, compression_level, append = TRUE,
-               root = root, keep_path = (mode == "mirror"),
-               include_directories = include_directories)
+  zip_internal(
+    zipfile,
+    files,
+    recurse,
+    compression_level,
+    append = TRUE,
+    root = root,
+    keep_path = (mode == "mirror"),
+    include_directories = include_directories
+  )
 }
 
 #' @rdname zip
 #' @export
 
-zipr_append <- function(zipfile, files, recurse = TRUE,
-                        compression_level = 9, include_directories = TRUE,
-                        root = ".", mode = c("cherry-pick", "mirror")) {
+zipr_append <- function(
+  zipfile,
+  files,
+  recurse = TRUE,
+  compression_level = 9,
+  include_directories = TRUE,
+  root = ".",
+  mode = c("cherry-pick", "mirror")
+) {
   mode <- match.arg(mode)
-  zip_internal(zipfile, files, recurse, compression_level, append = TRUE,
-               root = root, keep_path = (mode == "mirror"),
-               include_directories = include_directories)
+  zip_internal(
+    zipfile,
+    files,
+    recurse,
+    compression_level,
+    append = TRUE,
+    root = root,
+    keep_path = (mode == "mirror"),
+    include_directories = include_directories
+  )
 }
 
-zip_internal <- function(zipfile, files, recurse, compression_level,
-                         append, root, keep_path, include_directories) {
+zip_internal <- function(
+  zipfile,
+  files,
+  recurse,
+  compression_level,
+  append,
+  root,
+  keep_path,
+  include_directories
+) {
   zipfile <- path.expand(zipfile)
   if (dir.exists(zipfile)) {
     stop("zip file at `", zipfile, "` already exists and it is a directory")
@@ -195,9 +254,16 @@ zip_internal <- function(zipfile, files, recurse, compression_level,
   warn_for_colon(data$key)
   warn_for_dotdot(data$key)
 
-  .Call(c_R_zip_zip, enc2c(zipfile), enc2c(data$key),
-        enc2c(data$file), data$dir, file.info(data$file)$mtime,
-        as.integer(compression_level), append)
+  .Call(
+    c_R_zip_zip,
+    enc2c(zipfile),
+    enc2c(data$key),
+    enc2c(data$file),
+    data$dir,
+    file.info(data$file)$mtime,
+    as.integer(compression_level),
+    append
+  )
 
   invisible(zipfile)
 }
@@ -275,15 +341,20 @@ zip_list <- function(zipfile) {
 #' unzip(zipfile, exdir = tmp2)
 #' dir(tmp2, recursive = TRUE)
 
-unzip <- function(zipfile, files = NULL, overwrite = TRUE,
-                      junkpaths = FALSE, exdir = ".") {
-
+unzip <- function(
+  zipfile,
+  files = NULL,
+  overwrite = TRUE,
+  junkpaths = FALSE,
+  exdir = "."
+) {
   stopifnot(
     is_string(zipfile),
     is_character_or_null(files),
     is_flag(overwrite),
     is_flag(junkpaths),
-    is_string(exdir))
+    is_string(exdir)
+  )
 
   zipfile <- enc2c(normalizePath(zipfile))
   if (!is.null(files)) files <- enc2c(files)
