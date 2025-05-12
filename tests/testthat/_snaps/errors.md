@@ -12,5 +12,5 @@
       withr::with_dir(dirname(tmp), zipr(zipfile, basename(tmp)))
     Condition
       Error in `zip_internal()`:
-      ! zip error: Cannot add file `<random>` to archive `<tempdir>/<tempfile>.zip` in file zip.c:378
+      ! zip error: Cannot add file `<random>` to archive `<tempdir>/<tempfile>.zip` in file zip.c:<line>
 
