@@ -276,7 +276,9 @@ zip_internal <- function(
 #'   can therefore represent values up to `2^53-1` (9 PB).
 #' @param zipfile Path to an existing ZIP file.
 #' @return A data frame with columns: `filename`, `compressed_size`,
-#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32` and `offset`.
+#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset` and
+#'   `type`. `type` is one of `file`, `block_device`, `character_device`,
+#'   `directory`, `FIFO`, `symlink` or `socket`.
 #'
 #' @family zip/unzip functions
 #' @export
@@ -297,8 +299,20 @@ zip_list <- function(zipfile) {
   df$permissions <- as.octmode(res[[5]])
   df$crc32 <- as.hexmode(res[[6]])
   df$offset <- res[[7]]
+  # names are the same as in `fs::file_info()`
+  df$type <- file_types[res[[8]] + 1L]
   df
 }
+
+file_types <- c(
+  "file",
+  "block_device",
+  "character_device",
+  "directory",
+  "FIFO",
+  "symlink",
+  "socket"
+)
 
 #' Uncompress 'zip' Archives
 #'

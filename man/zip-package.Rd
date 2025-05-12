@@ -10,7 +10,7 @@ Cross-Platform 'zip' Compression Library. A replacement for the 'zip' function, 
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/r-lib/zip#readme}
+  \item \url{https://github.com/r-lib/zip}
   \item \url{https://r-lib.github.io/zip/}
   \item Report bugs at \url{https://github.com/r-lib/zip/issues}
 }
@@ -23,7 +23,7 @@ Other contributors:
 \itemize{
   \item Kuba Podgórski [contributor]
   \item Rich Geldreich [contributor]
-  \item Posit Software, PBC [copyright holder, funder]
+  \item Posit Software, PBC (\href{https://ror.org/03wc8by49}{ROR}) [copyright holder, funder]
 }
 
 }

@@ -5,7 +5,7 @@ test_that("non-existant file", {
   zipfile <- tempfile(fileext = ".zip")
 
   expect_snapshot(
-    error = TRUE, 
+    error = TRUE,
     withr::with_dir(
       dirname(tmp),
       zipr(zipfile, basename(tmp))
@@ -60,8 +60,9 @@ test_that("non readable file", {
     transform = function(x) {
       x <- transform_tempdir(x)
       x <- sub("`file[^`]+`", "`<random>`", x)
+      x <- sub("file zip.c:[0-9]+", "file zip.c:<line>", x)
       x
-    }    
+    }
   )
 })
 
