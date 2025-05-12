@@ -112,10 +112,12 @@ zip::zip("../test.zip", c("bar/file1", "bar2", "../foo2"))
 #> Warning in warn_for_dotdot(data$key): Some paths reference parent directory,
 #> creating non-portable zip file
 zip_list("../test.zip")[, "filename", drop = FALSE]
-#>        filename
-#> 1     bar/file1
-#> 2         bar2/
-#> 3      ../foo2/
+#> # A data frame: 4 x 1
+#>   filename     
+#>   <chr>        
+#> 1 bar/file1    
+#> 2 bar2/        
+#> 3 ../foo2/     
 #> 4 ../foo2/file3
 }\if{html}{\out{</div>}}
 
@@ -140,10 +142,12 @@ Here is an example with the same directory structure as above:
   mode = "cherry-pick"
 )
 zip_list("../test2.zip")[, "filename", drop = FALSE]
-#>     filename
-#> 1      file1
-#> 2      bar2/
-#> 3      foo2/
+#> # A data frame: 4 x 1
+#>   filename  
+#>   <chr>     
+#> 1 file1     
+#> 2 bar2/     
+#> 3 foo2/     
 #> 4 foo2/file3
 }\if{html}{\out{</div>}}
 

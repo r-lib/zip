@@ -200,3 +200,19 @@ test_that("umask if no permissions", {
     expect_true(TRUE)
   }
 })
+
+test_that("symlinks on Unix", {
+  skip_on_os("windows")
+  symlink <- test_path("fixtures/symlink.zip")
+  dir.create(tmp <- tempfile("zip-test-symlink"))
+  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+
+  zip::unzip(symlink, exdir = tmp)
+  expect_true(file.exists(file.path(tmp, "a")))
+  expect_true(file.exists(file.path(tmp, "a", "foo")))
+  expect_true(file.exists(file.path(tmp, "a", "bar")))
+  expect_equal(
+    Sys.readlink(file.path(tmp, "a", "bar")),
+    "foo"
+  )
+})

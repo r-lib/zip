@@ -11,7 +11,9 @@ zip_list(zipfile)
 }
 \value{
 A data frame with columns: \code{filename}, \code{compressed_size},
-\code{uncompressed_size}, \code{timestamp}, \code{permissions}, \code{crc32} and \code{offset}.
+\code{uncompressed_size}, \code{timestamp}, \code{permissions}, \code{crc32}, \code{offset} and
+\code{type}. \code{type} is one of \code{file}, \code{block_device}, \code{character_device},
+\code{directory}, \code{FIFO}, \code{symlink} or \code{socket}.
 }
 \description{
 List Files in a 'zip' Archive
