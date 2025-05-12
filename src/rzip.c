@@ -15,6 +15,20 @@
 #include "miniz.h"
 #include "zip.h"
 
+#ifndef S_IFLINK
+#define S_IFLNK         0120000         /* [XSI] symbolic link */
+#endif
+#ifndef S_IFSOCK
+#define S_IFSOCK        0140000         /* [XSI] socket */
+#endif
+
+#ifndef S_ISLNK
+#define S_ISLNK(m)      (((m) & S_IFMT) == S_IFLNK)     /* symbolic link */
+#endif
+#ifndef S_ISSOCK
+#define S_ISSOCK(m)     (((m) & S_IFMT) == S_IFSOCK)    /* socket */
+#endif
+
 SEXP R_zip_list(SEXP zipfile) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   size_t num_files;

@@ -178,7 +178,9 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
       fclose(zfh);
       ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
     }
+#ifndef WIN32
     mz_uint32 attr = file_stat.m_external_attr >> 16;
+#endif
 
     if (file_stat.m_is_directory) {
       if (! cjunkpaths && zip_mkdirp(buffer, 1)) {
