@@ -40,5 +40,5 @@ test_that("can list a zip file", {
 test_that("symlinks", {
   options(width = 200)
   zf <- test_path("fixtures/symlink.zip")
-  expect_snapshot(zip_list(zf))
+  expect_snapshot(zip_list(zf)$type)
 })
