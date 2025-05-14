@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">zip</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">2.3.2.9000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">2.3.3.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -242,9 +242,9 @@ to <code>zip()</code> and <code>zipr_append()</code> with a different default fo
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 3 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2025-05-12 <span style="color: #949494;">08:20:00</span> 755        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2025-05-12 <span style="color: #949494;">08:20:00</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2025-05-12 <span style="color: #949494;">08:20:00</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2025-05-14 <span style="color: #949494;">05:58:18</span> 755        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2025-05-14 <span style="color: #949494;">05:58:18</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2025-05-14 <span style="color: #949494;">05:58:18</span> 644        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Add another file</span></span></span>
@@ -254,10 +254,10 @@ to <code>zip()</code> and <code>zipr_append()</code> with a different default fo
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 4 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2025-05-12 <span style="color: #949494;">08:20:00</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2025-05-12 <span style="color: #949494;">08:20:00</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2025-05-12 <span style="color: #949494;">08:20:00</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> mydir/file3              15                10 2025-05-12 <span style="color: #949494;">08:20:00</span> 600        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2025-05-14 <span style="color: #949494;">05:58:18</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2025-05-14 <span style="color: #949494;">05:58:18</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2025-05-14 <span style="color: #949494;">05:58:18</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> mydir/file3              15                10 2025-05-14 <span style="color: #949494;">05:58:18</span> 600        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
 </code></pre></div>
     </div>
