@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">zip</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">2.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">2.3.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -158,10 +158,12 @@ entries are created by <code>zip</code>:</p>
 <span><span class="co">#&gt; Warning in warn_for_dotdot(data$key): Some paths reference parent directory,</span></span>
 <span><span class="co">#&gt; creating non-portable zip file</span></span>
 <span><span class="fu"><a href="../reference/zip_list.html">zip_list</a></span><span class="op">(</span><span class="st">"../test.zip"</span><span class="op">)</span><span class="op">[</span>, <span class="st">"filename"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
-<span><span class="co">#&gt;        filename</span></span>
-<span><span class="co">#&gt; 1     bar/file1</span></span>
-<span><span class="co">#&gt; 2         bar2/</span></span>
-<span><span class="co">#&gt; 3      ../foo2/</span></span>
+<span><span class="co">#&gt; # A data frame: 4 x 1</span></span>
+<span><span class="co">#&gt;   filename</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;</span></span>
+<span><span class="co">#&gt; 1 bar/file1</span></span>
+<span><span class="co">#&gt; 2 bar2/</span></span>
+<span><span class="co">#&gt; 3 ../foo2/</span></span>
 <span><span class="co">#&gt; 4 ../foo2/file3</span></span></code></pre><p></p></div>
 <p>Note that zip refuses to store files with absolute paths, and chops
 off the leading <code>/</code> character from these file names. This is because
@@ -184,10 +186,12 @@ level.</p>
 <span>  mode <span class="op">=</span> <span class="st">"cherry-pick"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/zip_list.html">zip_list</a></span><span class="op">(</span><span class="st">"../test2.zip"</span><span class="op">)</span><span class="op">[</span>, <span class="st">"filename"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
-<span><span class="co">#&gt;     filename</span></span>
-<span><span class="co">#&gt; 1      file1</span></span>
-<span><span class="co">#&gt; 2      bar2/</span></span>
-<span><span class="co">#&gt; 3      foo2/</span></span>
+<span><span class="co">#&gt; # A data frame: 4 x 1</span></span>
+<span><span class="co">#&gt;   filename</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;</span></span>
+<span><span class="co">#&gt; 1 file1</span></span>
+<span><span class="co">#&gt; 2 bar2/</span></span>
+<span><span class="co">#&gt; 3 foo2/</span></span>
 <span><span class="co">#&gt; 4 foo2/file3</span></span></code></pre><p></p></div>
 <p>From zip version 2.3.0, <code>"."</code> has a special meaning in the <code>files</code>
 argument: it will include the files (and possibly directories) within
@@ -235,26 +239,26 @@ to <code>zip()</code> and <code>zipr_append()</code> with a different default fo
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## List contents</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="zip_list.html">zip_list</a></span><span class="op">(</span><span class="va">zipfile</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 3 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 3 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2025-02-02 <span style="color: #949494;">08:45:30</span> 755        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2025-02-02 <span style="color: #949494;">08:45:30</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2025-02-02 <span style="color: #949494;">08:45:30</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2025-05-14 <span style="color: #949494;">05:56:40</span> 755        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2025-05-14 <span style="color: #949494;">05:56:40</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2025-05-14 <span style="color: #949494;">05:56:40</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Add another file</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"third file"</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tmp</span>, <span class="st">"mydir"</span>, <span class="st">"file3"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">zip_append</span><span class="op">(</span><span class="va">zipfile</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"mydir"</span>, <span class="st">"file3"</span><span class="op">)</span>, root <span class="op">=</span> <span class="va">tmp</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="zip_list.html">zip_list</a></span><span class="op">(</span><span class="va">zipfile</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 4 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 4 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2025-02-02 <span style="color: #949494;">08:45:30</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2025-02-02 <span style="color: #949494;">08:45:30</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2025-02-02 <span style="color: #949494;">08:45:30</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> mydir/file3              15                10 2025-02-02 <span style="color: #949494;">08:45:30</span> 600        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2025-05-14 <span style="color: #949494;">05:56:40</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2025-05-14 <span style="color: #949494;">05:56:40</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2025-05-14 <span style="color: #949494;">05:56:40</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> mydir/file3              15                10 2025-05-14 <span style="color: #949494;">05:56:40</span> 600        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -266,7 +270,7 @@ to <code>zip()</code> and <code>zipr_append()</code> with a different default fo
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer></div>
