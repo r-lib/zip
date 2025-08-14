@@ -7,7 +7,7 @@ get_tool <- function(prog) {
 
   exe <- system.file(package = "zip", "bin", .Platform$r_arch, prog)
   if (exe == "") {
-    pkgpath <- system.file(package = "zip")
+    pkgpath <- find.package("zip")
     if (basename(pkgpath) == "inst") pkgpath <- dirname(pkgpath)
     exe <- file.path(pkgpath, "src", "tools", prog)
     if (!file.exists(exe)) return("")
