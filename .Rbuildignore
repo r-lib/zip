@@ -26,3 +26,4 @@
 ^pkgdown$
 ^[\.]?air\.toml$
 ^\.vscode$
+^\.dev$
