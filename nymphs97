@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glitch Skeleton Art Gallery</title>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Courier New', monospace;
+      background: #000000;
+      color: #00ff00;
+      overflow-x: hidden;
+      width: 100%;
+      height: 100%;
+    }
+
+    html {
+      height: 100%;
+      width: 100%;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .gallery-container {
+      width: 100%;
+      min-height: 100%;
+      padding: 40px 20px;
+      background: linear-gradient(180deg, #000000 0%, #0a0a0a 100%);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    .glitch-title {
+      font-size: 64px;
+      font-weight: bold;
+      color: #00ff00;
+      text-transform: uppercase;
+      letter-spacing: 8px;
+      margin: 0 0 20px 0;
+      position: relative;
+      display: inline-block;
+      animation: glitch-text 3s infinite;
+    }
+
+    @keyframes glitch-text {
+      0%, 100% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+    }
+
+    .artist-name {
+      font-size: 24px;
+      color: #ff00ff;
+      margin-bottom: 30px;
+      letter-spacing: 4px;
+    }
+
+    .collection-info {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .info-box {
+      background: rgba(0, 255, 0, 0.1);
+      border: 2px solid #00ff00;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    }
+
+    .info-label {
+      font-size: 14px;
+      color: #00ff00;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    .info-value {
+      font-size: 24px;
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .art-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .art-card {
+      background: #0a0a0a;
+      border: 2px solid #00ff00;
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      /* cursor: pointer; */ /* ปิดการชี้เมื่อวางเมาส์เพื่อเน้นการแสดงผล */
+    }
+
+    .art-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 30px rgba(0, 255, 0, 0.5);
+      border-color: #ff00ff;
+    }
+
+    .art-canvas {
+      width: 100%;
+      height: 280px;
+      background: #000000;
+      border: 2px solid #00ff00;
+      margin-bottom: 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton-art {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .art-id {
+      font-size: 18px;
+      color: #00ff00;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .art-rarity {
+      font-size: 14px;
+      color: #ff00ff;
+      background: rgba(255, 0, 255, 0.1);
+      padding: 4px 12px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .glitch-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 0, 0.1) 0px,
+        transparent 2px,
+        transparent 4px,
+        rgba(255, 0, 255, 0.1) 6px
+      );
+      pointer-events: none;
+      animation: glitch-scan 8s linear infinite;
+    }
+
+    @keyframes glitch-scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    .generate-btn {
+      background: linear-gradient(135deg, #00ff00, #00cc00);
+      color: #000000;
+      border: none;
+      padding: 18px 40px;
+      font-size: 20px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 40px auto;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      box-shadow: 0 4px 20px rgba(0, 255, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    .generate-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 30px rgba(0, 255, 0, 0.6);
+    }
+    
+    .stats-bar {
+      background: rgba(0, 255, 0, 0.05);
+      border: 1px solid #00ff00;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 1400px;
+      margin: 40px auto 20px auto;
+    }
+
+    .stats-text {
+      font-size: 18px;
+      color: #00ff00;
+    }
+
+    @media (max-width: 768px) {
+      .glitch-title {
+        font-size: 36px;
+        letter-spacing: 4px;
+      }
+
+      .artist-name {
+        font-size: 18px;
+      }
+
+      .collection-info {
+        gap: 20px;
+      }
+
+      .info-box {
+        padding: 15px 20px;
+      }
+
+      .art-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+      }
+    }
+  </style>
+ </head>
+ <body>
+  <div class="gallery-container">
+   <div class="header">
+    <h1 class="glitch-title" id="collectionTitle">SKELETON GLITCH</h1>
+    <div class="artist-name" id="artistName">
+     by cnnymphs
+    </div>
+    <div class="collection-info">
+     <div class="info-box">
+      <div class="info-label">
+       Total Supply
+      </div>
+      <div class="info-value" id="totalSupply">
+       1000
+      </div>
+     </div>
+     <div class="info-box">
+      <div class="info-label">
+       Price
+      </div>
+      <div class="info-value" id="price">
+       0.007 BTC
+      </div>
+     </div>
+     <div class="info-box">
+      <div class="info-label">
+       Max / Wallet
+      </div>
+      <div class="info-value" id="maxPerWallet">
+       20
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="stats-bar">
+    <div class="stats-text">
+     🎨 Generative Glitch Pixel Art Collection • Each piece is unique
+    </div>
+   </div>
+   <div class="art-grid" id="artGrid"></div>
+  </div>
+  <script>
+    const rarityTypes = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+    let artCount = 1; // เริ่มที่ 1 เพื่อสร้าง ID #0001 (สำหรับ NFT ชิ้นเดียว)
+    
+    /**
+     * ดึงค่า 'token_id' จาก URL Parameters (ซึ่ง OpenSea/ระบบจะส่งค่ามาให้)
+     * เพื่อให้แต่ละ NFT มี ID ที่ไม่ซ้ำกันตามโทเคน
+     */
+    function getTokenId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      // OpenSea บางครั้งส่ง 'token_id' หรือ 'id'
+      let id = urlParams.get('token_id') || urlParams.get('id'); 
+
+      // ถ้าไม่พบใน URL ให้ตั้งเป็นค่าเริ่มต้น (เช่น 1) 
+      // หรือใช้ Math.random() สำหรับงาน Generative
+      if (!id) {
+          // หากไม่มี token_id, ใช้ค่าคงที่สำหรับแต่ละ NFT 
+          // หรือใช้การสุ่มถ้าต้องการงาน Generative ที่ไม่ซ้ำกันเมื่อรีเฟรช
+          return '1'; 
+      }
+      return id;
+    }
+
+    /**
+     * สร้าง Seed ที่เป็นเอกลักษณ์สำหรับ Generative Art 
+     * จาก Token ID เพื่อให้งานศิลปะแต่ละชิ้นไม่ซ้ำกันและคงที่ 
+     */
+    function getSeed(tokenId) {
+        // Simple hashing (not cryptographically secure, but good enough for generative art seed)
+        let hash = 0;
+        for (let i = 0; i < tokenId.length; i++) {
+            hash = tokenId.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return hash;
+    }
+    
+    // Simple PRNG (Pseudo-Random Number Generator) based on a seed
+    let seed = getSeed(getTokenId());
+    function seededRandom() {
+        // Lehmer random number generator (Park-Miller)
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+    }
+
+    // ฟังก์ชัน Math.random() เดิมจะถูกแทนที่ด้วย seededRandom() 
+    // เพื่อให้การสร้างงานศิลปะคงที่ตาม Token ID
+    const _originalMathRandom = Math.random;
+    Math.random = seededRandom; 
+    
+    function generateSkeletonPixelArt(canvas, glitchIntensity = 0.3) {
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const pixelSize = 8;
+      const gridWidth = width / pixelSize;
+      const gridHeight = height / pixelSize;
+
+      // Clear canvas
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
+
+      // Skeleton structure (simplified pixel positions)
+      const skeletonPattern = [
+        // Skull
+        [7,2], [8,2], [9,2], [10,2],
+        [6,3], [7,3], [8,3], [9,3], [10,3], [11,3],
+        [6,4], [7,4], [10,4], [11,4], // Eyes
+        [6,5], [7,5], [8,5], [9,5], [10,5], [11,5],
+        [7,6], [8,6], [9,6], [10,6],
+        // Spine
+        [8,7], [9,7],
+        [8,8], [9,8],
+        [8,9], [9,9],
+        // Ribs
+        [7,8], [10,8],
+        [6,9], [11,9],
+        [7,10], [10,10],
+        // Arms
+        [5,9], [12,9],
+        [4,10], [13,10],
+        [3,11], [14,11],
+        // Pelvis
+        [7,11], [8,11], [9,11], [10,11],
+        // Legs
+        [7,12], [10,12],
+        [7,13], [10,13],
+        [7,14], [10,14],
+        [6,15], [11,15]
+      ];
+
+      // Draw skeleton with glitch effect
+      skeletonPattern.forEach(([x, y]) => {
+        const colors = ['#00ff00', '#ff00ff', '#00ffff', '#ffff00'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Apply glitch offset
+        const glitchX = Math.random() < glitchIntensity ? (Math.random() - 0.5) * pixelSize * 2 : 0;
+        const glitchY = Math.random() < glitchIntensity ? (Math.random() - 0.5) * pixelSize * 2 : 0;
+        
+        ctx.fillStyle = color;
+        ctx.fillRect(
+          x * pixelSize + glitchX, 
+          y * pixelSize + glitchY, 
+          pixelSize, 
+          pixelSize
+        );
+
+        // Random glitch duplicates
+        if (Math.random() < glitchIntensity * 0.5) {
+          ctx.fillStyle = color;
+          ctx.globalAlpha = 0.5;
+          ctx.fillRect(
+            x * pixelSize + (Math.random() - 0.5) * pixelSize * 3,
+            y * pixelSize + (Math.random() - 0.5) * pixelSize * 3,
+            pixelSize,
+            pixelSize
+          );
+          ctx.globalAlpha = 1;
+        }
+      });
+
+      // Add scan lines
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+      for (let i = 0; i < height; i += 4) {
+        ctx.fillRect(0, i, width, 2);
+      }
+    }
+
+    function createArtCard(tokenId) {
+      // Re-seed PRNG for this token
+      seed = getSeed(tokenId);
+      Math.random = seededRandom; 
+      
+      const card = document.createElement('div');
+      card.className = 'art-card';
+      
+      // Canvas size: 160x160 (20x20 grid of 8px pixels)
+      const canvas = document.createElement('canvas');
+      canvas.className = 'skeleton-art';
+      canvas.width = 160; 
+      canvas.height = 160;
+
+      const artCanvas = document.createElement('div');
+      artCanvas.className = 'art-canvas';
+      // ปรับขนาด art-canvas ให้เข้ากับ grid-card
+      artCanvas.style.height = 'auto'; 
+      artCanvas.style.aspectRatio = '1 / 1';
+      artCanvas.appendChild(canvas);
+
+      const glitchOverlay = document.createElement('div');
+      glitchOverlay.className = 'glitch-overlay';
+      artCanvas.appendChild(glitchOverlay);
+
+      const artId = document.createElement('div');
+      artId.className = 'art-id';
+      artId.textContent = `#${String(tokenId).padStart(4, '0')}`;
+
+      // Glitch Intensity (เป็น Trait)
+      const glitchIntensity = 0.2 + Math.random() * 0.4; // 0.2 to 0.6
+
+      // Rarity (เป็น Trait)
+      const rarityIndex = Math.floor(Math.random() * rarityTypes.length);
+      const rarity = document.createElement('div');
+      rarity.className = 'art-rarity';
+      rarity.textContent = rarityTypes[rarityIndex];
+
+      card.appendChild(artCanvas);
+      card.appendChild(artId);
+      card.appendChild(rarity);
+
+      // Generate art
+      generateSkeletonPixelArt(canvas, glitchIntensity);
+
+      // Add hover effect to re-generate (if allowed)
+      // Note: OpenSea อาจจะไม่อนุญาตให้มีการเปลี่ยนแปลงเมื่อนำไปแสดงผล
+      card.addEventListener('mouseenter', () => {
+        // รีเซ็ต Seed ก่อนสุ่มใหม่เพื่อให้ภาพยังเป็นแบบเดิมหากมีการโฮเวอร์หลายครั้ง 
+        // หรือจะลบส่วนนี้ออกไปเลยก็ได้
+        seed = getSeed(tokenId);
+        Math.random = seededRandom; 
+        generateSkeletonPixelArt(canvas, glitchIntensity);
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        // รีเซ็ต Seed เพื่อสร้างภาพเดิมกลับมาเมื่อออกจากโฮเวอร์ (เพื่อให้ภาพคงที่)
+        seed = getSeed(tokenId);
+        Math.random = seededRandom; 
+        generateSkeletonPixelArt(canvas, glitchIntensity);
+      });
+
+
+      return card;
+    }
+
+    function generateGallery(count = 1) {
+      const grid = document.getElementById('artGrid');
+      grid.innerHTML = '';
+      
+      // ดึง ID ของโทเคนปัจจุบัน
+      const tokenId = getTokenId(); 
+      
+      // สร้างการ์ดเดียวสำหรับ NFT ชิ้นนี้เท่านั้น
+      grid.appendChild(createArtCard(tokenId));
+      
+      // คืนค่า Math.random() กลับไปใช้ฟังก์ชันเดิม (ไม่จำเป็นถ้าโค้ดนี้รันแค่ครั้งเดียว)
+      Math.random = _originalMathRandom; 
+    }
+
+    // ลบ event listener ของปุ่ม generateBtn เพื่อไม่ให้ผู้ใช้กดเปลี่ยนงานศิลปะใน NFT เดี่ยว
+    // document.getElementById('generateBtn').addEventListener('click', () => {
+    //   generateGallery(1); // หากต้องการเปิด ให้เปลี่ยนเป็นสร้างแค่ 1 ชิ้น
+    // });
+    
+    // ลบส่วนของ SDK ที่ไม่จำเป็นสำหรับการแสดงผลบน OpenSea
+    
+    // Initialize gallery - สร้าง NFT ชิ้นเดียวเมื่อโหลดหน้า
+    generateGallery(1); 
+  </script>
+ </body>
+</html>
