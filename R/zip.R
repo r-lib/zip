@@ -57,7 +57,7 @@ NULL
 #' In cherry picking mode, the selected files and directories
 #' will be at the root of the archive. This mode is handy if you
 #' want to select a subset of files and directories, possibly from
-#' different paths and put all of the in the archive, at the top
+#' different paths and put all of them in the archive, at the top
 #' level.
 #'
 #' Here is an example with the same directory structure as above:
@@ -91,14 +91,14 @@ NULL
 #'
 #' ## `zipr()` and `zipr_append()`
 #'
-#' These function exist for historical reasons. They are identical
-#' to `zip()` and `zipr_append()` with a different default for the
+#' These functions exist for historical reasons. They are identical
+#' to `zip()` and `zip_append()` with a different default for the
 #' `mode` argument.
 #'
 #' @param zipfile The zip file to create. If the file exists, `zip`
 #'   overwrites it, but `zip_append` appends to it. If it is a directory
 #'   an error is thrown.
-#' @param files List of file to add to the archive. See details below
+#' @param files List of files to add to the archive. See details below
 #'    about absolute and relative path names.
 #' @param recurse Whether to add the contents of directories recursively.
 #' @param compression_level A number between 1 and 9. 9 compresses best,
