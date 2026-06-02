@@ -92,7 +92,14 @@ SEXP R_zip_list(SEXP zipfile) {
     status = mz_zip_reader_file_stat (&zip_archive, i, &file_stat);
     if (!status) goto cleanup;
 
-    SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkChar(file_stat.m_filename));
+    const char *fname = file_stat.m_filename;
+    char *fname_utf8 = NULL;
+    if (!(file_stat.m_bit_flag & 0x800)) {
+      fname_utf8 = zip_cp437_to_utf8(fname);
+      if (fname_utf8) fname = fname_utf8;
+    }
+    SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkCharCE(fname, CE_UTF8));
+    if (fname_utf8) free(fname_utf8);
     REAL(VECTOR_ELT(result, 1))[i] = file_stat.m_comp_size;
     REAL(VECTOR_ELT(result, 2))[i] = file_stat.m_uncomp_size;
     INTEGER(VECTOR_ELT(result, 3))[i] = (int) file_stat.m_time;
