@@ -493,7 +493,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
         if (filenameu16) free(filenameu16);
         ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
       }
-      sprintf(tmp_path, "%s.tmp", czipfile);
+      snprintf(tmp_path, strlen(czipfile) + 5, "%s.tmp", czipfile);
 
       FILE *tmp_fh = zip_open_utf8(tmp_path, ZIP__WRITE, &filenameu16,
                                    &filenameu16_len);
