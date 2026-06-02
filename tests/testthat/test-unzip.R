@@ -224,6 +224,18 @@ test_that("CP437-encoded filename is decoded on extraction", {
   zip::unzip(cp437, exdir = tmp)
   extracted <- list.files(tmp)
   expect_equal(extracted, "catal\u00f1n.txt")
-  expect_equal(readLines(file.path(tmp, "catal\u00f1n.txt")), "CP437 filename test")
+  expect_equal(
+    readLines(file.path(tmp, "catal\u00f1n.txt")),
+    "CP437 filename test"
+  )
 })
 
+test_that("unzip works on files with STORED comp_size=0 quirk", {
+  zf <- test_path("fixtures/stored-zero-compsize.zip")
+  tmp <- test_temp_dir()
+  zip::unzip(zf, exdir = tmp)
+  expect_equal(
+    readLines(file.path(tmp, "subdir", "hello.txt")),
+    "Hello from a quirky zip file!"
+  )
+})
