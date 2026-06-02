@@ -10,6 +10,8 @@
   `zipr_append()`. It allows specifying custom paths for entries inside
   the archive, independently of their paths on disk (#50).
 
+* Updated embedded miniz to version 3.1.1 (#122).
+
 # zip 2.3.3
 
 * `zip_list()` now has a `type` column, for the file type.
