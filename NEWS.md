@@ -1,5 +1,9 @@
 # zip (development version)
 
+* `zip_append()` and `zipr_append()` now replace existing entries when
+  appending a file whose archive path already exists in the zip file,
+  instead of creating duplicate entries (#111).
+
 * New `keys` argument to `zip()`, `zipr()`, `zip_append()`, and
   `zipr_append()`. It allows specifying custom paths for entries inside
   the archive, independently of their paths on disk (#50).

@@ -323,6 +323,39 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
   return 0;
 }
 
+static int zip_rename(const char *from, const char *to) {
+#ifdef _WIN32
+  wchar_t *wfrom = NULL, *wto = NULL;
+  size_t wfrom_len = 0, wto_len = 0;
+  int ret;
+  if (zip__utf8_to_utf16(from, &wfrom, &wfrom_len) ||
+      zip__utf8_to_utf16(to, &wto, &wto_len)) {
+    if (wfrom) free(wfrom);
+    if (wto) free(wto);
+    return 1;
+  }
+  ret = MoveFileExW(wfrom, wto, MOVEFILE_REPLACE_EXISTING) ? 0 : 1;
+  free(wfrom);
+  free(wto);
+  return ret;
+#else
+  return rename(from, to);
+#endif
+}
+
+static void zip_remove_file(const char *path) {
+#ifdef _WIN32
+  wchar_t *wpath = NULL;
+  size_t wpath_len = 0;
+  if (!zip__utf8_to_utf16(path, &wpath, &wpath_len)) {
+    DeleteFileW(wpath);
+    free(wpath);
+  }
+#else
+  remove(path);
+#endif
+}
+
 int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 	    const char **cfiles, int *cdirs, double *cmtimes,
 	    int compression_level, int cappend) {
@@ -333,25 +366,203 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
   memset(&zip_archive, 0, sizeof(zip_archive));
   zip_char_t *filenameu16 = NULL;
   size_t filenameu16_len = 0;
+  mz_uint existing_count = 0;
 
   FILE *zfh = NULL;
 
   if (cappend) {
-    zfh = zip_open_utf8(czipfile, ZIP__APPEND, &filenameu16,
-                        &filenameu16_len);
+    zfh = zip_open_utf8(czipfile, ZIP__APPEND, &filenameu16, &filenameu16_len);
     if (zfh == NULL) {
       if (filenameu16) free(filenameu16);
       ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
     }
-    if (!mz_zip_reader_init_cfile(&zip_archive, zfh, 0, 0) ||
-	      !mz_zip_writer_init_from_reader(&zip_archive, NULL)) {
-          if (filenameu16) free(filenameu16);
-          fclose(zfh);
-          ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
+    if (!mz_zip_reader_init_cfile(&zip_archive, zfh, 0, 0)) {
+      if (filenameu16) free(filenameu16);
+      fclose(zfh);
+      ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
     }
+
+    existing_count = mz_zip_reader_get_num_files(&zip_archive);
+
+    /* Determine which existing entries conflict with incoming keys */
+    int *skip = NULL;
+    int has_replacements = 0;
+    if (existing_count > 0 && n > 0) {
+      skip = calloc(existing_count, sizeof(int));
+      if (!skip) {
+        mz_zip_reader_end(&zip_archive);
+        fclose(zfh);
+        if (filenameu16) free(filenameu16);
+        ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
+      }
+      for (mz_uint j = 0; j < existing_count; j++) {
+        mz_zip_archive_file_stat fstat;
+        if (!mz_zip_reader_file_stat(&zip_archive, j, &fstat)) continue;
+        for (int k = 0; k < n; k++) {
+          if (strcmp(fstat.m_filename, ckeys[k]) == 0) {
+            skip[j] = 1;
+            has_replacements = 1;
+            break;
+          }
+        }
+      }
+    }
+
+    if (has_replacements) {
+      /* Rebuild into a temp file: copy non-replaced entries, then add new ones */
+      char *tmp_path = malloc(strlen(czipfile) + 5);
+      if (!tmp_path) {
+        free(skip);
+        mz_zip_reader_end(&zip_archive);
+        fclose(zfh);
+        if (filenameu16) free(filenameu16);
+        ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
+      }
+      sprintf(tmp_path, "%s.tmp", czipfile);
+
+      FILE *tmp_fh = zip_open_utf8(tmp_path, ZIP__WRITE, &filenameu16,
+                                   &filenameu16_len);
+      if (!tmp_fh) {
+        free(tmp_path);
+        free(skip);
+        mz_zip_reader_end(&zip_archive);
+        fclose(zfh);
+        if (filenameu16) free(filenameu16);
+        ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+      }
+
+      mz_zip_archive wtr;
+      memset(&wtr, 0, sizeof(wtr));
+      if (!mz_zip_writer_init_cfile(&wtr, tmp_fh, 0)) {
+        fclose(tmp_fh);
+        zip_remove_file(tmp_path);
+        free(tmp_path);
+        free(skip);
+        mz_zip_reader_end(&zip_archive);
+        fclose(zfh);
+        if (filenameu16) free(filenameu16);
+        ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+      }
+
+      mz_uint num_copied = 0;
+      for (mz_uint j = 0; j < existing_count; j++) {
+        if (skip[j]) continue;
+        if (!mz_zip_writer_add_from_zip_reader(&wtr, &zip_archive, j)) {
+          mz_zip_writer_end(&wtr);
+          fclose(tmp_fh);
+          zip_remove_file(tmp_path);
+          free(tmp_path);
+          free(skip);
+          mz_zip_reader_end(&zip_archive);
+          fclose(zfh);
+          if (filenameu16) free(filenameu16);
+          ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+        }
+        num_copied++;
+      }
+
+      free(skip);
+      mz_zip_reader_end(&zip_archive);
+      fclose(zfh);
+      zfh = NULL;
+
+      for (i = 0; i < n; i++) {
+        const char *key = ckeys[i];
+        const char *filename = cfiles[i];
+        int directory = cdirs[i];
+        MZ_TIME_T cmtime = (MZ_TIME_T) cmtimes[i];
+        if (directory) {
+          if (!mz_zip_writer_add_mem_ex_v2(&wtr, key, 0, 0, 0, 0,
+                                           ccompression_level, 0, 0, &cmtime,
+                                           0, 0, 0, 0)) {
+            mz_zip_writer_end(&wtr);
+            fclose(tmp_fh);
+            zip_remove_file(tmp_path);
+            free(tmp_path);
+            if (filenameu16) free(filenameu16);
+            ZIP_ERROR(R_ZIP_EADDDIR, key, czipfile);
+          }
+        } else {
+          FILE *fh = zip_open_utf8(filename, ZIP__READ, &filenameu16,
+                                   &filenameu16_len);
+          if (!fh) {
+            mz_zip_writer_end(&wtr);
+            fclose(tmp_fh);
+            zip_remove_file(tmp_path);
+            free(tmp_path);
+            if (filenameu16) free(filenameu16);
+            ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+          }
+          mz_uint64 uncomp_size = 0;
+          if (zip_file_size(fh, &uncomp_size)) {
+            fclose(fh);
+            mz_zip_writer_end(&wtr);
+            fclose(tmp_fh);
+            zip_remove_file(tmp_path);
+            free(tmp_path);
+            if (filenameu16) free(filenameu16);
+            ZIP_ERROR(R_ZIP_FILESIZE, filename);
+          }
+          int ret = mz_zip_writer_add_cfile(&wtr, key, fh, uncomp_size,
+              &cmtime, NULL, 0, ccompression_level, NULL, 0, NULL, 0);
+          fclose(fh);
+          if (!ret) {
+            mz_zip_writer_end(&wtr);
+            fclose(tmp_fh);
+            zip_remove_file(tmp_path);
+            free(tmp_path);
+            if (filenameu16) free(filenameu16);
+            ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+          }
+        }
+        if (zip_set_permissions(&wtr, num_copied + i, filename)) {
+          mz_zip_writer_end(&wtr);
+          fclose(tmp_fh);
+          zip_remove_file(tmp_path);
+          free(tmp_path);
+          if (filenameu16) free(filenameu16);
+          ZIP_ERROR(R_ZIP_ESETZIPPERM, key, czipfile);
+        }
+      }
+
+      if (!mz_zip_writer_finalize_archive(&wtr)) {
+        mz_zip_writer_end(&wtr);
+        fclose(tmp_fh);
+        zip_remove_file(tmp_path);
+        free(tmp_path);
+        if (filenameu16) free(filenameu16);
+        ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+      }
+      if (!mz_zip_writer_end(&wtr)) {
+        fclose(tmp_fh);
+        zip_remove_file(tmp_path);
+        free(tmp_path);
+        if (filenameu16) free(filenameu16);
+        ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+      }
+      fclose(tmp_fh);
+
+      if (zip_rename(tmp_path, czipfile)) {
+        zip_remove_file(tmp_path);
+        free(tmp_path);
+        if (filenameu16) free(filenameu16);
+        ZIP_ERROR(R_ZIP_ECREATE, czipfile);
+      }
+      free(tmp_path);
+      if (filenameu16) free(filenameu16);
+      return 0;
+    }
+
+    /* No replacements: append in-place */
+    free(skip);
+    if (!mz_zip_writer_init_from_reader(&zip_archive, NULL)) {
+      if (filenameu16) free(filenameu16);
+      fclose(zfh);
+      ZIP_ERROR(R_ZIP_EOPENAPPEND, czipfile);
+    }
+
   } else {
-    zfh = zip_open_utf8(czipfile, ZIP__WRITE, &filenameu16,
-                        &filenameu16_len);
+    zfh = zip_open_utf8(czipfile, ZIP__WRITE, &filenameu16, &filenameu16_len);
     if (zfh == NULL) {
       if (filenameu16) free(filenameu16);
       ZIP_ERROR(R_ZIP_EOPENWRITE, czipfile);
@@ -363,6 +574,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
     }
   }
 
+  /* Common path for create and in-place append (no replacements) */
   for (i = 0; i < n; i++) {
     const char *key = ckeys[i];
     const char *filename = cfiles[i];
@@ -372,27 +584,28 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
       if (!mz_zip_writer_add_mem_ex_v2(&zip_archive, key, 0, 0, 0, 0,
 				       ccompression_level, 0, 0, &cmtime, 0, 0,
 				       0, 0)) {
-	      mz_zip_writer_end(&zip_archive);
+        mz_zip_writer_end(&zip_archive);
         if (filenameu16) free(filenameu16);
         fclose(zfh);
         ZIP_ERROR(R_ZIP_EADDDIR, key, czipfile);
       }
-
     } else {
-      FILE* fh = zip_open_utf8(filename, ZIP__READ, &filenameu16,
+      FILE *fh = zip_open_utf8(filename, ZIP__READ, &filenameu16,
                                &filenameu16_len);
       if (fh == NULL) {
+        mz_zip_writer_end(&zip_archive);
         if (filenameu16) free(filenameu16);
         fclose(zfh);
         ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
       mz_uint64 uncomp_size = 0;
       if (zip_file_size(fh, &uncomp_size)) {
+        fclose(fh);
+        mz_zip_writer_end(&zip_archive);
         if (filenameu16) free(filenameu16);
         fclose(zfh);
         ZIP_ERROR(R_ZIP_FILESIZE, filename);
       }
-
       int ret = mz_zip_writer_add_cfile(&zip_archive, key, fh,
           /* size_to_all= */ uncomp_size, /* pFile_time = */ &cmtime,
           /* pComment= */ NULL, /* comment_size= */ 0,
@@ -403,23 +616,24 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
           /* user_extra_data_central_len = */ 0);
       fclose(fh);
       if (!ret) {
-        if (filenameu16) free(filenameu16);
         mz_zip_writer_end(&zip_archive);
+        if (filenameu16) free(filenameu16);
+        fclose(zfh);
         ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
       }
     }
 
-    if (zip_set_permissions(&zip_archive, i, filename)) {
-      if (filenameu16) free(filenameu16);
+    if (zip_set_permissions(&zip_archive, existing_count + i, filename)) {
       mz_zip_writer_end(&zip_archive);
+      if (filenameu16) free(filenameu16);
       fclose(zfh);
       ZIP_ERROR(R_ZIP_ESETZIPPERM, key, czipfile);
     }
   }
 
   if (!mz_zip_writer_finalize_archive(&zip_archive)) {
-    if (filenameu16) free(filenameu16);
     mz_zip_writer_end(&zip_archive);
+    if (filenameu16) free(filenameu16);
     fclose(zfh);
     ZIP_ERROR(R_ZIP_ECREATE, czipfile);
   }
@@ -433,6 +647,5 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
   if (filenameu16) free(filenameu16);
   fclose(zfh);
 
-  /* TODO: return info */
   return 0;
 }
