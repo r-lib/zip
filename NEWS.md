@@ -1,5 +1,9 @@
 # zip (development version)
 
+* `zip_append()` and `zipr_append()` now replace existing entries when
+  appending a file whose archive path already exists in the zip file,
+  instead of creating duplicate entries (#111).
+
 * `unzip()` and `zip_list()` now correctly handle ZIP files with
   non-UTF-8 filenames (e.g. filenames encoded in IBM CP437, as created
   by many Windows tools). The filenames are converted to UTF-8 using the
