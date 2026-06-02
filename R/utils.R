@@ -1,6 +1,12 @@
 `%||%` <- function(l, r) if (is.null(l)) r else l
 
-get_zip_data <- function(files, recurse, keep_path, include_directories, keys = NULL) {
+get_zip_data <- function(
+  files,
+  recurse,
+  keep_path,
+  include_directories,
+  keys = NULL
+) {
   list <- if (is.null(keys)) {
     if (keep_path) {
       get_zip_data_path(files, recurse)
@@ -40,7 +46,11 @@ get_zip_data_keys <- function(files, keys, recurse, keep_path) {
           contents$key <- paste0(key, "/", contents$key)
         }
         sub_data <- rbind(
-          data_frame(key = paste0(key, "/"), file = normalizePath("."), dir = TRUE),
+          data_frame(
+            key = paste0(key, "/"),
+            file = normalizePath("."),
+            dir = TRUE
+          ),
           contents
         )
       } else if (keep_path) {
@@ -69,7 +79,9 @@ get_zip_data_keys <- function(files, keys, recurse, keep_path) {
 
   result <- do.call(rbind, Filter(Negate(is.null), results))
   dup <- duplicated(result$file)
-  if (any(dup)) result <- result[!dup, ]
+  if (any(dup)) {
+    result <- result[!dup, ]
+  }
   result
 }
 

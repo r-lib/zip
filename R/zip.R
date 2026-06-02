@@ -272,7 +272,13 @@ zip_internal <- function(
     stop("Some files do not exist")
   }
 
-  data <- get_zip_data(files, recurse, keep_path, include_directories, keys = keys)
+  data <- get_zip_data(
+    files,
+    recurse,
+    keep_path,
+    include_directories,
+    keys = keys
+  )
   data$key <- fix_absolute_paths(data$key)
   warn_for_colon(data$key)
   warn_for_dotdot(data$key)

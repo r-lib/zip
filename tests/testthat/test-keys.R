@@ -86,7 +86,12 @@ test_that("keys warns and skips directories when recurse = FALSE", {
 
   withr::with_dir(tmp, {
     expect_warning(
-      zip(zipfile, c("top.txt", "d"), keys = c("a.txt", "subdir"), recurse = FALSE),
+      zip(
+        zipfile,
+        c("top.txt", "d"),
+        keys = c("a.txt", "subdir"),
+        recurse = FALSE
+      ),
       "directories ignored"
     )
   })
