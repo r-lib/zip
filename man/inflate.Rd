@@ -30,6 +30,6 @@ data_gz <- deflate(charToRaw("Hello world!"))
 inflate(data_gz$output)
 }
 \seealso{
-\code{\link[base:memCompress]{base::memDecompress()}} does the same with \code{type = "gzip"},
+\code{\link[base:memDecompress]{base::memDecompress()}} does the same with \code{type = "gzip"},
 but it does not tell you the number of bytes read from the input.
 }

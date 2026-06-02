@@ -19,6 +19,11 @@ Useful links:
 \author{
 \strong{Maintainer}: Gábor Csárdi \email{csardi.gabor@gmail.com}
 
+Authors:
+\itemize{
+  \item Gábor Csárdi \email{csardi.gabor@gmail.com}
+}
+
 Other contributors:
 \itemize{
   \item Kuba Podgórski [contributor]
