@@ -72,7 +72,9 @@ test_that("can compress / uncompress many files", {
   }
 
   tmp <- test_temp_dir()
-  for (i in 1:70000) cat("file", i, file = file.path(tmp, i))
+  for (i in 1:70000) {
+    cat("file", i, file = file.path(tmp, i))
+  }
 
   zip <- test_temp_file(".zip")
   zipr(zip, tmp)

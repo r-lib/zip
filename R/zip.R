@@ -247,7 +247,9 @@ zip_internal <- function(
   oldwd <- setwd(root)
   on.exit(setwd(oldwd), add = TRUE)
 
-  if (!all(file.exists(files))) stop("Some files do not exist")
+  if (!all(file.exists(files))) {
+    stop("Some files do not exist")
+  }
 
   data <- get_zip_data(files, recurse, keep_path, include_directories)
   data$key <- fix_absolute_paths(data$key)
@@ -371,7 +373,9 @@ unzip <- function(
   )
 
   zipfile <- enc2c(normalizePath(zipfile))
-  if (!is.null(files)) files <- enc2c(files)
+  if (!is.null(files)) {
+    files <- enc2c(files)
+  }
   exdir <- sub("/+$", "", exdir)
   mkdirp(exdir)
   exdir <- enc2c(normalizePath(exdir))

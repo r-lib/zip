@@ -132,4 +132,3 @@ transform_tempdir <- function(x) {
   x <- sub("[A-Z]:.*Rtmp[a-zA-Z0-9]+[\\\\/]", "<tempdir>/", x)
   x
 }
-

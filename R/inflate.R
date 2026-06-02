@@ -23,7 +23,9 @@ inflate <- function(buffer, pos = 1L, size = NULL) {
     is_count(pos),
     is.null(size) || is_count(size)
   )
-  if (!is.null(size)) size <- as.integer(size)
+  if (!is.null(size)) {
+    size <- as.integer(size)
+  }
   .Call(c_R_inflate, buffer, as.integer(pos), size)
 }
 
@@ -55,6 +57,8 @@ deflate <- function(buffer, level = 6L, pos = 1L, size = NULL) {
     is_count(pos),
     is.null(size) || is_count(size)
   )
-  if (!is.null(size)) size <- as.integer(size)
+  if (!is.null(size)) {
+    size <- as.integer(size)
+  }
   .Call(c_R_deflate, buffer, as.integer(level), as.integer(pos), size)
 }

@@ -3,12 +3,16 @@ os_type <- function() {
 }
 
 get_tool <- function(prog) {
-  if (os_type() == "windows") prog <- paste0(prog, ".exe")
+  if (os_type() == "windows") {
+    prog <- paste0(prog, ".exe")
+  }
 
   exe <- system.file(package = "zip", "bin", .Platform$r_arch, prog)
   if (exe == "") {
     pkgpath <- find.package("zip")
-    if (basename(pkgpath) == "inst") pkgpath <- dirname(pkgpath)
+    if (basename(pkgpath) == "inst") {
+      pkgpath <- dirname(pkgpath)
+    }
     exe <- file.path(pkgpath, "src", "tools", prog)
     if (!file.exists(exe)) return("")
   }

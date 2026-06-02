@@ -18,7 +18,9 @@ get_zip_data_path <- function(files, recurse) {
   if (recurse && length(files)) {
     data <- do.call(rbind, lapply(files, get_zip_data_path_recursive))
     dup <- duplicated(data$files)
-    if (any(dup)) data <- data <- data[!dup, drop = FALSE]
+    if (any(dup)) {
+      data <- data <- data[!dup, drop = FALSE]
+    }
     data
   } else {
     files <- ignore_dirs_with_warning(files)
@@ -70,7 +72,9 @@ get_zip_data_nopath <- function(files, recurse) {
   if (recurse && length(files)) {
     data <- do.call(rbind, lapply(files, get_zip_data_nopath_recursive))
     dup <- duplicated(data$files)
-    if (any(dup)) data <- data[!dup, drop = FALSE]
+    if (any(dup)) {
+      data <- data[!dup, drop = FALSE]
+    }
     data
   } else {
     files <- ignore_dirs_with_warning(files)
