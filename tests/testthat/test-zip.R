@@ -451,13 +451,16 @@ test_that("zip_append replaces existing file with same key", {
 
   dir.create(tmp <- tempfile())
   cat("original content", file = file.path(tmp, "file1"))
-  cat("other file",       file = file.path(tmp, "file2"))
+  cat("other file", file = file.path(tmp, "file2"))
 
   zipfile <- tempfile(fileext = ".zip")
   withr::with_dir(dirname(tmp), zip(zipfile, basename(tmp)))
 
   cat("updated content", file = file.path(tmp, "file1"))
-  withr::with_dir(dirname(tmp), zip_append(zipfile, file.path(basename(tmp), "file1")))
+  withr::with_dir(
+    dirname(tmp),
+    zip_append(zipfile, file.path(basename(tmp), "file1"))
+  )
 
   lst <- zip_list(zipfile)
   # Replaced entry moves to the end; non-replaced entries retain their order
@@ -486,8 +489,11 @@ test_that("zip_append replaces multiple existing entries", {
   zipfile <- tempfile(fileext = ".zip")
   withr::with_dir(
     dirname(tmp),
-    zip(zipfile, file.path(basename(tmp), c("a", "b", "c")),
-        include_directories = FALSE)
+    zip(
+      zipfile,
+      file.path(basename(tmp), c("a", "b", "c")),
+      include_directories = FALSE
+    )
   )
   expect_equal(nrow(zip_list(zipfile)), 3L)
 
@@ -495,8 +501,11 @@ test_that("zip_append replaces multiple existing entries", {
   cat("c2", file = file.path(tmp, "c"))
   withr::with_dir(
     dirname(tmp),
-    zip_append(zipfile, file.path(basename(tmp), c("a", "c")),
-               include_directories = FALSE)
+    zip_append(
+      zipfile,
+      file.path(basename(tmp), c("a", "c")),
+      include_directories = FALSE
+    )
   )
 
   lst <- zip_list(zipfile)
@@ -506,9 +515,18 @@ test_that("zip_append replaces multiple existing entries", {
   exdir <- tempfile()
   on.exit(try(unlink(exdir, recursive = TRUE)), add = TRUE)
   unzip(zipfile, exdir = exdir)
-  expect_equal(readLines(file.path(exdir, basename(tmp), "a"), warn = FALSE), "a2")
-  expect_equal(readLines(file.path(exdir, basename(tmp), "b"), warn = FALSE), "b1")
-  expect_equal(readLines(file.path(exdir, basename(tmp), "c"), warn = FALSE), "c2")
+  expect_equal(
+    readLines(file.path(exdir, basename(tmp), "a"), warn = FALSE),
+    "a2"
+  )
+  expect_equal(
+    readLines(file.path(exdir, basename(tmp), "b"), warn = FALSE),
+    "b1"
+  )
+  expect_equal(
+    readLines(file.path(exdir, basename(tmp), "c"), warn = FALSE),
+    "c2"
+  )
 })
 
 test_that("zip_append without conflicts still works", {
@@ -526,8 +544,11 @@ test_that("zip_append without conflicts still works", {
   cat("file2", file = file.path(tmp, "file2"))
   withr::with_dir(
     dirname(tmp),
-    zip_append(zipfile, file.path(basename(tmp), "file2"),
-               include_directories = FALSE)
+    zip_append(
+      zipfile,
+      file.path(basename(tmp), "file2"),
+      include_directories = FALSE
+    )
   )
 
   lst <- zip_list(zipfile)
