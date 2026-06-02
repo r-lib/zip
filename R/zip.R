@@ -111,6 +111,12 @@ NULL
 #' @param mode Selects how files and directories are stored in
 #'   the archive. It can be `"mirror"` or `"cherry-pick"`.
 #'   See "Relative Paths" below for details.
+#' @param keys An optional character vector of the same length as `files`,
+#'   specifying the paths of the corresponding entries inside the zip
+#'   archive. For a file, the key is the exact archive path. For a
+#'   directory, the key becomes the directory prefix under which all
+#'   contents are stored. If `NULL` (default), paths are determined by
+#'   `mode`. `"."` may not appear in `files` when `keys` is specified.
 #' @return The name of the created zip file, invisibly.
 #'
 #' @export
@@ -140,7 +146,8 @@ zip <- function(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("mirror", "cherry-pick")
+  mode = c("mirror", "cherry-pick"),
+  keys = NULL
 ) {
   mode <- match.arg(mode)
   zip_internal(
@@ -151,7 +158,8 @@ zip <- function(
     append = FALSE,
     root = root,
     keep_path = (mode == "mirror"),
-    include_directories = include_directories
+    include_directories = include_directories,
+    keys = keys
   )
 }
 
@@ -165,7 +173,8 @@ zipr <- function(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("cherry-pick", "mirror")
+  mode = c("cherry-pick", "mirror"),
+  keys = NULL
 ) {
   mode <- match.arg(mode)
   zip_internal(
@@ -176,7 +185,8 @@ zipr <- function(
     append = FALSE,
     root = root,
     keep_path = (mode == "mirror"),
-    include_directories = include_directories
+    include_directories = include_directories,
+    keys = keys
   )
 }
 
@@ -190,7 +200,8 @@ zip_append <- function(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("mirror", "cherry-pick")
+  mode = c("mirror", "cherry-pick"),
+  keys = NULL
 ) {
   mode <- match.arg(mode)
   zip_internal(
@@ -201,7 +212,8 @@ zip_append <- function(
     append = TRUE,
     root = root,
     keep_path = (mode == "mirror"),
-    include_directories = include_directories
+    include_directories = include_directories,
+    keys = keys
   )
 }
 
@@ -215,7 +227,8 @@ zipr_append <- function(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("cherry-pick", "mirror")
+  mode = c("cherry-pick", "mirror"),
+  keys = NULL
 ) {
   mode <- match.arg(mode)
   zip_internal(
@@ -226,7 +239,8 @@ zipr_append <- function(
     append = TRUE,
     root = root,
     keep_path = (mode == "mirror"),
-    include_directories = include_directories
+    include_directories = include_directories,
+    keys = keys
   )
 }
 
@@ -238,8 +252,15 @@ zip_internal <- function(
   append,
   root,
   keep_path,
-  include_directories
+  include_directories,
+  keys = NULL
 ) {
+  if (!is.null(keys)) {
+    if (length(keys) != length(files)) {
+      stop("`keys` must have the same length as `files`")
+    }
+  }
+
   zipfile <- path.expand(zipfile)
   if (dir.exists(zipfile)) {
     stop("zip file at `", zipfile, "` already exists and it is a directory")
@@ -251,7 +272,13 @@ zip_internal <- function(
     stop("Some files do not exist")
   }
 
-  data <- get_zip_data(files, recurse, keep_path, include_directories)
+  data <- get_zip_data(
+    files,
+    recurse,
+    keep_path,
+    include_directories,
+    keys = keys
+  )
   data$key <- fix_absolute_paths(data$key)
   warn_for_colon(data$key)
   warn_for_dotdot(data$key)

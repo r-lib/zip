@@ -1,5 +1,9 @@
 # zip (development version)
 
+* New `keys` argument to `zip()`, `zipr()`, `zip_append()`, and
+  `zipr_append()`. It allows specifying custom paths for entries inside
+  the archive, independently of their paths on disk (#50).
+
 # zip 2.3.3
 
 * `zip_list()` now has a `type` column, for the file type.
