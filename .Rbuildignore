@@ -28,3 +28,4 @@
 ^\.vscode$
 ^\.cache$
 ^tools/extra/[.]*$
+^CLAUDE\.md$
