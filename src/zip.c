@@ -12,6 +12,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
+#include <limits.h>
 #endif
 
 #include "miniz.h"
@@ -192,7 +193,13 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 
 #ifndef WIN32
     } else if (S_ISLNK(attr)) {
-      char *tmpbuf = malloc(file_stat.m_uncomp_size + 1); // trailing 0
+      if (file_stat.m_uncomp_size >= PATH_MAX) {
+        mz_zip_reader_end(&zip_archive);
+        if (buffer) free(buffer);
+        fclose(zfh);
+        ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
+      }
+      char *tmpbuf = malloc(file_stat.m_uncomp_size + 1);
       if (!tmpbuf) {
 	      mz_zip_reader_end(&zip_archive);
 	      if (buffer) free(buffer);
