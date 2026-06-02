@@ -12,7 +12,8 @@ zip(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("mirror", "cherry-pick")
+  mode = c("mirror", "cherry-pick"),
+  keys = NULL
 )
 
 zipr(
@@ -22,7 +23,8 @@ zipr(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("cherry-pick", "mirror")
+  mode = c("cherry-pick", "mirror"),
+  keys = NULL
 )
 
 zip_append(
@@ -32,7 +34,8 @@ zip_append(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("mirror", "cherry-pick")
+  mode = c("mirror", "cherry-pick"),
+  keys = NULL
 )
 
 zipr_append(
@@ -42,7 +45,8 @@ zipr_append(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("cherry-pick", "mirror")
+  mode = c("cherry-pick", "mirror"),
+  keys = NULL
 )
 ```
 
@@ -81,6 +85,15 @@ zipr_append(
 
   Selects how files and directories are stored in the archive. It can be
   `"mirror"` or `"cherry-pick"`. See "Relative Paths" below for details.
+
+- keys:
+
+  An optional character vector of the same length as `files`, specifying
+  the paths of the corresponding entries inside the zip archive. For a
+  file, the key is the exact archive path. For a directory, the key
+  becomes the directory prefix under which all contents are stored. If
+  `NULL` (default), paths are determined by `mode`. `"."` may not appear
+  in `files` when `keys` is specified.
 
 ## Value
 
@@ -195,9 +208,9 @@ zip_list(zipfile)
 #> # A data frame: 3 × 8
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-02 10:23:04 755        
-#> 2 mydir/file1              15                10 2026-06-02 10:23:04 644        
-#> 3 mydir/file2              16                11 2026-06-02 10:23:04 644        
+#> 1 mydir/                    0                 0 2026-06-02 10:27:58 755        
+#> 2 mydir/file1              15                10 2026-06-02 10:27:58 644        
+#> 3 mydir/file2              16                11 2026-06-02 10:27:58 644        
 #> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
 
 ## Add another file
@@ -207,9 +220,9 @@ zip_list(zipfile)
 #> # A data frame: 4 × 8
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-02 10:23:04 644        
-#> 2 mydir/file1              15                10 2026-06-02 10:23:04 644        
-#> 3 mydir/file2              16                11 2026-06-02 10:23:04 644        
-#> 4 mydir/file3              15                10 2026-06-02 10:23:04 600        
+#> 1 mydir/                    0                 0 2026-06-02 10:27:58 644        
+#> 2 mydir/file1              15                10 2026-06-02 10:27:58 644        
+#> 3 mydir/file2              16                11 2026-06-02 10:27:58 644        
+#> 4 mydir/file3              15                10 2026-06-02 10:27:58 600        
 #> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
 ```

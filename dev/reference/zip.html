@@ -46,7 +46,8 @@
 <span>  compression_level <span class="op">=</span> <span class="fl">9</span>,</span>
 <span>  include_directories <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  root <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mirror"</span>, <span class="st">"cherry-pick"</span><span class="op">)</span></span>
+<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mirror"</span>, <span class="st">"cherry-pick"</span><span class="op">)</span>,</span>
+<span>  keys <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">zipr</span><span class="op">(</span></span>
@@ -56,7 +57,8 @@
 <span>  compression_level <span class="op">=</span> <span class="fl">9</span>,</span>
 <span>  include_directories <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  root <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cherry-pick"</span>, <span class="st">"mirror"</span><span class="op">)</span></span>
+<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cherry-pick"</span>, <span class="st">"mirror"</span><span class="op">)</span>,</span>
+<span>  keys <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">zip_append</span><span class="op">(</span></span>
@@ -66,7 +68,8 @@
 <span>  compression_level <span class="op">=</span> <span class="fl">9</span>,</span>
 <span>  include_directories <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  root <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mirror"</span>, <span class="st">"cherry-pick"</span><span class="op">)</span></span>
+<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mirror"</span>, <span class="st">"cherry-pick"</span><span class="op">)</span>,</span>
+<span>  keys <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">zipr_append</span><span class="op">(</span></span>
@@ -76,7 +79,8 @@
 <span>  compression_level <span class="op">=</span> <span class="fl">9</span>,</span>
 <span>  include_directories <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  root <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cherry-pick"</span>, <span class="st">"mirror"</span><span class="op">)</span></span>
+<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cherry-pick"</span>, <span class="st">"mirror"</span><span class="op">)</span>,</span>
+<span>  keys <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -119,6 +123,15 @@ archive.</p></dd>
 <dd><p>Selects how files and directories are stored in
 the archive. It can be <code>"mirror"</code> or <code>"cherry-pick"</code>.
 See "Relative Paths" below for details.</p></dd>
+
+
+<dt id="arg-keys">keys<a class="anchor" aria-label="anchor" href="#arg-keys"></a></dt>
+<dd><p>An optional character vector of the same length as <code>files</code>,
+specifying the paths of the corresponding entries inside the zip
+archive. For a file, the key is the exact archive path. For a
+directory, the key becomes the directory prefix under which all
+contents are stored. If <code>NULL</code> (default), paths are determined by
+<code>mode</code>. <code>"."</code> may not appear in <code>files</code> when <code>keys</code> is specified.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -242,9 +255,9 @@ to <code>zip()</code> and <code>zip_append()</code> with a different default for
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 3 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-02 <span style="color: #949494;">10:23:04</span> 755        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-02 <span style="color: #949494;">10:23:04</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-02 <span style="color: #949494;">10:23:04</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-02 <span style="color: #949494;">10:27:58</span> 755        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-02 <span style="color: #949494;">10:27:58</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-02 <span style="color: #949494;">10:27:58</span> 644        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Add another file</span></span></span>
@@ -254,10 +267,10 @@ to <code>zip()</code> and <code>zip_append()</code> with a different default for
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 4 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-02 <span style="color: #949494;">10:23:04</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-02 <span style="color: #949494;">10:23:04</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-02 <span style="color: #949494;">10:23:04</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> mydir/file3              15                10 2026-06-02 <span style="color: #949494;">10:23:04</span> 600        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-02 <span style="color: #949494;">10:27:58</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-02 <span style="color: #949494;">10:27:58</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-02 <span style="color: #949494;">10:27:58</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> mydir/file3              15                10 2026-06-02 <span style="color: #949494;">10:27:58</span> 600        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
 </code></pre></div>
     </div>

@@ -2,6 +2,16 @@
 
 ## zip (development version)
 
+- New `keys` argument to
+  [`zip()`](https://r-lib.github.io/zip/dev/reference/zip.md),
+  [`zipr()`](https://r-lib.github.io/zip/dev/reference/zip.md),
+  [`zip_append()`](https://r-lib.github.io/zip/dev/reference/zip.md),
+  and
+  [`zipr_append()`](https://r-lib.github.io/zip/dev/reference/zip.md).
+  It allows specifying custom paths for entries inside the archive,
+  independently of their paths on disk
+  ([\#50](https://github.com/r-lib/zip/issues/50)).
+
 ## zip 2.3.3
 
 CRAN release: 2025-05-13
