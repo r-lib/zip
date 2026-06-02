@@ -14,7 +14,8 @@ zip(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("mirror", "cherry-pick")
+  mode = c("mirror", "cherry-pick"),
+  keys = NULL
 )
 
 zipr(
@@ -24,7 +25,8 @@ zipr(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("cherry-pick", "mirror")
+  mode = c("cherry-pick", "mirror"),
+  keys = NULL
 )
 
 zip_append(
@@ -34,7 +36,8 @@ zip_append(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("mirror", "cherry-pick")
+  mode = c("mirror", "cherry-pick"),
+  keys = NULL
 )
 
 zipr_append(
@@ -44,7 +47,8 @@ zipr_append(
   compression_level = 9,
   include_directories = TRUE,
   root = ".",
-  mode = c("cherry-pick", "mirror")
+  mode = c("cherry-pick", "mirror"),
+  keys = NULL
 )
 }
 \arguments{
@@ -70,6 +74,13 @@ archive.}
 \item{mode}{Selects how files and directories are stored in
 the archive. It can be \code{"mirror"} or \code{"cherry-pick"}.
 See "Relative Paths" below for details.}
+
+\item{keys}{An optional character vector of the same length as \code{files},
+specifying the paths of the corresponding entries inside the zip
+archive. For a file, the key is the exact archive path. For a
+directory, the key becomes the directory prefix under which all
+contents are stored. If \code{NULL} (default), paths are determined by
+\code{mode}. \code{"."} may not appear in \code{files} when \code{keys} is specified.}
 }
 \value{
 The name of the created zip file, invisibly.

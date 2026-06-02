@@ -1,10 +1,14 @@
 `%||%` <- function(l, r) if (is.null(l)) r else l
 
-get_zip_data <- function(files, recurse, keep_path, include_directories) {
-  list <- if (keep_path) {
-    get_zip_data_path(files, recurse)
+get_zip_data <- function(files, recurse, keep_path, include_directories, keys = NULL) {
+  list <- if (is.null(keys)) {
+    if (keep_path) {
+      get_zip_data_path(files, recurse)
+    } else {
+      get_zip_data_nopath(files, recurse)
+    }
   } else {
-    get_zip_data_nopath(files, recurse)
+    get_zip_data_keys(files, keys, recurse, keep_path)
   }
 
   if (!include_directories) {
@@ -12,6 +16,65 @@ get_zip_data <- function(files, recurse, keep_path, include_directories) {
   }
 
   list
+}
+
+get_zip_data_keys <- function(files, keys, recurse, keep_path) {
+  is_dir <- file.info(files)$isdir
+  results <- vector("list", length(files))
+  any_dir_ignored <- FALSE
+
+  for (i in seq_along(files)) {
+    file <- files[[i]]
+    key <- keys[[i]]
+    dir <- is_dir[[i]]
+
+    if (dir && !recurse) {
+      any_dir_ignored <- TRUE
+      next
+    }
+
+    if (dir) {
+      if (!keep_path && file == ".") {
+        contents <- get_zip_data_nopath(".", recurse)
+        if (nrow(contents) > 0) {
+          contents$key <- paste0(key, "/", contents$key)
+        }
+        sub_data <- rbind(
+          data_frame(key = paste0(key, "/"), file = normalizePath("."), dir = TRUE),
+          contents
+        )
+      } else if (keep_path) {
+        sub_data <- get_zip_data_path_recursive(file)
+        old_prefix <- file
+        sub_data$key <- remap_key_prefix(sub_data$key, old_prefix, key)
+      } else {
+        sub_data <- get_zip_data_nopath_recursive(file)
+        old_prefix <- basename(normalizePath(file))
+        sub_data$key <- remap_key_prefix(sub_data$key, old_prefix, key)
+      }
+    } else {
+      sub_data <- data_frame(
+        key = key,
+        file = normalizePath(file),
+        dir = FALSE
+      )
+    }
+
+    results[[i]] <- sub_data
+  }
+
+  if (any_dir_ignored) {
+    warning("directories ignored in zip file, specify recurse = TRUE")
+  }
+
+  result <- do.call(rbind, Filter(Negate(is.null), results))
+  dup <- duplicated(result$file)
+  if (any(dup)) result <- result[!dup, ]
+  result
+}
+
+remap_key_prefix <- function(keys, old_prefix, new_prefix) {
+  paste0(new_prefix, substr(keys, nchar(old_prefix) + 1L, nchar(keys)))
 }
 
 get_zip_data_path <- function(files, recurse) {
