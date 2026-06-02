@@ -22,6 +22,9 @@
 #define S_IFSOCK        0140000         /* [XSI] socket */
 #endif
 
+#ifndef S_IFMT
+#define S_IFMT          0170000
+#endif
 #ifndef S_ISLNK
 #define S_ISLNK(m)      (((m) & S_IFMT) == S_IFLNK)     /* symbolic link */
 #endif
