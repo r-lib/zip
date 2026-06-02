@@ -4,9 +4,17 @@
   appending a file whose archive path already exists in the zip file,
   instead of creating duplicate entries (#111).
 
+* `unzip()` and `zip_list()` now correctly handle ZIP files with
+  non-UTF-8 filenames (e.g. filenames encoded in IBM CP437, as created
+  by many Windows tools). The filenames are converted to UTF-8 using the
+  CP437 character map when the UTF-8 flag is not set in the ZIP entry
+  (#103).
+
 * New `keys` argument to `zip()`, `zipr()`, `zip_append()`, and
   `zipr_append()`. It allows specifying custom paths for entries inside
   the archive, independently of their paths on disk (#50).
+
+* Updated embedded miniz to version 3.1.1 (#122).
 
 # zip 2.3.3
 

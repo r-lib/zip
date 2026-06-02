@@ -37,6 +37,13 @@ test_that("can list a zip file", {
   expect_true(inherits(list$crc32, 'hexmode'))
 })
 
+test_that("CP437-encoded filename is decoded to UTF-8", {
+  zf <- test_path("fixtures/cp437.zip")
+  lst <- zip_list(zf)
+  expect_equal(lst$filename, "catal\u00f1n.txt")
+  expect_equal(Encoding(lst$filename), "UTF-8")
+})
+
 test_that("symlinks", {
   options(width = 200)
   zf <- test_path("fixtures/symlink.zip")

@@ -1,37 +1,113 @@
 diff --git a/src/miniz.c b/src/miniz.c
-index 9b984dc..2410ad3 100644
 --- a/src/miniz.c
 +++ b/src/miniz.c
-@@ -3685,7 +3685,11 @@ static mz_bool mz_zip_reader_read_central_dir(mz_zip_archive *pZip, mz_uint flag
-             /* I've seen archives that aren't marked as zip64 that uses zip64 ext data, argh */
-             if ((comp_size != MZ_UINT32_MAX) && (decomp_size != MZ_UINT32_MAX))
-             {
--                if (((!MZ_READ_LE32(p + MZ_ZIP_CDH_METHOD_OFS)) && (decomp_size != comp_size)) || (decomp_size && !comp_size))
-+                /* Allow STORED entries where comp_size=0 but decomp_size>0: some zip creators
-+                   (e.g. old Windows tools) write 0 for the compressed size of STORED entries.
-+                   Use MZ_READ_LE16 (not LE32) to avoid reading the adjacent mod-time field. */
-+                if (((!MZ_READ_LE16(p + MZ_ZIP_CDH_METHOD_OFS)) && (decomp_size != comp_size) && comp_size) ||
-+                    (MZ_READ_LE16(p + MZ_ZIP_CDH_METHOD_OFS) && decomp_size && !comp_size))
-                     return mz_zip_set_error(pZip, MZ_ZIP_INVALID_HEADER_OR_CORRUPTED);
-             }
- 
-@@ -4064,6 +4068,9 @@ static mz_bool mz_zip_file_stat_internal(mz_zip_archive *pZip, mz_uint file_inde
-     pStat->m_crc32 = MZ_READ_LE32(p + MZ_ZIP_CDH_CRC32_OFS);
-     pStat->m_comp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_COMPRESSED_SIZE_OFS);
-     pStat->m_uncomp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_DECOMPRESSED_SIZE_OFS);
-+    /* Some zip creators write comp_size=0 for STORED entries; treat as comp_size=uncomp_size. */
-+    if ((pStat->m_method == 0) && (pStat->m_comp_size == 0) && (pStat->m_uncomp_size > 0))
-+        pStat->m_comp_size = pStat->m_uncomp_size;
-     pStat->m_internal_attr = MZ_READ_LE16(p + MZ_ZIP_CDH_INTERNAL_ATTR_OFS);
-     pStat->m_external_attr = MZ_READ_LE32(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
-     pStat->m_local_header_ofs = MZ_READ_LE32(p + MZ_ZIP_CDH_LOCAL_HEADER_OFS);
-@@ -5163,6 +5170,9 @@ mz_bool mz_zip_validate_file(mz_zip_archive *pZip, mz_uint file_index, mz_uint f
-     local_header_extra_len = MZ_READ_LE16(pLocal_header + MZ_ZIP_LDH_EXTRA_LEN_OFS);
-     local_header_comp_size = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_COMPRESSED_SIZE_OFS);
-     local_header_uncomp_size = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_DECOMPRESSED_SIZE_OFS);
-+    /* Some zip creators write comp_size=0 for STORED entries; treat as comp_size=uncomp_size. */
-+    if ((!MZ_READ_LE16(pLocal_header + MZ_ZIP_LDH_METHOD_OFS)) && (!local_header_comp_size) && local_header_uncomp_size)
-+        local_header_comp_size = local_header_uncomp_size;
-     local_header_crc32 = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_CRC32_OFS);
-     local_header_bit_flags = MZ_READ_LE16(pLocal_header + MZ_ZIP_LDH_BIT_FLAG_OFS);
-     has_data_descriptor = (local_header_bit_flags & 8) != 0;
+@@ -3938,7 +3938,11 @@
+                 /* I've seen archives that aren't marked as zip64 that uses zip64 ext data, argh */
+                 if ((comp_size != MZ_UINT32_MAX) && (decomp_size != MZ_UINT32_MAX))
+                 {
+-                    if (((!MZ_READ_LE32(p + MZ_ZIP_CDH_METHOD_OFS)) && (decomp_size != comp_size)) || (decomp_size && !comp_size))
++                    /* Allow STORED entries where comp_size=0 but decomp_size>0: some zip creators
++                       (e.g. old Windows tools) write 0 for the compressed size of STORED entries.
++                       Use MZ_READ_LE16 (not LE32) to avoid reading the adjacent mod-time field. */
++                    if (((!MZ_READ_LE16(p + MZ_ZIP_CDH_METHOD_OFS)) && (decomp_size != comp_size) && comp_size) ||
++                        (MZ_READ_LE16(p + MZ_ZIP_CDH_METHOD_OFS) && decomp_size && !comp_size))
+                         return mz_zip_set_error(pZip, MZ_ZIP_INVALID_HEADER_OR_CORRUPTED);
+                 }
+
+@@ -4317,6 +4321,9 @@
+         pStat->m_crc32 = MZ_READ_LE32(p + MZ_ZIP_CDH_CRC32_OFS);
+         pStat->m_comp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_COMPRESSED_SIZE_OFS);
+         pStat->m_uncomp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_DECOMPRESSED_SIZE_OFS);
++        /* Some zip creators write comp_size=0 for STORED entries; treat as comp_size=uncomp_size. */
++        if ((pStat->m_method == 0) && (pStat->m_comp_size == 0) && (pStat->m_uncomp_size > 0))
++            pStat->m_comp_size = pStat->m_uncomp_size;
+         pStat->m_internal_attr = MZ_READ_LE16(p + MZ_ZIP_CDH_INTERNAL_ATTR_OFS);
+         pStat->m_external_attr = MZ_READ_LE32(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
+         pStat->m_local_header_ofs = MZ_READ_LE32(p + MZ_ZIP_CDH_LOCAL_HEADER_OFS);
+
+@@ -5421,6 +5428,9 @@
+         local_header_extra_len = MZ_READ_LE16(pLocal_header + MZ_ZIP_LDH_EXTRA_LEN_OFS);
+         local_header_comp_size = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_COMPRESSED_SIZE_OFS);
+         local_header_uncomp_size = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_DECOMPRESSED_SIZE_OFS);
++        /* Some zip creators write comp_size=0 for STORED entries; treat as comp_size=uncomp_size. */
++        if ((!MZ_READ_LE16(pLocal_header + MZ_ZIP_LDH_METHOD_OFS)) && (!local_header_comp_size) && local_header_uncomp_size)
++            local_header_comp_size = local_header_uncomp_size;
+         local_header_crc32 = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_CRC32_OFS);
+         local_header_bit_flags = MZ_READ_LE16(pLocal_header + MZ_ZIP_LDH_BIT_FLAG_OFS);
+         has_data_descriptor = (local_header_bit_flags & 8) != 0;
+
+@@ -6241,7 +6251,14 @@
+         if (*pArchive_name == '/')
+             return MZ_FALSE;
+
+-        /* Making sure the name does not contain drive letters or DOS style backward slashes is the responsibility of the program using miniz*/
++        while (*pArchive_name)
++        {
++            /* We warn for colons in keys, but allow them in zip files.
++               macOS command line `zip` adds files with colons without any problems. */
++            if (*pArchive_name == '\\')
++                return MZ_FALSE;
++            pArchive_name++;
++        }
+
+         return MZ_TRUE;
+     }
+
+@@ -7902,6 +7919,38 @@
+         return MZ_FALSE;
+     }
+
++    int mz_zip_get_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
++                                   mz_uint16 *value) {
++        mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
++        if (!p) return 0;
++        *value = MZ_READ_LE16(p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS);
++        return 1;
++    }
++
++    int mz_zip_set_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
++                                   mz_uint16 value) {
++        mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
++        if (!p) return 0;
++        MZ_WRITE_LE16(p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS, value);
++        return 1;
++    }
++
++    int mz_zip_get_external_attr(mz_zip_archive *pZip, mz_uint file_index,
++                                 mz_uint32 *value) {
++        mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
++        if (!p) return 0;
++        *value = MZ_READ_LE32(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
++        return 1;
++    }
++
++    int mz_zip_set_external_attr(mz_zip_archive *pZip, mz_uint file_index,
++                                 mz_uint32 value) {
++        mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
++        if (!p) return 0;
++        MZ_WRITE_LE32(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS, value);
++        return 1;
++    }
++
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/src/miniz.h b/src/miniz.h
+--- a/src/miniz.h
++++ b/src/miniz.h
+@@ -1503,6 +1503,15 @@
+
+ #endif /* #ifndef MINIZ_NO_ARCHIVE_WRITING_APIS */
+
++    int mz_zip_get_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
++                                   mz_uint16 *value);
++    int mz_zip_set_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
++                                   mz_uint16 value);
++    int mz_zip_get_external_attr(mz_zip_archive *pZip, mz_uint file_index,
++                                 mz_uint32 *value);
++    int mz_zip_set_external_attr(mz_zip_archive *pZip, mz_uint file_index,
++                                 mz_uint32 value);
++
+ #ifdef __cplusplus
+ }
+ #endif
