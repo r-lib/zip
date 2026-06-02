@@ -52,7 +52,7 @@ zipr_append(
 overwrites it, but \code{zip_append} appends to it. If it is a directory
 an error is thrown.}
 
-\item{files}{List of file to add to the archive. See details below
+\item{files}{List of files to add to the archive. See details below
 about absolute and relative path names.}
 
 \item{recurse}{Whether to add the contents of directories recursively.}
@@ -131,7 +131,7 @@ only relative paths are allowed in zip files.
 In cherry picking mode, the selected files and directories
 will be at the root of the archive. This mode is handy if you
 want to select a subset of files and directories, possibly from
-different paths and put all of the in the archive, at the top
+different paths and put all of them in the archive, at the top
 level.
 
 Here is an example with the same directory structure as above:
@@ -172,8 +172,8 @@ omitted, even on Unix.
 
 \subsection{\code{zipr()} and \code{zipr_append()}}{
 
-These function exist for historical reasons. They are identical
-to \code{zip()} and \code{zipr_append()} with a different default for the
+These functions exist for historical reasons. They are identical
+to \code{zip()} and \code{zip_append()} with a different default for the
 \code{mode} argument.
 }
 }
