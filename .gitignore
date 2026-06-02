@@ -19,4 +19,4 @@
 /src-*
 docs
 /*.zip
-/.dev
+/.cache

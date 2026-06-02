@@ -26,4 +26,4 @@
 ^pkgdown$
 ^[\.]?air\.toml$
 ^\.vscode$
-^\.dev$
+^\.cache$
