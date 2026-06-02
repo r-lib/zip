@@ -55,7 +55,7 @@ zipr_append(
 
 - files:
 
-  List of file to add to the archive. See details below about absolute
+  List of files to add to the archive. See details below about absolute
   and relative path names.
 
 - recurse:
@@ -138,7 +138,7 @@ relative paths are allowed in zip files.
 In cherry picking mode, the selected files and directories will be at
 the root of the archive. This mode is handy if you want to select a
 subset of files and directories, possibly from different paths and put
-all of the in the archive, at the top level.
+all of them in the archive, at the top level.
 
 Here is an example with the same directory structure as above:
 
@@ -173,8 +173,8 @@ omitted, even on Unix.
 
 ### `zipr()` and `zipr_append()`
 
-These function exist for historical reasons. They are identical to
-`zip()` and `zipr_append()` with a different default for the `mode`
+These functions exist for historical reasons. They are identical to
+`zip()` and `zip_append()` with a different default for the `mode`
 argument.
 
 ## Examples
@@ -195,9 +195,9 @@ zip_list(zipfile)
 #> # A data frame: 3 × 8
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-02 08:50:14 755        
-#> 2 mydir/file1              15                10 2026-06-02 08:50:14 644        
-#> 3 mydir/file2              16                11 2026-06-02 08:50:14 644        
+#> 1 mydir/                    0                 0 2026-06-02 08:51:48 755        
+#> 2 mydir/file1              15                10 2026-06-02 08:51:48 644        
+#> 3 mydir/file2              16                11 2026-06-02 08:51:48 644        
 #> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
 
 ## Add another file
@@ -207,9 +207,9 @@ zip_list(zipfile)
 #> # A data frame: 4 × 8
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-02 08:50:14 644        
-#> 2 mydir/file1              15                10 2026-06-02 08:50:14 644        
-#> 3 mydir/file2              16                11 2026-06-02 08:50:14 644        
-#> 4 mydir/file3              15                10 2026-06-02 08:50:14 600        
+#> 1 mydir/                    0                 0 2026-06-02 08:51:48 644        
+#> 2 mydir/file1              15                10 2026-06-02 08:51:48 644        
+#> 3 mydir/file2              16                11 2026-06-02 08:51:48 644        
+#> 4 mydir/file3              15                10 2026-06-02 08:51:48 600        
 #> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
 ```
