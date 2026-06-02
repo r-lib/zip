@@ -2,6 +2,14 @@
 
 ## zip (development version)
 
+- [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) and
+  [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
+  now correctly handle ZIP files with non-UTF-8 filenames
+  (e.g. filenames encoded in IBM CP437, as created by many Windows
+  tools). The filenames are converted to UTF-8 using the CP437 character
+  map when the UTF-8 flag is not set in the ZIP entry
+  ([\#103](https://github.com/r-lib/zip/issues/103)).
+
 - New `keys` argument to
   [`zip()`](https://r-lib.github.io/zip/dev/reference/zip.md),
   [`zipr()`](https://r-lib.github.io/zip/dev/reference/zip.md),
