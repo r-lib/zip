@@ -42,3 +42,10 @@ test_that("symlinks", {
   zf <- test_path("fixtures/symlink.zip")
   expect_snapshot(zip_list(zf)$type)
 })
+
+test_that("zip_list works on files with STORED comp_size=0 quirk", {
+  zf <- test_path("fixtures/stored-zero-compsize.zip")
+  lst <- zip_list(zf)
+  expect_equal(lst$filename, c("subdir/", "subdir/hello.txt"))
+  expect_equal(lst$uncompressed_size, c(20, 30))
+})

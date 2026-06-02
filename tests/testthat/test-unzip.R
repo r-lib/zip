@@ -216,3 +216,13 @@ test_that("symlinks on Unix", {
     "foo"
   )
 })
+
+test_that("unzip works on files with STORED comp_size=0 quirk", {
+  zf <- test_path("fixtures/stored-zero-compsize.zip")
+  tmp <- test_temp_dir()
+  zip::unzip(zf, exdir = tmp)
+  expect_equal(
+    readLines(file.path(tmp, "subdir", "hello.txt")),
+    "Hello from a quirky zip file!"
+  )
+})
