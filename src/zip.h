@@ -75,6 +75,8 @@ FILE* zip_long_wfopen(const wchar_t *filename,
 
 #endif
 
+char *zip_cp437_to_utf8(const char *src);
+
 FILE *zip_open_utf8(const char *filename, const zip_char_t *mode,
                     zip_char_t **buffer, size_t *buffer_size);
 int zip_str_file_path(const char *cexdir, const char *key,
