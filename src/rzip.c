@@ -15,7 +15,7 @@
 #include "miniz.h"
 #include "zip.h"
 
-#ifndef S_IFLINK
+#ifndef S_IFLNK
 #define S_IFLNK         0120000         /* [XSI] symbolic link */
 #endif
 #ifndef S_IFSOCK
