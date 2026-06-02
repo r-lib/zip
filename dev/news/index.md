@@ -2,6 +2,12 @@
 
 ## zip (development version)
 
+- [`zip_append()`](https://r-lib.github.io/zip/dev/reference/zip.md) and
+  [`zipr_append()`](https://r-lib.github.io/zip/dev/reference/zip.md)
+  now replace existing entries when appending a file whose archive path
+  already exists in the zip file, instead of creating duplicate entries
+  ([\#111](https://github.com/r-lib/zip/issues/111)).
+
 - [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) and
   [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
   now correctly handle ZIP files with non-UTF-8 filenames
