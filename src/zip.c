@@ -69,6 +69,7 @@ char *zip_cp437_to_utf8(const char *src) {
   return result;
 }
 
+
 #define ZIP_ERROR_BUFFER_SIZE 1000
 static char zip_error_buffer[ZIP_ERROR_BUFFER_SIZE];
 
@@ -178,7 +179,8 @@ int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
 #endif
 
 int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
-	      int coverwrite, int cjunkpaths, const char *cexdir) {
+	      int coverwrite, int cjunkpaths, const char *cexdir,
+	      zip_decode_fn decode_fn, void *decode_data) {
 
   int allfiles = cfiles == NULL;
   int i, n;
@@ -229,7 +231,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     /* key_for_fs is the UTF-8 version of key used for filesystem operations.
        key always points to file_stat.m_filename for use in error messages. */
     if (!(file_stat.m_bit_flag & 0x800)) {
-      key_utf8 = zip_cp437_to_utf8(key);
+      key_utf8 = decode_fn ? decode_fn(key, decode_data) : zip_cp437_to_utf8(key);
       if (!key_utf8) {
         mz_zip_reader_end(&zip_archive);
         if (buffer) free(buffer);
@@ -375,7 +377,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
     key = file_stat.m_filename;
     char *key_utf8_2 = NULL;
     if (!(file_stat.m_bit_flag & 0x800)) {
-      key_utf8_2 = zip_cp437_to_utf8(key);
+      key_utf8_2 = decode_fn ? decode_fn(key, decode_data) : zip_cp437_to_utf8(key);
     }
     const char *key_for_fs2 = key_utf8_2 ? key_utf8_2 : key;
 

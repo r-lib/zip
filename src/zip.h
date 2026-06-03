@@ -44,8 +44,11 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 	    const char **cfiles, int *cdirs, double *cmtimes,
 	    int compression_level, int cappend);
 
+typedef char *(*zip_decode_fn)(const char *src, void *data);
+
 int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
-	      int coverwrite, int cjunkpaths, const char *exdir);
+	      int coverwrite, int cjunkpaths, const char *exdir,
+	      zip_decode_fn decode_fn, void *decode_data);
 
 #ifdef _WIN32
 
