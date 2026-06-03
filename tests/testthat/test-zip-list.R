@@ -38,6 +38,10 @@ test_that("can list a zip file", {
 })
 
 test_that("CP932-encoded filename is decoded to UTF-8 when encoding is set", {
+  skip_if(
+    inherits(try(iconv("x", "CP932", "CP932"), silent = TRUE), "try-error"),
+    "CP932 encoding not supported"
+  )
   zf <- test_path("fixtures/cp932.zip")
   lst <- zip_list(zf, encoding = "CP932")
   expect_equal(lst$filename, "\u30c6\u30b9\u30c8.txt")

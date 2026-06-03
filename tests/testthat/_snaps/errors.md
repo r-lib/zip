@@ -28,7 +28,7 @@
       unzip(tmp, exdir = exdir)
     Condition
       Error in `unzip()`:
-      ! Cannot open zip file `<tempdir>/test-file-<random>.zip` for reading: not a ZIP archive @<location>
+      ! Cannot open zip file `<tempdir>/test-file-<random>.zip`
 
 # unzip file not in archive includes miniz error
 

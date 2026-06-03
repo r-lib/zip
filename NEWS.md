@@ -1,5 +1,11 @@
 # zip (development version)
 
+* `unzip()` now returns a data frame (invisibly) with one row per extracted
+  entry, containing the same columns as `zip_list()` (`filename`,
+  `compressed_size`, `uncompressed_size`, `timestamp`, `permissions`,
+  `crc32`, `offset`, `type`) plus a `path` column with the absolute path
+  to each extracted file on disk (#35).
+
 * `zip_list()` and `unzip()` now have an `encoding` argument for ZIP files
   with non-UTF-8, non-CP437 filenames (e.g. CP932/Shift-JIS on Japanese
   Windows). When `encoding` is set, filenames without the UTF-8 flag are

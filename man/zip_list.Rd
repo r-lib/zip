@@ -31,4 +31,8 @@ to the start of the local zip header for each entry. Following the approach
 of \code{seek()} it is stored as a \code{numeric} rather than an \code{integer} vector and
 can therefore represent values up to \code{2^53-1} (9 PB).
 }
+\seealso{
+Other zip/unzip functions:
+\code{\link[=unzip]{unzip()}}
+}
 \concept{zip/unzip functions}

@@ -15,7 +15,6 @@ License: MIT + file LICENSE
 URL: https://github.com/r-lib/zip, https://r-lib.github.io/zip/
 BugReports: https://github.com/r-lib/zip/issues
 Suggests:
-    covr,
     pillar,
     processx,
     R6,
