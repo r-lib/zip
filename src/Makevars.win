@@ -1,5 +1,5 @@
 
-OBJECTS = init.o miniz.o rzip.o zip.o winutils.o errors.o
+OBJECTS = init.o miniz.o rzip.o zip.o winutils.o errors.o cleancall.o
 
 .PHONY: all clean
 

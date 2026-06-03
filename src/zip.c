@@ -464,7 +464,8 @@ static void zip_remove_file(const char *path) {
 
 int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 	    const char **cfiles, int *cdirs, double *cmtimes,
-	    int compression_level, int cappend) {
+	    int compression_level, int cappend,
+	    zip_progress_fn progress_fn, void *progress_data) {
 
   mz_uint ccompression_level = (mz_uint) compression_level;
   int i, n = num_files;
@@ -757,6 +758,8 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
       fclose(zfh);
       ZIP_ERROR(R_ZIP_ESETZIPPERM, key, czipfile);
     }
+
+    if (progress_fn) progress_fn(num_files, i, progress_data);
   }
 
   if (!mz_zip_writer_finalize_archive(&zip_archive)) {
