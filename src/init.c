@@ -1,6 +1,7 @@
 
 #include <R.h>
 #include <Rinternals.h>
+#include <Rversion.h>
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
 #include <R_ext/Visibility.h>
@@ -26,6 +27,10 @@ static const R_CallMethodDef CallEntries[] = {
   { "R_deflate",       (DL_FUNC) &R_deflate,       4 },
   { NULL, NULL, 0 }
 };
+
+#if (R_VERSION < R_Version(4, 5, 0))
+#define R_getVar(x,y,z) Rf_findVar(x,y)
+#endif
 
 r_export void R_init_zip(DllInfo *dll) {
   R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);

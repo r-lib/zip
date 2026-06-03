@@ -1,10 +1,11 @@
 #define R_NO_REMAP
 #include <Rinternals.h>
+#include <Rversion.h>
 
 #include "cleancall.h"
 
 
-#if (defined(R_VERSION) && R_VERSION < R_Version(3, 4, 0))
+#if (R_VERSION < R_Version(3, 4, 0))
  SEXP R_MakeExternalPtrFn(DL_FUNC p, SEXP tag, SEXP prot) {
    fn_ptr ptr;
    ptr.fn = p;
@@ -35,7 +36,7 @@ void cleancall_SetExternalPtrAddrFn(SEXP s, DL_FUNC p) {
 // Initialised at load time with the `.Call` primitive
 SEXP cleancall_fns_dot_call = NULL;
 
-#if (defined(R_VERSION) && R_VERSION < R_Version(4, 5, 0))
+#if (R_VERSION < R_Version(4, 5, 0))
 #define R_getVar(x,y,z) Rf_findVar(x,y)
 #endif
 
