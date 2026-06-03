@@ -1,7 +1,7 @@
 
 PKG_CFLAGS = $(C_VISIBILITY)
 
-OBJECTS = init.o miniz.o rzip.o zip.o unixutils.o
+OBJECTS = init.o miniz.o rzip.o zip.o unixutils.o errors.o
 
 .PHONY: all clean
 

@@ -210,3 +210,43 @@ test_that("appending single empty directory, non-recursive", {
     c(basename(tmp), "file1", "file2")
   )
 })
+
+# miniz error message tests --------------------------------------------------
+
+transform_zip_error <- function(x) {
+  x <- transform_tempdir(x)
+  x <- sub("test-file-[a-zA-Z0-9]+", "test-file-<random>", x)
+  x <- transform_location(x)
+  x
+}
+
+test_that("zip_list on a non-ZIP file includes miniz error", {
+  tmp <- test_temp_file(".zip")
+  writeBin(charToRaw("not a zip file"), tmp)
+  expect_snapshot(
+    error = TRUE,
+    zip_list(tmp),
+    transform = transform_zip_error
+  )
+})
+
+test_that("unzip on a non-ZIP file includes miniz error", {
+  tmp <- test_temp_file(".zip")
+  writeBin(charToRaw("not a zip file"), tmp)
+  exdir <- test_temp_dir()
+  expect_snapshot(
+    error = TRUE,
+    unzip(tmp, exdir = exdir),
+    transform = transform_zip_error
+  )
+})
+
+test_that("unzip file not in archive includes miniz error", {
+  z <- make_a_zip()
+  exdir <- test_temp_dir()
+  expect_snapshot(
+    error = TRUE,
+    unzip(z$zip, files = "no-such-file", exdir = exdir),
+    transform = transform_zip_error
+  )
+})
