@@ -1,5 +1,10 @@
 # zip (development version)
 
+* `zip_list()` and `unzip()` now have an `encoding` argument for ZIP files
+  with non-UTF-8, non-CP437 filenames (e.g. CP932/Shift-JIS on Japanese
+  Windows). When `encoding` is set, filenames without the UTF-8 flag are
+  decoded from the specified code page instead of CP437 (#101).
+
 * `zip_append()` and `zipr_append()` now replace existing entries when
   appending a file whose archive path already exists in the zip file,
   instead of creating duplicate entries (#111).

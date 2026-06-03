@@ -38,6 +38,14 @@ This file can be used to diagnose errors if the process failed.
 }
 }
 
+\section{Encoding}{
+
+The \code{unzip_process} class does not support the \code{encoding} argument of
+\code{\link[=unzip]{unzip()}}. Non-UTF-8 filenames are decoded using the IBM CP437 fallback.
+Use \code{\link[=unzip]{unzip()}} directly if you need to handle ZIP files with filenames in
+other encodings (e.g. CP932).
+}
+
 \examples{
 ex <- system.file("example.zip", package = "zip")
 tmp <- tempfile()

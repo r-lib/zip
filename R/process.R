@@ -61,6 +61,12 @@ super <- ""
 #' @return An `unzip_process` R6 class object, a subclass of
 #' [processx::process].
 #'
+#' @section Encoding:
+#' The `unzip_process` class does not support the `encoding` argument of
+#' [unzip()]. Non-UTF-8 filenames are decoded using the IBM CP437 fallback.
+#' Use [unzip()] directly if you need to handle ZIP files with filenames in
+#' other encodings (e.g. CP932).
+#'
 #' @export
 #' @examples
 #' ex <- system.file("example.zip", package = "zip")

@@ -4,7 +4,14 @@
 \alias{unzip}
 \title{Uncompress 'zip' Archives}
 \usage{
-unzip(zipfile, files = NULL, overwrite = TRUE, junkpaths = FALSE, exdir = ".")
+unzip(
+  zipfile,
+  files = NULL,
+  overwrite = TRUE,
+  junkpaths = FALSE,
+  exdir = ".",
+  encoding = NULL
+)
 }
 \arguments{
 \item{zipfile}{Path to the zip file to uncompress.}
@@ -22,6 +29,13 @@ files. If \code{TRUE}, all files will be created in \code{exdir}.}
 
 \item{exdir}{Directory to uncompress the archive to. If it does not
 exist, it will be created.}
+
+\item{encoding}{Encoding to use for entry filenames. ZIP files signal
+UTF-8 filenames via a flag in each entry; those are always decoded as
+UTF-8 regardless of \code{encoding}. For entries without that flag, \code{encoding}
+is used; \code{NULL} (the default) falls back to IBM CP437, which is what the
+ZIP specification prescribes for legacy entries. The value is passed
+to \code{\link[=iconv]{iconv()}}.}
 }
 \description{
 \code{unzip()} always restores modification times of the extracted files and

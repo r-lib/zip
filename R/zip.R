@@ -304,6 +304,12 @@ zip_internal <- function(
 #'   of `seek()` it is stored as a `numeric` rather than an `integer` vector and
 #'   can therefore represent values up to `2^53-1` (9 PB).
 #' @param zipfile Path to an existing ZIP file.
+#' @param encoding Encoding to use for entry filenames. ZIP files signal
+#'   UTF-8 filenames via a flag in each entry; those are always decoded as
+#'   UTF-8 regardless of `encoding`. For entries without that flag, `encoding`
+#'   is used; `NULL` (the default) falls back to IBM CP437, which is what the
+#'   ZIP specification prescribes for legacy entries. The value is passed
+#'   to [iconv()].
 #' @return A data frame with columns: `filename`, `compressed_size`,
 #'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset` and
 #'   `type`. `type` is one of `file`, `block_device`, `character_device`,
@@ -312,9 +318,9 @@ zip_internal <- function(
 #' @family zip/unzip functions
 #' @export
 
-zip_list <- function(zipfile) {
+zip_list <- function(zipfile, encoding = NULL) {
   zipfile <- enc2c(normalizePath(zipfile))
-  res <- .Call(c_R_zip_list, zipfile)
+  res <- .Call(c_R_zip_list, zipfile, encoding)
   if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {
     requireNamespace("pillar", quietly = TRUE)
   }
@@ -364,6 +370,7 @@ file_types <- c(
 #'   files. If `TRUE`, all files will be created in `exdir`.
 #' @param exdir Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
+#' @inheritParams zip_list
 #'
 #' @export
 #' @examples
@@ -389,7 +396,8 @@ unzip <- function(
   files = NULL,
   overwrite = TRUE,
   junkpaths = FALSE,
-  exdir = "."
+  exdir = ".",
+  encoding = NULL
 ) {
   stopifnot(
     is_string(zipfile),
@@ -407,7 +415,7 @@ unzip <- function(
   mkdirp(exdir)
   exdir <- enc2c(normalizePath(exdir))
 
-  .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir)
+  .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir, encoding)
 
   invisible()
 }

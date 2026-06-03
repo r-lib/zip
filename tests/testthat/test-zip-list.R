@@ -37,6 +37,21 @@ test_that("can list a zip file", {
   expect_true(inherits(list$crc32, 'hexmode'))
 })
 
+test_that("CP932-encoded filename is decoded to UTF-8 when encoding is set", {
+  zf <- test_path("fixtures/cp932.zip")
+  lst <- zip_list(zf, encoding = "CP932")
+  expect_equal(lst$filename, "\u30c6\u30b9\u30c8.txt")
+  expect_equal(Encoding(lst$filename), "UTF-8")
+})
+
+test_that("unsupported encoding gives an error", {
+  zf <- test_path("fixtures/cp932.zip")
+  expect_error(
+    zip_list(zf, encoding = "NOT-AN-ENCODING"),
+    "unsupported encoding"
+  )
+})
+
 test_that("CP437-encoded filename is decoded to UTF-8", {
   zf <- test_path("fixtures/cp437.zip")
   lst <- zip_list(zf)

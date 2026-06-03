@@ -11,6 +11,7 @@
 #endif
 
 #include <Rinternals.h>
+#include <R_ext/Riconv.h>
 
 #include "miniz.h"
 #include "zip.h"
@@ -32,8 +33,44 @@
 #define S_ISSOCK(m)     (((m) & S_IFMT) == S_IFSOCK)    /* socket */
 #endif
 
-SEXP R_zip_list(SEXP zipfile) {
+static int r_check_encoding(const char *encoding) {
+  if (!encoding || encoding[0] == '\0') return 0;
+  void *cd = Riconv_open("UTF-8", encoding);
+  if (cd == (void *) -1) return -1;
+  Riconv_close(cd);
+  return 0;
+}
+
+static char *r_decode_filename(const char *src, void *data) {
+  const char *encoding = (const char *) data;
+  void *cd = Riconv_open("UTF-8", encoding);
+  if (cd == (void *) -1) return NULL;
+
+  size_t srclen = strlen(src);
+  size_t dstlen = srclen * 4 + 1;
+  char *result = malloc(dstlen);
+  if (!result) { Riconv_close(cd); return NULL; }
+
+  const char *inbuf = src;
+  char *outbuf = result;
+  size_t inbytesleft = srclen;
+  size_t outbytesleft = dstlen - 1;
+
+  if (Riconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft) == (size_t) -1) {
+    Riconv_close(cd);
+    free(result);
+    return NULL;
+  }
+  *outbuf = '\0';
+  Riconv_close(cd);
+  return result;
+}
+
+SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
+  const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
+  if (r_check_encoding(cencoding))
+    error("zip: unsupported encoding: '%s'", cencoding);
   size_t num_files;
   unsigned int i;
   SEXP result = R_NilValue;
@@ -95,7 +132,9 @@ SEXP R_zip_list(SEXP zipfile) {
     const char *fname = file_stat.m_filename;
     char *fname_utf8 = NULL;
     if (!(file_stat.m_bit_flag & 0x800)) {
-      fname_utf8 = zip_cp437_to_utf8(fname);
+      fname_utf8 = cencoding
+        ? r_decode_filename(fname, (void *) cencoding)
+        : zip_cp437_to_utf8(fname);
       if (fname_utf8) fname = fname_utf8;
     }
     SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkCharCE(fname, CE_UTF8));
@@ -175,12 +214,15 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 }
 
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
-		 SEXP exdir) {
+		 SEXP exdir, SEXP encoding) {
 
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   int coverwrite = LOGICAL(overwrite)[0];
   int cjunkpaths = LOGICAL(junkpaths)[0];
   const char *cexdir = CHAR(STRING_ELT(exdir, 0));
+  const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
+  if (r_check_encoding(cencoding))
+    error("zip: unsupported encoding: '%s'", cencoding);
   int allfiles = isNull(files);
   int i, n = allfiles ? 0 : LENGTH(files);
   const char **cfiles = 0;
@@ -194,7 +236,8 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   }
 
   zip_set_error_handler(R_zip_error_handler);
-  zip_unzip(czipfile, cfiles, n, coverwrite, cjunkpaths, cexdir);
+  zip_unzip(czipfile, cfiles, n, coverwrite, cjunkpaths, cexdir,
+            cencoding ? r_decode_filename : NULL, (void *) cencoding);
 
   return R_NilValue;
 }
