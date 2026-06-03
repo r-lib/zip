@@ -38,10 +38,24 @@ can_run_unzip_exe <- function() {
   zip_data$unzip_exe_works <- if (exe == "") {
     FALSE
   } else {
+    # Probe the executable with a real unzip of the bundled example archive
+    # into a temporary directory. This catches both the case where the binary
+    # cannot be launched at all (processx errors) and where it launches but
+    # fails to run correctly (non-zero exit status); in either case we fall
+    # back to the in-R implementation.
     tryCatch({
-      p <- processx::process$new(exe, c("", ""), stdout = NULL, stderr = NULL)
+      probe <- system.file(package = "zip", "example.zip")
+      tmp <- tempfile()
+      on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+      p <- processx::process$new(
+        exe,
+        enc2c(c(probe, tmp)),
+        stdout = NULL,
+        stderr = NULL
+      )
+      p$wait(5000)
       p$kill()
-      TRUE
+      identical(p$get_exit_status(), 0L)
     }, error = function(e) FALSE)
   }
   zip_data$unzip_exe_works
