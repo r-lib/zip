@@ -28,8 +28,9 @@ uncovr::document()    # regenerate NAMESPACE and man/ from roxygen2 comments
 uncovr::test()                                           # all tests
 ```
 
-**Install** (prefer `uncovr::reload()` for iteration; only install when
-needed):
+**Install** (prefer
+[`uncovr::reload()`](https://rdrr.io/pkg/uncovr/man/reload.html) for
+iteration; only install when needed):
 
 ``` r
 
