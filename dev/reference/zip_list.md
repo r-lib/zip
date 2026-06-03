@@ -5,7 +5,7 @@ List Files in a 'zip' Archive
 ## Usage
 
 ``` r
-zip_list(zipfile)
+zip_list(zipfile, encoding = NULL)
 ```
 
 ## Arguments
@@ -13,6 +13,15 @@ zip_list(zipfile)
 - zipfile:
 
   Path to an existing ZIP file.
+
+- encoding:
+
+  Encoding to use for entry filenames. ZIP files signal UTF-8 filenames
+  via a flag in each entry; those are always decoded as UTF-8 regardless
+  of `encoding`. For entries without that flag, `encoding` is used;
+  `NULL` (the default) falls back to IBM CP437, which is what the ZIP
+  specification prescribes for legacy entries. The value is passed to
+  [`iconv()`](https://rdrr.io/r/base/iconv.html).
 
 ## Value
 

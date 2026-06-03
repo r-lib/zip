@@ -6,7 +6,14 @@ directories.
 ## Usage
 
 ``` r
-unzip(zipfile, files = NULL, overwrite = TRUE, junkpaths = FALSE, exdir = ".")
+unzip(
+  zipfile,
+  files = NULL,
+  overwrite = TRUE,
+  junkpaths = FALSE,
+  exdir = ".",
+  encoding = NULL
+)
 ```
 
 ## Arguments
@@ -37,6 +44,15 @@ unzip(zipfile, files = NULL, overwrite = TRUE, junkpaths = FALSE, exdir = ".")
   Directory to uncompress the archive to. If it does not exist, it will
   be created.
 
+- encoding:
+
+  Encoding to use for entry filenames. ZIP files signal UTF-8 filenames
+  via a flag in each entry; those are always decoded as UTF-8 regardless
+  of `encoding`. For entries without that flag, `encoding` is used;
+  `NULL` (the default) falls back to IBM CP437, which is what the ZIP
+  specification prescribes for legacy entries. The value is passed to
+  [`iconv()`](https://rdrr.io/r/base/iconv.html).
+
 ## Permissions
 
 If the zip archive stores permissions and was created on Unix, the
@@ -59,9 +75,9 @@ zip_list(zipfile)
 #> # A data frame: 3 × 8
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-02 13:43:56 755        
-#> 2 mydir/file1              15                10 2026-06-02 13:43:56 644        
-#> 3 mydir/file2              16                11 2026-06-02 13:43:56 644        
+#> 1 mydir/                    0                 0 2026-06-03 07:54:34 755        
+#> 2 mydir/file1              15                10 2026-06-03 07:54:34 644        
+#> 3 mydir/file2              16                11 2026-06-03 07:54:34 644        
 #> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
 
 ## Extract

@@ -69,6 +69,15 @@ by default the standard error is written to a temporary file.
 This file can be used to diagnose errors if the process failed.</p></li>
 <li><p><code>...</code> passed to the <code>initialize</code> method of <a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a>.</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="encoding">Encoding<a class="anchor" aria-label="anchor" href="#encoding"></a></h2>
+
+
+<p>The <code>unzip_process</code> class does not support the <code>encoding</code> argument of
+<code><a href="unzip.html">unzip()</a></code>. Non-UTF-8 filenames are decoded using the IBM CP437 fallback.
+Use <code><a href="unzip.html">unzip()</a></code> directly if you need to handle ZIP files with filenames in
+other encodings (e.g. CP932).</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

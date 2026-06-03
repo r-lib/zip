@@ -65,7 +65,7 @@ zip_list(zipfile)
 #> # A data frame: 2 × 8
 #>   filename     compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                  <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 file1a7b4ae…               0                 0 2026-06-02 13:43:56 755        
-#> 2 file1a7b4ae…            1126              4818 2026-06-02 13:43:56 644        
+#> 1 file1a85ca0…               0                 0 2026-06-03 07:54:36 755        
+#> 2 file1a85ca0…            1126              4818 2026-06-03 07:54:36 644        
 #> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
 ```

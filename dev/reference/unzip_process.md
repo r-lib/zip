@@ -44,6 +44,15 @@ Arguments:
 - `...` passed to the `initialize` method of
   [processx::process](http://processx.r-lib.org/reference/process.md).
 
+## Encoding
+
+The `unzip_process` class does not support the `encoding` argument of
+[`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md).
+Non-UTF-8 filenames are decoded using the IBM CP437 fallback. Use
+[`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) directly
+if you need to handle ZIP files with filenames in other encodings (e.g.
+CP932).
+
 ## Examples
 
 ``` r

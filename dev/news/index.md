@@ -2,6 +2,14 @@
 
 ## zip (development version)
 
+- [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
+  and [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md)
+  now have an `encoding` argument for ZIP files with non-UTF-8,
+  non-CP437 filenames (e.g. CP932/Shift-JIS on Japanese Windows). When
+  `encoding` is set, filenames without the UTF-8 flag are decoded from
+  the specified code page instead of CP437
+  ([\#101](https://github.com/r-lib/zip/issues/101)).
+
 - [`zip_append()`](https://r-lib.github.io/zip/dev/reference/zip.md) and
   [`zipr_append()`](https://r-lib.github.io/zip/dev/reference/zip.md)
   now replace existing entries when appending a file whose archive path
