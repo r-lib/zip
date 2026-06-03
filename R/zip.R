@@ -371,7 +371,13 @@ file_types <- c(
 #' @param exdir Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
 #' @inheritParams zip_list
+#' @return A data frame with one row per extracted entry and columns,
+#'   invisibly: `filename` (path within the archive), `compressed_size`,
+#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset`,
+#'   `type` (same as in [zip_list()]), and `path` (absolute path to the
+#'   extracted file on disk).
 #'
+#' @family zip/unzip functions
 #' @export
 #' @examples
 #' ## temporary directory, to avoid messing up the user's workspace.
@@ -386,10 +392,10 @@ file_types <- c(
 #' ## List contents
 #' zip_list(zipfile)
 #'
-#' ## Extract
+#' ## Extract and inspect result
 #' tmp2 <- tempfile()
-#' unzip(zipfile, exdir = tmp2)
-#' dir(tmp2, recursive = TRUE)
+#' result <- unzip(zipfile, exdir = tmp2)
+#' result[, c("filename", "path")]
 
 unzip <- function(
   zipfile,
@@ -415,7 +421,32 @@ unzip <- function(
   mkdirp(exdir)
   exdir <- enc2c(normalizePath(exdir))
 
-  .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir, encoding)
+  res <- .Call(
+    c_R_zip_unzip,
+    zipfile,
+    files,
+    overwrite,
+    junkpaths,
+    exdir,
+    encoding
+  )
 
-  invisible()
+  if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {
+    requireNamespace("pillar", quietly = TRUE)
+  }
+  df <- data_frame(
+    filename = res[[1]],
+    compressed_size = res[[2]],
+    uncompressed_size = res[[3]],
+    timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
+  )
+  Encoding(df$filename) <- "UTF-8"
+  df$permissions <- as.octmode(res[[5]])
+  df$crc32 <- as.hexmode(res[[6]])
+  df$offset <- res[[7]]
+  df$type <- file_types[res[[8]] + 1L]
+  df$path <- res[[9]]
+  Encoding(df$path) <- "UTF-8"
+
+  invisible(df)
 }
