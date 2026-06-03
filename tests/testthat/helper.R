@@ -1,3 +1,7 @@
+transform_location <- function(x) {
+  sub("@[a-zA-Z0-9._/]+:[0-9]+ \\([^)]+\\)", "@<location>", x)
+}
+
 df <- function(key, file, dir = FALSE) {
   data_frame(
     key = key,

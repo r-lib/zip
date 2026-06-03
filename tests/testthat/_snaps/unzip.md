@@ -4,5 +4,5 @@
       zip::unzip(z$zip, overwrite = FALSE, exdir = tmp)
     Condition
       Error in `zip::unzip()`:
-      ! zip error: Not overwriting `test-dir-<random>/dir/<tempfile>` when extracting `<tempdir>/test-file-<random>.zip` in file zip.c:308
+      ! Not overwriting `test-dir-<random>/dir/<tempfile>` when extracting `<tempdir>/test-file-<random>.zip` @rzip.c:193 (R_zip_error_handler)
 

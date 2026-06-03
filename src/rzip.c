@@ -13,6 +13,7 @@
 #include <Rinternals.h>
 #include <R_ext/Riconv.h>
 
+#include "errors.h"
 #include "miniz.h"
 #include "zip.h"
 
@@ -70,7 +71,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
   if (r_check_encoding(cencoding))
-    error("zip: unsupported encoding: '%s'", cencoding);
+    R_THROW_ERROR("zip: unsupported encoding: '%s'", cencoding);
   size_t num_files;
   unsigned int i;
   SEXP result = R_NilValue;
@@ -86,7 +87,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   size_t uzipfile_len = 0;
   if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
     if (uzipfile) free(uzipfile);
-    error("Cannot convert zip file name to unicode");
+    R_THROW_ERROR("Cannot convert zip file name to unicode");
   }
   fh = zip_long_wfopen(uzipfile, L"rb");
 #else
@@ -97,7 +98,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
 
   if (fh == NULL) {
     if (uzipfile) free(uzipfile);
-    error("Cannot open zip file `%s`", czipfile);
+    R_THROW_ERROR("Cannot open zip file `%s`", czipfile);
   }
 
   R_ZIP_FSEEK64(fh, 0, SEEK_END);
@@ -107,9 +108,12 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   memset(&zip_archive, 0, sizeof(zip_archive));
   status = mz_zip_reader_init_cfile(&zip_archive, fh, file_size, 0);
   if (!status) {
+    const char *mz_err =
+      mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
+    mz_zip_reader_end(&zip_archive);
     fclose(fh);
-    free(uzipfile);
-    error("Cannot open zip file `%s`", czipfile);
+    if (uzipfile) free(uzipfile);
+    R_THROW_ERROR("Cannot open zip file `%s`: %s", czipfile, mz_err);
   }
 
   num_files = mz_zip_reader_get_num_files(&zip_archive);
@@ -172,15 +176,21 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   return result;
 
  cleanup:
-  fclose(fh);
-  mz_zip_reader_end(&zip_archive);
-  error("Cannot list zip entries, corrupt zip file?");
+  {
+    const char *mz_err =
+      mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
+    fclose(fh);
+    if (uzipfile) free(uzipfile);
+    mz_zip_reader_end(&zip_archive);
+    UNPROTECT(1);
+    R_THROW_ERROR("Cannot list zip entries in `%s`: %s", czipfile, mz_err);
+  }
   return result;
 }
 
 void R_zip_error_handler(const char *reason, const char *file,
 			 int line, int zip_errno, int eno) {
-  error("zip error: %s in file %s:%i", reason, file, line);
+  R_THROW_ERROR("%s", reason);
 }
 
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
@@ -222,7 +232,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   const char *cexdir = CHAR(STRING_ELT(exdir, 0));
   const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
   if (r_check_encoding(cencoding))
-    error("zip: unsupported encoding: '%s'", cencoding);
+    R_THROW_ERROR("zip: unsupported encoding: '%s'", cencoding);
   int allfiles = isNull(files);
   int i, n = allfiles ? 0 : LENGTH(files);
   const char **cfiles = 0;
