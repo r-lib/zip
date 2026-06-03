@@ -28,8 +28,9 @@ Arguments:
 
 - `zipfile`: Path to the zip file to create.
 
-- `files`: List of file to add to the archive. Each specified file or
-  directory in is created as a top-level entry in the zip archive.
+- `files`: Character vector of paths to files to add to the archive.
+  Each specified file or directory in is created as a top-level entry in
+  the zip archive.
 
 - `recurse`: Whether to add the contents of directories recursively.
 
@@ -65,7 +66,7 @@ zip_list(zipfile)
 #> # A data frame: 2 × 8
 #>   filename     compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                  <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 file1a85ca0…               0                 0 2026-06-03 07:54:36 755        
-#> 2 file1a85ca0…            1126              4818 2026-06-03 07:54:36 644        
+#> 1 file1a2a11f…               0                 0 2026-06-03 08:09:06 755        
+#> 2 file1a2a11f…            1126              4818 2026-06-03 08:09:06 644        
 #> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
 ```

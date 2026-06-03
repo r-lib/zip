@@ -60,7 +60,7 @@ It is implemented as a subclass of <a href="http://processx.r-lib.org/reference/
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>                         <span class="at">stderr =</span> <span class="fu">tempfile</span>(), ...)</span></code></pre><p></p></div>
 <p>See <a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a> for the class methods.</p>
 <p>Arguments:</p><ul><li><p><code>zipfile</code>: Path to the zip file to create.</p></li>
-<li><p><code>files</code>: List of file to add to the archive. Each specified file
+<li><p><code>files</code>: Character vector of paths to files to add to the archive. Each specified file
 or directory in is created as a top-level entry in the zip archive.</p></li>
 <li><p><code>recurse</code>: Whether to add the contents of directories recursively.</p></li>
 <li><p><code>include_directories</code>: Whether to explicitly include directories
@@ -88,8 +88,8 @@ This file can be used to diagnose errors if the process failed.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 2 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename     compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> file1a85ca0…               0                 0 2026-06-03 <span style="color: #949494;">07:54:36</span> 755        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> file1a85ca0…            <span style="text-decoration: underline;">1</span>126              <span style="text-decoration: underline;">4</span>818 2026-06-03 <span style="color: #949494;">07:54:36</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> file1a2a11f…               0                 0 2026-06-03 <span style="color: #949494;">08:09:06</span> 755        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> file1a2a11f…            <span style="text-decoration: underline;">1</span>126              <span style="text-decoration: underline;">4</span>818 2026-06-03 <span style="color: #949494;">08:09:06</span> 644        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
 </code></pre></div>
     </div>
