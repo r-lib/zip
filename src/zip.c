@@ -180,7 +180,8 @@ int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
 
 int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 	      int coverwrite, int cjunkpaths, const char *cexdir,
-	      zip_decode_fn decode_fn, void *decode_data) {
+	      zip_decode_fn decode_fn, void *decode_data,
+	      zip_entry_fn entry_fn, void *entry_data) {
 
   int allfiles = cfiles == NULL;
   int i, n;
@@ -352,6 +353,7 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
       }
     }
 #endif
+    if (entry_fn) entry_fn(n, i, &file_stat, key_for_fs, buffer, entry_data);
   }
 
   if (key_utf8) { free(key_utf8); key_utf8 = NULL; }
@@ -396,7 +398,6 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
   mz_zip_reader_end(&zip_archive);
   fclose(zfh);
 
-  /* TODO: return info */
   return 0;
 }
 

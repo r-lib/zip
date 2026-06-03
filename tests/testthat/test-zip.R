@@ -578,3 +578,66 @@ test_that("can omit directories", {
     file.path(basename(tmp), c("file1", "file2"))
   )
 })
+
+test_that("unzip() returns a data frame with file info", {
+  on.exit(try(unlink(c(zipfile, tmp, exdir), recursive = TRUE)))
+
+  dir.create(tmp <- tempfile())
+  cat("first file", file = file.path(tmp, "file1"))
+  cat("second file", file = file.path(tmp, "file2"))
+
+  zipfile <- tempfile(fileext = ".zip")
+  withr::with_dir(dirname(tmp), zip(zipfile, basename(tmp)))
+
+  exdir <- tempfile()
+  result <- unzip(zipfile, exdir = exdir)
+
+  expect_s3_class(result, "data.frame")
+  expect_equal(
+    result$filename,
+    c(bns(tmp), file.path(basename(tmp), c("file1", "file2")))
+  )
+  expect_true(all(file.exists(result$path)))
+  expect_s3_class(result$timestamp, "POSIXct")
+  expect_s3_class(result$permissions, "octmode")
+  expect_s3_class(result$crc32, "hexmode")
+})
+
+test_that("unzip() path column matches zip_list() metadata", {
+  on.exit(try(unlink(c(zipfile, tmp, exdir), recursive = TRUE)))
+
+  dir.create(tmp <- tempfile())
+  cat("hello", file = file.path(tmp, "a.txt"))
+
+  zipfile <- tempfile(fileext = ".zip")
+  withr::with_dir(dirname(tmp), zip(zipfile, basename(tmp)))
+
+  exdir <- tempfile()
+  result <- unzip(zipfile, exdir = exdir)
+  listing <- zip_list(zipfile)
+
+  expect_equal(result$filename, listing$filename)
+  expect_equal(result$compressed_size, listing$compressed_size)
+  expect_equal(result$uncompressed_size, listing$uncompressed_size)
+  expect_equal(result$crc32, listing$crc32)
+  expect_equal(result$type, listing$type)
+})
+
+test_that("unzip() with junkpaths returns correct paths", {
+  on.exit(try(unlink(c(zipfile, tmp, exdir), recursive = TRUE)))
+
+  dir.create(tmp <- tempfile())
+  cat("hi", file = file.path(tmp, "file1"))
+
+  zipfile <- tempfile(fileext = ".zip")
+  withr::with_dir(
+    dirname(tmp),
+    zip(zipfile, basename(tmp), include_directories = FALSE)
+  )
+
+  exdir <- tempfile()
+  result <- unzip(zipfile, exdir = exdir, junkpaths = TRUE)
+
+  expect_equal(basename(result$path), basename(result$filename))
+  expect_true(all(file.exists(result$path)))
+})
