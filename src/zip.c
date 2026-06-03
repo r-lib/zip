@@ -123,14 +123,12 @@ void zip_error_mz(int errorcode, const char *mz_msg,
   va_list va;
   int err = errno;
   va_start(va, line);
-  char buf[ZIP_ERROR_BUFFER_SIZE];
-  vsnprintf(buf, ZIP_ERROR_BUFFER_SIZE - 1, zip_error_strings[errorcode], va);
+  int n = vsnprintf(zip_error_buffer, ZIP_ERROR_BUFFER_SIZE,
+                    zip_error_strings[errorcode], va);
   va_end(va);
-  if (mz_msg && mz_msg[0] && strcmp(mz_msg, "no error") != 0)
-    snprintf(zip_error_buffer, ZIP_ERROR_BUFFER_SIZE - 1,
-             "%s: %s", buf, mz_msg);
-  else
-    snprintf(zip_error_buffer, ZIP_ERROR_BUFFER_SIZE - 1, "%s", buf);
+  if (n > 0 && n < ZIP_ERROR_BUFFER_SIZE - 1 &&
+      mz_msg && mz_msg[0] && strcmp(mz_msg, "no error") != 0)
+    snprintf(zip_error_buffer + n, ZIP_ERROR_BUFFER_SIZE - n, ": %s", mz_msg);
   zip_error_handler(zip_error_buffer, file, line, errorcode, err);
 }
 
