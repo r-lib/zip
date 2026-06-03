@@ -98,8 +98,8 @@ NULL
 #' @param zipfile The zip file to create. If the file exists, `zip`
 #'   overwrites it, but `zip_append` appends to it. If it is a directory
 #'   an error is thrown.
-#' @param files List of files to add to the archive. See details below
-#'    about absolute and relative path names.
+#' @param files Character vector of paths to files to add to the archive.
+#'   See details below about absolute and relative path names.
 #' @param recurse Whether to add the contents of directories recursively.
 #' @param compression_level A number between 1 and 9. 9 compresses best,
 #'   but it also takes the longest.
@@ -304,6 +304,12 @@ zip_internal <- function(
 #'   of `seek()` it is stored as a `numeric` rather than an `integer` vector and
 #'   can therefore represent values up to `2^53-1` (9 PB).
 #' @param zipfile Path to an existing ZIP file.
+#' @param encoding Encoding to use for entry filenames. ZIP files signal
+#'   UTF-8 filenames via a flag in each entry; those are always decoded as
+#'   UTF-8 regardless of `encoding`. For entries without that flag, `encoding`
+#'   is used; `NULL` (the default) falls back to IBM CP437, which is what the
+#'   ZIP specification prescribes for legacy entries. The value is passed
+#'   to [iconv()].
 #' @return A data frame with columns: `filename`, `compressed_size`,
 #'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset` and
 #'   `type`. `type` is one of `file`, `block_device`, `character_device`,
@@ -312,9 +318,9 @@ zip_internal <- function(
 #' @family zip/unzip functions
 #' @export
 
-zip_list <- function(zipfile) {
+zip_list <- function(zipfile, encoding = NULL) {
   zipfile <- enc2c(normalizePath(zipfile))
-  res <- .Call(c_R_zip_list, zipfile)
+  res <- .Call(c_R_zip_list, zipfile, encoding)
   if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {
     requireNamespace("pillar", quietly = TRUE)
   }
@@ -364,7 +370,14 @@ file_types <- c(
 #'   files. If `TRUE`, all files will be created in `exdir`.
 #' @param exdir Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
+#' @inheritParams zip_list
+#' @return A data frame with one row per extracted entry and columns,
+#'   invisibly: `filename` (path within the archive), `compressed_size`,
+#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset`,
+#'   `type` (same as in [zip_list()]), and `path` (absolute path to the
+#'   extracted file on disk).
 #'
+#' @family zip/unzip functions
 #' @export
 #' @examples
 #' ## temporary directory, to avoid messing up the user's workspace.
@@ -379,17 +392,18 @@ file_types <- c(
 #' ## List contents
 #' zip_list(zipfile)
 #'
-#' ## Extract
+#' ## Extract and inspect result
 #' tmp2 <- tempfile()
-#' unzip(zipfile, exdir = tmp2)
-#' dir(tmp2, recursive = TRUE)
+#' result <- unzip(zipfile, exdir = tmp2)
+#' result[, c("filename", "path")]
 
 unzip <- function(
   zipfile,
   files = NULL,
   overwrite = TRUE,
   junkpaths = FALSE,
-  exdir = "."
+  exdir = ".",
+  encoding = NULL
 ) {
   stopifnot(
     is_string(zipfile),
@@ -407,7 +421,32 @@ unzip <- function(
   mkdirp(exdir)
   exdir <- enc2c(normalizePath(exdir))
 
-  .Call(c_R_zip_unzip, zipfile, files, overwrite, junkpaths, exdir)
+  res <- .Call(
+    c_R_zip_unzip,
+    zipfile,
+    files,
+    overwrite,
+    junkpaths,
+    exdir,
+    encoding
+  )
 
-  invisible()
+  if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {
+    requireNamespace("pillar", quietly = TRUE)
+  }
+  df <- data_frame(
+    filename = res[[1]],
+    compressed_size = res[[2]],
+    uncompressed_size = res[[3]],
+    timestamp = as.POSIXct(res[[4]], tz = "UTC", origin = "1970-01-01")
+  )
+  Encoding(df$filename) <- "UTF-8"
+  df$permissions <- as.octmode(res[[5]])
+  df$crc32 <- as.hexmode(res[[6]])
+  df$offset <- res[[7]]
+  df$type <- file_types[res[[8]] + 1L]
+  df$path <- res[[9]]
+  Encoding(df$path) <- "UTF-8"
+
+  invisible(df)
 }

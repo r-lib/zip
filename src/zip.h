@@ -44,8 +44,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 	    const char **cfiles, int *cdirs, double *cmtimes,
 	    int compression_level, int cappend);
 
-int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
-	      int coverwrite, int cjunkpaths, const char *exdir);
+typedef char *(*zip_decode_fn)(const char *src, void *data);
 
 #ifdef _WIN32
 
@@ -74,6 +73,26 @@ FILE* zip_long_wfopen(const wchar_t *filename,
 #define ZIP__APPEND "r+b"
 
 #endif
+
+/* Called once per extracted entry after the entry is fully written.
+   n  = total number of entries being extracted
+   i  = 0-based index of this entry
+   stat  = miniz file stat for this entry
+   fname_utf8 = UTF-8 decoded filename (same string used for the filesystem path)
+   path = full extracted path (zip_char_t: wchar_t on Windows, char elsewhere) */
+typedef void (*zip_entry_fn)(
+    int n,
+    int i,
+    const mz_zip_archive_file_stat *stat,
+    const char *fname_utf8,
+    const zip_char_t *path,
+    void *data
+);
+
+int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
+	      int coverwrite, int cjunkpaths, const char *exdir,
+	      zip_decode_fn decode_fn, void *decode_data,
+	      zip_entry_fn entry_fn, void *entry_data);
 
 char *zip_cp437_to_utf8(const char *src);
 

@@ -4,7 +4,14 @@
 \alias{unzip}
 \title{Uncompress 'zip' Archives}
 \usage{
-unzip(zipfile, files = NULL, overwrite = TRUE, junkpaths = FALSE, exdir = ".")
+unzip(
+  zipfile,
+  files = NULL,
+  overwrite = TRUE,
+  junkpaths = FALSE,
+  exdir = ".",
+  encoding = NULL
+)
 }
 \arguments{
 \item{zipfile}{Path to the zip file to uncompress.}
@@ -22,6 +29,20 @@ files. If \code{TRUE}, all files will be created in \code{exdir}.}
 
 \item{exdir}{Directory to uncompress the archive to. If it does not
 exist, it will be created.}
+
+\item{encoding}{Encoding to use for entry filenames. ZIP files signal
+UTF-8 filenames via a flag in each entry; those are always decoded as
+UTF-8 regardless of \code{encoding}. For entries without that flag, \code{encoding}
+is used; \code{NULL} (the default) falls back to IBM CP437, which is what the
+ZIP specification prescribes for legacy entries. The value is passed
+to \code{\link[=iconv]{iconv()}}.}
+}
+\value{
+A data frame with one row per extracted entry and columns,
+invisibly: \code{filename} (path within the archive), \code{compressed_size},
+\code{uncompressed_size}, \code{timestamp}, \code{permissions}, \code{crc32}, \code{offset},
+\code{type} (same as in \code{\link[=zip_list]{zip_list()}}), and \code{path} (absolute path to the
+extracted file on disk).
 }
 \description{
 \code{unzip()} always restores modification times of the extracted files and
@@ -47,8 +68,13 @@ zip::zip(zipfile, "mydir", root = tmp)
 ## List contents
 zip_list(zipfile)
 
-## Extract
+## Extract and inspect result
 tmp2 <- tempfile()
-unzip(zipfile, exdir = tmp2)
-dir(tmp2, recursive = TRUE)
+result <- unzip(zipfile, exdir = tmp2)
+result[, c("filename", "path")]
 }
+\seealso{
+Other zip/unzip functions:
+\code{\link[=zip_list]{zip_list()}}
+}
+\concept{zip/unzip functions}

@@ -27,7 +27,7 @@ See \link[processx:process]{processx::process} for the class methods.
 Arguments:
 \itemize{
 \item \code{zipfile}: Path to the zip file to create.
-\item \code{files}: List of file to add to the archive. Each specified file
+\item \code{files}: Character vector of paths to files to add to the archive. Each specified file
 or directory in is created as a top-level entry in the zip archive.
 \item \code{recurse}: Whether to add the contents of directories recursively.
 \item \code{include_directories}: Whether to explicitly include directories

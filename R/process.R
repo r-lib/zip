@@ -90,6 +90,12 @@ can_run_unzip_exe <- function() {
 #' @return An `unzip_process` R6 class object, a subclass of
 #' [processx::process].
 #'
+#' @section Encoding:
+#' The `unzip_process` class does not support the `encoding` argument of
+#' [unzip()]. Non-UTF-8 filenames are decoded using the IBM CP437 fallback.
+#' Use [unzip()] directly if you need to handle ZIP files with filenames in
+#' other encodings (e.g. CP932).
+#'
 #' @export
 #' @examples
 #' ex <- system.file("example.zip", package = "zip")
@@ -183,7 +189,7 @@ unzip_process <- function() {
 #'
 #' Arguments:
 #' * `zipfile`: Path to the zip file to create.
-#' * `files`: List of file to add to the archive. Each specified file
+#' * `files`: Character vector of paths to files to add to the archive. Each specified file
 #'    or directory in is created as a top-level entry in the zip archive.
 #' * `recurse`: Whether to add the contents of directories recursively.
 #' * `include_directories`: Whether to explicitly include directories

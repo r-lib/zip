@@ -4,10 +4,17 @@
 \alias{zip_list}
 \title{List Files in a 'zip' Archive}
 \usage{
-zip_list(zipfile)
+zip_list(zipfile, encoding = NULL)
 }
 \arguments{
 \item{zipfile}{Path to an existing ZIP file.}
+
+\item{encoding}{Encoding to use for entry filenames. ZIP files signal
+UTF-8 filenames via a flag in each entry; those are always decoded as
+UTF-8 regardless of \code{encoding}. For entries without that flag, \code{encoding}
+is used; \code{NULL} (the default) falls back to IBM CP437, which is what the
+ZIP specification prescribes for legacy entries. The value is passed
+to \code{\link[=iconv]{iconv()}}.}
 }
 \value{
 A data frame with columns: \code{filename}, \code{compressed_size},
@@ -23,5 +30,9 @@ Note that \code{crc32} is formatted using \code{as.hexmode()}. \code{offset} ref
 to the start of the local zip header for each entry. Following the approach
 of \code{seek()} it is stored as a \code{numeric} rather than an \code{integer} vector and
 can therefore represent values up to \code{2^53-1} (9 PB).
+}
+\seealso{
+Other zip/unzip functions:
+\code{\link[=unzip]{unzip()}}
 }
 \concept{zip/unzip functions}

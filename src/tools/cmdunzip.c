@@ -49,7 +49,9 @@ int MAIN(int argc, CHAR* argv[]) {
 #endif
 
   zip_unzip(zipfile, /* cfiles= */ 0, /* num_files= */ 0,
-	    /* coverwrite= */ 1, /* cjunkpaths= */ 0, /* exdir= */ exdir);
+	    /* coverwrite= */ 1, /* cjunkpaths= */ 0, /* exdir= */ exdir,
+	    /* decode_fn= */ NULL, /* decode_data= */ NULL,
+	    /* entry_fn= */ NULL, /* entry_data= */ NULL);
 
 #ifdef _WIN32
 cleanup:

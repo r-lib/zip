@@ -56,8 +56,8 @@ zipr_append(
 overwrites it, but \code{zip_append} appends to it. If it is a directory
 an error is thrown.}
 
-\item{files}{List of files to add to the archive. See details below
-about absolute and relative path names.}
+\item{files}{Character vector of paths to files to add to the archive.
+See details below about absolute and relative path names.}
 
 \item{recurse}{Whether to add the contents of directories recursively.}
 

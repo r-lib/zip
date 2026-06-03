@@ -11,7 +11,9 @@
 #endif
 
 #include <Rinternals.h>
+#include <R_ext/Riconv.h>
 
+#include "errors.h"
 #include "miniz.h"
 #include "zip.h"
 
@@ -32,8 +34,44 @@
 #define S_ISSOCK(m)     (((m) & S_IFMT) == S_IFSOCK)    /* socket */
 #endif
 
-SEXP R_zip_list(SEXP zipfile) {
+static int r_check_encoding(const char *encoding) {
+  if (!encoding || encoding[0] == '\0') return 0;
+  void *cd = Riconv_open("UTF-8", encoding);
+  if (cd == (void *) -1) return -1;
+  Riconv_close(cd);
+  return 0;
+}
+
+static char *r_decode_filename(const char *src, void *data) {
+  const char *encoding = (const char *) data;
+  void *cd = Riconv_open("UTF-8", encoding);
+  if (cd == (void *) -1) return NULL;
+
+  size_t srclen = strlen(src);
+  size_t dstlen = srclen * 4 + 1;
+  char *result = malloc(dstlen);
+  if (!result) { Riconv_close(cd); return NULL; }
+
+  const char *inbuf = src;
+  char *outbuf = result;
+  size_t inbytesleft = srclen;
+  size_t outbytesleft = dstlen - 1;
+
+  if (Riconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft) == (size_t) -1) {
+    Riconv_close(cd);
+    free(result);
+    return NULL;
+  }
+  *outbuf = '\0';
+  Riconv_close(cd);
+  return result;
+}
+
+SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
+  const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
+  if (r_check_encoding(cencoding))
+    R_THROW_ERROR("zip: unsupported encoding: '%s'", cencoding);
   size_t num_files;
   unsigned int i;
   SEXP result = R_NilValue;
@@ -49,7 +87,7 @@ SEXP R_zip_list(SEXP zipfile) {
   size_t uzipfile_len = 0;
   if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
     if (uzipfile) free(uzipfile);
-    error("Cannot convert zip file name to unicode");
+    R_THROW_ERROR("Cannot convert zip file name to unicode");
   }
   fh = zip_long_wfopen(uzipfile, L"rb");
 #else
@@ -60,7 +98,7 @@ SEXP R_zip_list(SEXP zipfile) {
 
   if (fh == NULL) {
     if (uzipfile) free(uzipfile);
-    error("Cannot open zip file `%s`", czipfile);
+    R_THROW_ERROR("Cannot open zip file `%s`", czipfile);
   }
 
   R_ZIP_FSEEK64(fh, 0, SEEK_END);
@@ -70,9 +108,12 @@ SEXP R_zip_list(SEXP zipfile) {
   memset(&zip_archive, 0, sizeof(zip_archive));
   status = mz_zip_reader_init_cfile(&zip_archive, fh, file_size, 0);
   if (!status) {
+    const char *mz_err =
+      mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
+    mz_zip_reader_end(&zip_archive);
     fclose(fh);
-    free(uzipfile);
-    error("Cannot open zip file `%s`", czipfile);
+    if (uzipfile) free(uzipfile);
+    R_THROW_ERROR("Cannot open zip file `%s`: %s", czipfile, mz_err);
   }
 
   num_files = mz_zip_reader_get_num_files(&zip_archive);
@@ -95,7 +136,9 @@ SEXP R_zip_list(SEXP zipfile) {
     const char *fname = file_stat.m_filename;
     char *fname_utf8 = NULL;
     if (!(file_stat.m_bit_flag & 0x800)) {
-      fname_utf8 = zip_cp437_to_utf8(fname);
+      fname_utf8 = cencoding
+        ? r_decode_filename(fname, (void *) cencoding)
+        : zip_cp437_to_utf8(fname);
       if (fname_utf8) fname = fname_utf8;
     }
     SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkCharCE(fname, CE_UTF8));
@@ -133,15 +176,21 @@ SEXP R_zip_list(SEXP zipfile) {
   return result;
 
  cleanup:
-  fclose(fh);
-  mz_zip_reader_end(&zip_archive);
-  error("Cannot list zip entries, corrupt zip file?");
+  {
+    const char *mz_err =
+      mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
+    fclose(fh);
+    if (uzipfile) free(uzipfile);
+    mz_zip_reader_end(&zip_archive);
+    UNPROTECT(1);
+    R_THROW_ERROR("Cannot list zip entries in `%s`: %s", czipfile, mz_err);
+  }
   return result;
 }
 
 void R_zip_error_handler(const char *reason, const char *file,
 			 int line, int zip_errno, int eno) {
-  error("zip error: %s in file %s:%i", reason, file, line);
+  R_THROW_ERROR("%s", reason);
 }
 
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
@@ -174,13 +223,63 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
   return R_NilValue;
 }
 
+/* Passed to r_unzip_entry_fn; result is pre-allocated by R_zip_unzip. */
+typedef struct {
+  SEXP   result;
+  int    num_entries; /* expected length of result vectors; checked in callback */
+#ifdef _WIN32
+  char  *path_utf8;
+  size_t path_utf8_size;
+#endif
+} r_unzip_data_t;
+
+static void r_unzip_entry_fn(int n, int i,
+                              const mz_zip_archive_file_stat *stat,
+                              const char *fname_utf8,
+                              const zip_char_t *path,
+                              void *data_ptr) {
+  r_unzip_data_t *d = (r_unzip_data_t *) data_ptr;
+  if (i >= d->num_entries)
+    error("zip: archive changed between directory scan and extraction");
+  SEXP result = d->result;
+
+  SET_STRING_ELT(VECTOR_ELT(result, 0), i, mkCharCE(fname_utf8, CE_UTF8));
+  REAL(VECTOR_ELT(result, 1))[i]    = stat->m_comp_size;
+  REAL(VECTOR_ELT(result, 2))[i]    = stat->m_uncomp_size;
+  INTEGER(VECTOR_ELT(result, 3))[i] = (int) stat->m_time;
+  mode_t mode;
+  zip_get_permissions((mz_zip_archive_file_stat *) stat, &mode);
+  INTEGER(VECTOR_ELT(result, 4))[i] = (int) mode;
+  INTEGER(VECTOR_ELT(result, 5))[i] = (int) stat->m_crc32;
+  REAL(VECTOR_ELT(result, 6))[i]    = (double) stat->m_local_header_ofs;
+
+  INTEGER(VECTOR_ELT(result, 7))[i] = 0;
+  mz_uint32 attr = stat->m_external_attr >> 16;
+  if (S_ISBLK(attr))       INTEGER(VECTOR_ELT(result, 7))[i] = 1;
+  else if (S_ISCHR(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 2;
+  else if (S_ISDIR(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 3;
+  else if (S_ISFIFO(attr)) INTEGER(VECTOR_ELT(result, 7))[i] = 4;
+  else if (S_ISLNK(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 5;
+  else if (S_ISSOCK(attr)) INTEGER(VECTOR_ELT(result, 7))[i] = 6;
+
+#ifdef _WIN32
+  zip__utf16_to_utf8(path, &d->path_utf8, &d->path_utf8_size);
+  SET_STRING_ELT(VECTOR_ELT(result, 8), i, mkCharCE(d->path_utf8, CE_UTF8));
+#else
+  SET_STRING_ELT(VECTOR_ELT(result, 8), i, mkCharCE(path, CE_UTF8));
+#endif
+}
+
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
-		 SEXP exdir) {
+		 SEXP exdir, SEXP encoding) {
 
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   int coverwrite = LOGICAL(overwrite)[0];
   int cjunkpaths = LOGICAL(junkpaths)[0];
   const char *cexdir = CHAR(STRING_ELT(exdir, 0));
+  const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
+  if (r_check_encoding(cencoding))
+    R_THROW_ERROR("zip: unsupported encoding: '%s'", cencoding);
   int allfiles = isNull(files);
   int i, n = allfiles ? 0 : LENGTH(files);
   const char **cfiles = 0;
@@ -193,10 +292,55 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     for (i = 0; i < n; i++) cfiles[i] = CHAR(STRING_ELT(files, i));
   }
 
-  zip_set_error_handler(R_zip_error_handler);
-  zip_unzip(czipfile, cfiles, n, coverwrite, cjunkpaths, cexdir);
+  /* When extracting all files, open the archive briefly to count entries so
+     we can pre-allocate the result vectors before extraction begins. */
+  int num_entries = n; /* known already when files != NULL */
+  if (allfiles) {
+    mz_zip_archive tmp_archive;
+    memset(&tmp_archive, 0, sizeof(tmp_archive));
+    zip_char_t *tmp_buf = NULL;
+    size_t tmp_buf_size = 0;
+    FILE *tmp_fh = zip_open_utf8(czipfile, ZIP__READ, &tmp_buf, &tmp_buf_size);
+    if (tmp_fh == NULL) error("Cannot open zip file `%s`", czipfile);
+    if (!mz_zip_reader_init_cfile(&tmp_archive, tmp_fh, 0, 0)) {
+      if (tmp_buf) free(tmp_buf);
+      fclose(tmp_fh);
+      error("Cannot open zip file `%s`", czipfile);
+    }
+    num_entries = (int) mz_zip_reader_get_num_files(&tmp_archive);
+    mz_zip_reader_end(&tmp_archive);
+    if (tmp_buf) free(tmp_buf);
+    fclose(tmp_fh);
+  }
 
-  return R_NilValue;
+  /* Allocate result vectors. PROTECT and UNPROTECT are both in this function. */
+  SEXP result = PROTECT(allocVector(VECSXP, 9));
+  SET_VECTOR_ELT(result, 0, allocVector(STRSXP,  num_entries)); /* filename */
+  SET_VECTOR_ELT(result, 1, allocVector(REALSXP, num_entries)); /* compressed_size */
+  SET_VECTOR_ELT(result, 2, allocVector(REALSXP, num_entries)); /* uncompressed_size */
+  SET_VECTOR_ELT(result, 3, allocVector(INTSXP,  num_entries)); /* timestamp */
+  SET_VECTOR_ELT(result, 4, allocVector(INTSXP,  num_entries)); /* permissions */
+  SET_VECTOR_ELT(result, 5, allocVector(INTSXP,  num_entries)); /* crc32 */
+  SET_VECTOR_ELT(result, 6, allocVector(REALSXP, num_entries)); /* offset */
+  SET_VECTOR_ELT(result, 7, allocVector(INTSXP,  num_entries)); /* type */
+  SET_VECTOR_ELT(result, 8, allocVector(STRSXP,  num_entries)); /* path */
+
+  r_unzip_data_t data;
+  memset(&data, 0, sizeof(data));
+  data.result = result;
+  data.num_entries = num_entries;
+
+  zip_set_error_handler(R_zip_error_handler);
+  zip_unzip(czipfile, cfiles, n, coverwrite, cjunkpaths, cexdir,
+            cencoding ? r_decode_filename : NULL, (void *) cencoding,
+            r_unzip_entry_fn, &data);
+
+#ifdef _WIN32
+  if (data.path_utf8) free(data.path_utf8);
+#endif
+
+  UNPROTECT(1);
+  return result;
 }
 
 
