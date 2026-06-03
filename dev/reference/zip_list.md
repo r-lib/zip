@@ -38,3 +38,8 @@ to the start of the local zip header for each entry. Following the
 approach of [`seek()`](https://rdrr.io/r/base/seek.html) it is stored as
 a `numeric` rather than an `integer` vector and can therefore represent
 values up to `2^53-1` (9 PB).
+
+## See also
+
+Other zip/unzip functions:
+[`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md)

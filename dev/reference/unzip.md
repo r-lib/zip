@@ -53,10 +53,24 @@ unzip(
   specification prescribes for legacy entries. The value is passed to
   [`iconv()`](https://rdrr.io/r/base/iconv.html).
 
+## Value
+
+A data frame with one row per extracted entry and columns, invisibly:
+`filename` (path within the archive), `compressed_size`,
+`uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset`,
+`type` (same as in
+[`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)),
+and `path` (absolute path to the extracted file on disk).
+
 ## Permissions
 
 If the zip archive stores permissions and was created on Unix, the
 permissions will be restored.
+
+## See also
+
+Other zip/unzip functions:
+[`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
 
 ## Examples
 
@@ -75,14 +89,19 @@ zip_list(zipfile)
 #> # A data frame: 3 × 8
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-03 09:25:34 755        
-#> 2 mydir/file1              15                10 2026-06-03 09:25:34 644        
-#> 3 mydir/file2              16                11 2026-06-03 09:25:34 644        
+#> 1 mydir/                    0                 0 2026-06-03 09:43:06 755        
+#> 2 mydir/file1              15                10 2026-06-03 09:43:06 644        
+#> 3 mydir/file2              16                11 2026-06-03 09:43:06 644        
 #> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
 
-## Extract
+## Extract and inspect result
 tmp2 <- tempfile()
-unzip(zipfile, exdir = tmp2)
-dir(tmp2, recursive = TRUE)
-#> [1] "mydir/file1" "mydir/file2"
+result <- unzip(zipfile, exdir = tmp2)
+result[, c("filename", "path")]
+#> # A data frame: 3 × 2
+#>   filename    path                                        
+#>   <chr>       <chr>                                       
+#> 1 mydir/      /tmp/RtmpjtstV4/file1a3d39a85a55/mydir/     
+#> 2 mydir/file1 /tmp/RtmpjtstV4/file1a3d39a85a55/mydir/file1
+#> 3 mydir/file2 /tmp/RtmpjtstV4/file1a3d39a85a55/mydir/file2
 ```

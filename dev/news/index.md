@@ -2,6 +2,15 @@
 
 ## zip (development version)
 
+- [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) now
+  returns a data frame (invisibly) with one row per extracted entry,
+  containing the same columns as
+  [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
+  (`filename`, `compressed_size`, `uncompressed_size`, `timestamp`,
+  `permissions`, `crc32`, `offset`, `type`) plus a `path` column with
+  the absolute path to each extracted file on disk
+  ([\#35](https://github.com/r-lib/zip/issues/35)).
+
 - [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
   and [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md)
   now have an `encoding` argument for ZIP files with non-UTF-8,
