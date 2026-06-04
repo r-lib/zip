@@ -1,5 +1,11 @@
 # zip (development version)
 
+* `zip()` and `unzip()` now show a progress bar when the `cli` package is
+  installed. For `zip()`, progress is byte-level, so large single files are
+  tracked smoothly. For `unzip()`, progress advances once per extracted
+  entry. Progress bars are (for now) opt-in via the `ZIP_PROGRESS=true`
+  environment variable or the `zip.progress` option (#48).
+
 * `unzip()` now returns a data frame (invisibly) with one row per extracted
   entry, containing the same columns as `zip_list()` (`filename`,
   `compressed_size`, `uncompressed_size`, `timestamp`, `permissions`,
