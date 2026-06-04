@@ -641,3 +641,21 @@ test_that("unzip() with junkpaths returns correct paths", {
   expect_equal(basename(result$path), basename(result$filename))
   expect_true(all(file.exists(result$path)))
 })
+
+test_that("zip() shows progress bar when zip.progress = TRUE", {
+  skip_if_not_installed("cli")
+
+  tmp <- test_temp_dir()
+  cat("file content", file = file.path(tmp, "file1"))
+  cat("more content", file = file.path(tmp, "file2"))
+  zipfile <- test_temp_file(".zip", create = FALSE)
+
+  withr::local_options(zip.progress = TRUE, cli.progress_show_after = 0)
+  output <- capture.output(
+    withr::with_dir(dirname(tmp), zip(zipfile, basename(tmp))),
+    type = "message"
+  )
+
+  expect_true(file.exists(zipfile))
+  expect_match(output, "Zipping", all = FALSE)
+})

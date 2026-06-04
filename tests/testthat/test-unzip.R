@@ -239,3 +239,20 @@ test_that("unzip works on files with STORED comp_size=0 quirk", {
     "Hello from a quirky zip file!"
   )
 })
+
+test_that("unzip() shows progress bar when zip.progress = TRUE", {
+  skip_if_not_installed("cli")
+  withr::local_options(zip.progress = FALSE)
+
+  z <- make_a_zip()
+  exdir <- test_temp_dir()
+
+  withr::local_options(zip.progress = TRUE, cli.progress_show_after = 0)
+  output <- capture.output(
+    zip::unzip(z$zip, exdir = exdir),
+    type = "message"
+  )
+
+  expect_true(file.exists(file.path(exdir, basename(z$ex), "file1")))
+  expect_match(output, "Unzipping", all = FALSE)
+})
