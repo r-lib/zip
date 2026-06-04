@@ -299,16 +299,24 @@ zip_internal <- function(
   warn_for_colon(data$key)
   warn_for_dotdot(data$key)
 
+  fi <- file.info(data$file, extra_cols = FALSE)
+  show_progress <- is_progress_enabled()
+  total_bytes <- if (show_progress) {
+    sum(fi$size[!data$dir], na.rm = TRUE)
+  } else {
+    NA_real_
+  }
+
   call_with_cleanup(
     c_R_zip_zip,
     enc2c(zipfile),
     enc2c(data$key),
     enc2c(data$file),
     data$dir,
-    file.info(data$file)$mtime,
+    fi$mtime,
     as.integer(compression_level),
     append,
-    requireNamespace("cli", quietly = TRUE)
+    total_bytes
   )
 
   invisible(zipfile)
@@ -446,7 +454,7 @@ unzip <- function(
     junkpaths,
     exdir,
     encoding,
-    requireNamespace("cli", quietly = TRUE)
+    is_progress_enabled()
   )
 
   if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {

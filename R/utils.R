@@ -1,5 +1,7 @@
 `%||%` <- function(l, r) if (is.null(l)) r else l
 
+`%&&%` <- function(l, r) if (is.null(l)) NULL else r
+
 get_zip_data <- function(
   files,
   recurse,
@@ -246,4 +248,40 @@ enc2c <- function(x) {
   } else {
     enc2native(x)
   }
+}
+
+is_true_option <- function(name) {
+  opt <- getOption(name)
+  if (is.null(opt)) {
+    NULL
+  } else if (isTRUE(opt)) {
+    TRUE
+  } else if (isFALSE(opt)) {
+    FALSE
+  } else {
+    stop(sprintf("Option `%s` must be TRUE, FALSE", name))
+  }
+}
+
+true_values <- c("true", "on", "yes", "1", "yeah", "yep", "y")
+false_values <- c("false", "off", "no", "0", "nope", "nay", "n")
+
+is_true_env_var <- function(name) {
+  env <- Sys.getenv(name, unset = NA)
+  if (is.na(env)) {
+    NULL
+  } else if (env %in% true_values) {
+    TRUE
+  } else if (env %in% false_values) {
+    FALSE
+  } else {
+    stop(sprintf("Environment variable `%s` must be TRUE or FALSE", name))
+  }
+}
+
+is_progress_enabled <- function() {
+  enabled <- is_true_option("zip.progress") %||%
+    is_true_env_var("ZIP_PROGRESS") %||%
+    FALSE
+  enabled && requireNamespace("cli", quietly = TRUE)
 }
