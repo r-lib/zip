@@ -40,9 +40,12 @@ int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode);
 int zip_set_permissions(mz_zip_archive *zip_archive, mz_uint file_index,
 			const char *filename);
 
+typedef void (*zip_progress_fn)(mz_uint64 bytes_done, void *data);
+
 int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 	    const char **cfiles, int *cdirs, double *cmtimes,
-	    int compression_level, int cappend);
+	    int compression_level, int cappend,
+	    zip_progress_fn progress_fn, void *progress_data);
 
 typedef char *(*zip_decode_fn)(const char *src, void *data);
 

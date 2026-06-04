@@ -14,8 +14,10 @@ Description: Cross-Platform 'zip' Compression Library. A replacement for
 License: MIT + file LICENSE
 URL: https://github.com/r-lib/zip, https://r-lib.github.io/zip/
 BugReports: https://github.com/r-lib/zip/issues
+LinkingTo: cli
 Suggests:
     callr,
+    cli,
     pillar,
     processx,
     R6,

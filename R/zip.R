@@ -1,6 +1,22 @@
 #' @useDynLib zip, .registration = TRUE, .fixes = "c_"
 NULL
 
+call_with_cleanup <- function(ptr, ...) {
+  # R_ExecWithCleanup (inside cleancall) pushes a CTXT_CCODE context with
+  # call=R_NilValue, so Rf_error() loses the calling function name. Capture
+  # it here and restore it on errors that arrive without a call.
+  caller <- sys.call(sys.nframe() - 1)
+  withCallingHandlers(
+    .Call(c_cleancall_call, pairlist(ptr, ...), parent.frame()),
+    error = function(e) {
+      if (is.null(conditionCall(e))) {
+        e$call <- caller
+        stop(e)
+      }
+    }
+  )
+}
+
 #' Compress Files into 'zip' Archives
 #'
 #' `zip()` creates a new zip archive file.
@@ -283,15 +299,24 @@ zip_internal <- function(
   warn_for_colon(data$key)
   warn_for_dotdot(data$key)
 
-  .Call(
+  fi <- file.info(data$file, extra_cols = FALSE)
+  show_progress <- is_progress_enabled()
+  total_bytes <- if (show_progress) {
+    sum(fi$size[!data$dir], na.rm = TRUE)
+  } else {
+    NA_real_
+  }
+
+  call_with_cleanup(
     c_R_zip_zip,
     enc2c(zipfile),
     enc2c(data$key),
     enc2c(data$file),
     data$dir,
-    file.info(data$file)$mtime,
+    fi$mtime,
     as.integer(compression_level),
-    append
+    append,
+    total_bytes
   )
 
   invisible(zipfile)
@@ -421,14 +446,15 @@ unzip <- function(
   mkdirp(exdir)
   exdir <- enc2c(normalizePath(exdir))
 
-  res <- .Call(
+  res <- call_with_cleanup(
     c_R_zip_unzip,
     zipfile,
     files,
     overwrite,
     junkpaths,
     exdir,
-    encoding
+    encoding,
+    is_progress_enabled()
   )
 
   if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {

@@ -16,6 +16,8 @@
 #include "errors.h"
 #include "miniz.h"
 #include "zip.h"
+#include "cleancall.h"
+#include <cli/progress.h>
 
 #ifndef S_IFLNK
 #define S_IFLNK         0120000         /* [XSI] symbolic link */
@@ -193,8 +195,19 @@ void R_zip_error_handler(const char *reason, const char *file,
   R_THROW_ERROR("%s", reason);
 }
 
+static void r_zip_progress_fn(mz_uint64 bytes_done, void *data) {
+  cli_progress_set((SEXP) data, (double) bytes_done);
+}
+
+static SEXP make_progress_bar(double total, const char *name) {
+  SEXP bar = PROTECT(cli_progress_bar(total, R_NilValue));
+  cli_progress_set_name(bar, name);
+  UNPROTECT(1);
+  return bar;
+}
+
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
-	       SEXP compression_level, SEXP append) {
+	       SEXP compression_level, SEXP append, SEXP total_bytes) {
 
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   const char **ckeys = 0, **cfiles = 0;
@@ -202,6 +215,8 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
   double *cmtimes = REAL(mtime);
   int ccompression_level = INTEGER(compression_level)[0];
   int cappend = LOGICAL(append)[0];
+  double ctotal_bytes = REAL(total_bytes)[0];
+  int cshow_progress = !ISNA(ctotal_bytes);
   int i, n = LENGTH(keys);
 
   /* The reason we allocate n+1 here is that otherwise R_alloc will
@@ -215,11 +230,15 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
     cfiles[i] = CHAR(STRING_ELT(files, i));
   }
 
+  SEXP bar = PROTECT(cshow_progress ? make_progress_bar(ctotal_bytes, "Zipping") : R_NilValue);
+
   zip_set_error_handler(R_zip_error_handler);
 
   zip_zip(czipfile, n, ckeys, cfiles, cdirs, cmtimes, ccompression_level,
-	  cappend);
+	  cappend, cshow_progress ? r_zip_progress_fn : NULL, bar);
 
+  cli_progress_done(bar);
+  UNPROTECT(1);
   return R_NilValue;
 }
 
@@ -227,6 +246,7 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 typedef struct {
   SEXP   result;
   int    num_entries; /* expected length of result vectors; checked in callback */
+  SEXP   bar;
 #ifdef _WIN32
   char  *path_utf8;
   size_t path_utf8_size;
@@ -268,16 +288,19 @@ static void r_unzip_entry_fn(int n, int i,
 #else
   SET_STRING_ELT(VECTOR_ELT(result, 8), i, mkCharCE(path, CE_UTF8));
 #endif
+
+  cli_progress_update(d->bar, -1, 1, 0);
 }
 
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
-		 SEXP exdir, SEXP encoding) {
+		 SEXP exdir, SEXP encoding, SEXP show_progress) {
 
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   int coverwrite = LOGICAL(overwrite)[0];
   int cjunkpaths = LOGICAL(junkpaths)[0];
   const char *cexdir = CHAR(STRING_ELT(exdir, 0));
   const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
+  int cshow_progress = LOGICAL(show_progress)[0];
   if (r_check_encoding(cencoding))
     R_THROW_ERROR("zip: unsupported encoding: '%s'", cencoding);
   int allfiles = isNull(files);
@@ -313,6 +336,8 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
     fclose(tmp_fh);
   }
 
+  SEXP bar = PROTECT(cshow_progress ? make_progress_bar((double) num_entries, "Unzipping") : R_NilValue);
+
   /* Allocate result vectors. PROTECT and UNPROTECT are both in this function. */
   SEXP result = PROTECT(allocVector(VECSXP, 9));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP,  num_entries)); /* filename */
@@ -329,6 +354,7 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   memset(&data, 0, sizeof(data));
   data.result = result;
   data.num_entries = num_entries;
+  data.bar = bar;
 
   zip_set_error_handler(R_zip_error_handler);
   zip_unzip(czipfile, cfiles, n, coverwrite, cjunkpaths, cexdir,
@@ -339,7 +365,8 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   if (data.path_utf8) free(data.path_utf8);
 #endif
 
-  UNPROTECT(1);
+  cli_progress_done(bar);
+  UNPROTECT(2); /* bar + result */
   return result;
 }
 

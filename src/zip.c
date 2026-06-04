@@ -462,9 +462,29 @@ static void zip_remove_file(const char *path) {
 #endif
 }
 
+typedef struct {
+  FILE *fh;
+  mz_uint64 *bytes_done_ptr;
+  zip_progress_fn progress_fn;
+  void *progress_data;
+} zip_read_ctx_t;
+
+static size_t zip_read_with_progress(void *pOpaque, mz_uint64 file_ofs,
+                                     void *pBuf, size_t n) {
+  (void) file_ofs;
+  zip_read_ctx_t *ctx = (zip_read_ctx_t *) pOpaque;
+  size_t ret = fread(pBuf, 1, n, ctx->fh);
+  if (ret > 0 && ctx->progress_fn) {
+    *ctx->bytes_done_ptr += (mz_uint64) ret;
+    ctx->progress_fn(*ctx->bytes_done_ptr, ctx->progress_data);
+  }
+  return ret;
+}
+
 int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 	    const char **cfiles, int *cdirs, double *cmtimes,
-	    int compression_level, int cappend) {
+	    int compression_level, int cappend,
+	    zip_progress_fn progress_fn, void *progress_data) {
 
   mz_uint ccompression_level = (mz_uint) compression_level;
   int i, n = num_files;
@@ -473,6 +493,7 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
   zip_char_t *filenameu16 = NULL;
   size_t filenameu16_len = 0;
   mz_uint existing_count = 0;
+  mz_uint64 bytes_done = 0;
 
   FILE *zfh = NULL;
 
@@ -617,7 +638,13 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
             if (filenameu16) free(filenameu16);
             ZIP_ERROR(R_ZIP_FILESIZE, filename);
           }
-          int ret = mz_zip_writer_add_cfile(&wtr, key, fh, uncomp_size,
+          zip_read_ctx_t rctx;
+          rctx.fh = fh;
+          rctx.bytes_done_ptr = &bytes_done;
+          rctx.progress_fn = progress_fn;
+          rctx.progress_data = progress_data;
+          int ret = mz_zip_writer_add_read_buf_callback(
+              &wtr, key, zip_read_with_progress, &rctx, uncomp_size,
               &cmtime, NULL, 0, ccompression_level, NULL, 0, NULL, 0);
           fclose(fh);
           if (!ret) {
@@ -732,14 +759,18 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
         fclose(zfh);
         ZIP_ERROR(R_ZIP_FILESIZE, filename);
       }
-      int ret = mz_zip_writer_add_cfile(&zip_archive, key, fh,
-          /* size_to_all= */ uncomp_size, /* pFile_time = */ &cmtime,
+      zip_read_ctx_t rctx;
+      rctx.fh = fh;
+      rctx.bytes_done_ptr = &bytes_done;
+      rctx.progress_fn = progress_fn;
+      rctx.progress_data = progress_data;
+      int ret = mz_zip_writer_add_read_buf_callback(
+          &zip_archive, key, zip_read_with_progress, &rctx,
+          /* max_size= */ uncomp_size, /* pFile_time= */ &cmtime,
           /* pComment= */ NULL, /* comment_size= */ 0,
-          /* level_and_flags = */ ccompression_level,
-          /* user_extra_data_local = */ NULL,
-          /* user_extra_data_local_len = */ 0,
-          /* user_extra_data_central = */ NULL,
-          /* user_extra_data_central_len = */ 0);
+          /* level_and_flags= */ ccompression_level,
+          /* user_extra_data_local= */ NULL, /* ...len= */ 0,
+          /* user_extra_data_central= */ NULL, /* ...len= */ 0);
       fclose(fh);
       if (!ret) {
         const char *mz_err =

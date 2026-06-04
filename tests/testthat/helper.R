@@ -137,3 +137,9 @@ transform_tempdir <- function(x) {
   x <- sub("[A-Z]:.*Rtmp[a-zA-Z0-9]+[\\\\/]", "<tempdir>/", x)
   x
 }
+
+skip_if_not_installed <- function(...) {
+  if (Sys.getenv("_R_CHECK_FORCE_SUGGESTS_") == "false") {
+    testthat::skip_if_not_installed(...)
+  }
+}
