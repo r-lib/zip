@@ -247,9 +247,11 @@ test_that("unzip() shows progress bar when zip.progress = TRUE", {
   z <- make_a_zip()
   exdir <- test_temp_dir()
 
-  withr::local_options(zip.progress = TRUE, cli.progress_show_after = 0)
+  withr::local_options(zip.progress = TRUE, cli.progress_show_after = -1)
   output <- capture.output(
-    zip::unzip(z$zip, exdir = exdir),
+    asNamespace("cli")$cli_with_ticks(
+      zip::unzip(z$zip, exdir = exdir)
+    ),
     type = "message"
   )
 

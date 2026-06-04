@@ -650,9 +650,12 @@ test_that("zip() shows progress bar when zip.progress = TRUE", {
   cat("more content", file = file.path(tmp, "file2"))
   zipfile <- test_temp_file(".zip", create = FALSE)
 
-  withr::local_options(zip.progress = TRUE, cli.progress_show_after = 0)
+  withr::local_options(zip.progress = TRUE, cli.progress_show_after = -1)
+  withr::local_dir(dirname(tmp))
   output <- capture.output(
-    withr::with_dir(dirname(tmp), zip(zipfile, basename(tmp))),
+    asNamespace("cli")$cli_with_ticks(
+      zip(zipfile, basename(tmp))
+    ),
     type = "message"
   )
 
