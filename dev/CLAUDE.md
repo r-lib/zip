@@ -26,6 +26,7 @@ uncovr::document()    # regenerate NAMESPACE and man/ from roxygen2 comments
 ``` r
 
 uncovr::test()                                           # all tests
+uncovr::test(filter = "zip")                             # filter by file name (no "test-" prefix)
 ```
 
 **Install** (prefer

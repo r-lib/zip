@@ -18,6 +18,16 @@ Development version:
 pak::pak("r-lib/zip")
 ```
 
+## Optional dependencies
+
+- For progress bars (see below), the [cli](https://cli.r-lib.org)
+  package is needed.
+- Background processes,
+  i.e. [`zip_process()`](https://r-lib.github.io/zip/dev/reference/zip_process.md)
+  and
+  [`unzip_process()`](https://r-lib.github.io/zip/dev/reference/unzip_process.md),
+  need the [processx](https://processx.r-lib.org) package.
+
 ## Usage
 
 ``` r
@@ -99,6 +109,27 @@ functions to create background zip / unzip processes. These processes
 were implemented on top of the
 [`processx::process`](http://processx.r-lib.org/reference/process.md)
 class, so they are pollable.
+
+### Progress bars
+
+[`zip()`](https://r-lib.github.io/zip/dev/reference/zip.md) and
+[`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) (and
+co.) support progress bars if the `cli` package is installed. This is
+disabled by default (for now), but can be enabled by setting the
+`zip_progress` option or the `ZIP_PROGRESS` environment variable to
+`TRUE`.
+
+### Configuration
+
+#### Options
+
+- `zip_progress`: If set to `TRUE`, progress bars are enabled. Takes
+  precedence over the `ZIP_PROGRESS` environment variable.
+
+#### Environment variables
+
+- `ZIP_PROGRESS`: If set to `TRUE`, progress bars are enabled. The
+  `zip_progress` option takes precedence over this environment variable.
 
 ## License
 

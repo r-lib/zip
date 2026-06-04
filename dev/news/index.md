@@ -2,6 +2,17 @@
 
 ## zip (development version)
 
+- [`zip()`](https://r-lib.github.io/zip/dev/reference/zip.md) and
+  [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) now
+  show a progress bar when the `cli` package is installed. For
+  [`zip()`](https://r-lib.github.io/zip/dev/reference/zip.md), progress
+  is byte-level, so large single files are tracked smoothly. For
+  [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md),
+  progress advances once per extracted entry. Progress bars are (for
+  now) opt-in via the `ZIP_PROGRESS=true` environment variable or the
+  `zip.progress` option
+  ([\#48](https://github.com/r-lib/zip/issues/48)).
+
 - [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) now
   returns a data frame (invisibly) with one row per extracted entry,
   containing the same columns as

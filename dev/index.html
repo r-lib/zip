@@ -67,6 +67,14 @@
 <code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"r-lib/zip"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="optional-dependencies">Optional dependencies<a class="anchor" aria-label="anchor" href="#optional-dependencies"></a>
+</h2>
+<ul>
+<li>For progress bars (see below), the <a href="https://cli.r-lib.org" class="external-link">cli</a> package is needed.</li>
+<li>Background processes, i.e. <code><a href="reference/zip_process.html">zip_process()</a></code> and <code><a href="reference/unzip_process.html">unzip_process()</a></code>, need the <a href="https://processx.r-lib.org" class="external-link">processx</a> package.</li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -122,6 +130,31 @@
 <h3 id="compressing-and-uncompressing-in-background-processes">Compressing and uncompressing in background processes<a class="anchor" aria-label="anchor" href="#compressing-and-uncompressing-in-background-processes"></a>
 </h3>
 <p>You can use the <code><a href="reference/zip_process.html">zip_process()</a></code> and <code><a href="reference/unzip_process.html">unzip_process()</a></code> functions to create background zip / unzip processes. These processes were implemented on top of the <code><a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a></code> class, so they are pollable.</p>
+</div>
+<div class="section level3">
+<h3 id="progress-bars">Progress bars<a class="anchor" aria-label="anchor" href="#progress-bars"></a>
+</h3>
+<p><code><a href="reference/zip.html">zip()</a></code> and <code><a href="reference/unzip.html">unzip()</a></code> (and co.) support progress bars if the <code>cli</code> package is installed. This is disabled by default (for now), but can be enabled by setting the <code>zip_progress</code> option or the <code>ZIP_PROGRESS</code> environment variable to <code>TRUE</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="configuration">Configuration<a class="anchor" aria-label="anchor" href="#configuration"></a>
+</h3>
+<div class="section level4">
+<h4 id="options">Options<a class="anchor" aria-label="anchor" href="#options"></a>
+</h4>
+<ul>
+<li>
+<code>zip_progress</code>: If set to <code>TRUE</code>, progress bars are enabled. Takes precedence over the <code>ZIP_PROGRESS</code> environment variable.</li>
+</ul>
+</div>
+<div class="section level4">
+<h4 id="environment-variables">Environment variables<a class="anchor" aria-label="anchor" href="#environment-variables"></a>
+</h4>
+<ul>
+<li>
+<code>ZIP_PROGRESS</code>: If set to <code>TRUE</code>, progress bars are enabled. The <code>zip_progress</code> option takes precedence over this environment variable.</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="section level2">
