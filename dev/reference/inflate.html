@@ -39,7 +39,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">inflate</span><span class="op">(</span><span class="va">buffer</span>, pos <span class="op">=</span> <span class="fl">1L</span>, size <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">inflate</span><span class="op">(</span><span class="va">buffer</span>, pos <span class="op">=</span> <span class="fl">1L</span>, size <span class="op">=</span> <span class="cn">NULL</span>, raw <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -57,6 +57,12 @@
 <dt id="arg-size">size<a class="anchor" aria-label="anchor" href="#arg-size"></a></dt>
 <dd><p>Uncompressed size estimate, or <code>NULL</code>. If not given, or too
 small, the output buffer is resized multiple times.</p></dd>
+
+
+<dt id="arg-raw">raw<a class="anchor" aria-label="anchor" href="#arg-raw"></a></dt>
+<dd><p>Whether <code>buffer</code> contains a raw DEFLATE stream, i.e. one
+without a zlib header and trailer. The default (<code>FALSE</code>) expects a
+zlib stream.</p></dd>
 
 </dl></div>
     <div class="section level2">

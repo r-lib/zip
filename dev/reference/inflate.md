@@ -5,7 +5,7 @@ Uncompress a raw GZIP stream
 ## Usage
 
 ``` r
-inflate(buffer, pos = 1L, size = NULL)
+inflate(buffer, pos = 1L, size = NULL, raw = FALSE)
 ```
 
 ## Arguments
@@ -22,6 +22,11 @@ inflate(buffer, pos = 1L, size = NULL)
 
   Uncompressed size estimate, or `NULL`. If not given, or too small, the
   output buffer is resized multiple times.
+
+- raw:
+
+  Whether `buffer` contains a raw DEFLATE stream, i.e. one without a
+  zlib header and trailer. The default (`FALSE`) expects a zlib stream.
 
 ## Value
 
