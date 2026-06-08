@@ -303,6 +303,7 @@ zip_path <- function(zipfile, mode = "range") {
 }
 
 transform_tempdir <- function(x) {
+  x <- sub("/private/(tmp|var|etc)/", "/\\1/", x)
   x <- sub(tempdir(), "<tempdir>", x, fixed = TRUE)
   x <- sub(normalizePath(tempdir()), "<tempdir>", x, fixed = TRUE)
   x <- sub(
