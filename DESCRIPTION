@@ -17,13 +17,18 @@ BugReports: https://github.com/r-lib/zip/issues
 LinkingTo: cli
 Suggests:
     cli,
+    callr,
+    curl,
     pillar,
     processx,
     R6,
     testthat,
+    webfakes,
     withr
 Config/Needs/website: tidyverse/tidytemplate
 Config/testthat/edition: 3
+Config/testthat/parallel: true
+Config/testthat/start-first: large-files, http
 Config/usethis/last-upkeep: 2025-05-07
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

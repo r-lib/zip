@@ -206,6 +206,23 @@ static SEXP make_progress_bar(double total, const char *name) {
   return bar;
 }
 
+SEXP R_zip_cp437_to_utf8(SEXP bytes) {
+  R_xlen_t n = XLENGTH(bytes);
+  char *src = malloc(n + 1);
+  if (!src) R_THROW_ERROR("Cannot decode CP437 file name, out of memory");
+  memcpy(src, RAW(bytes), n);
+  src[n] = '\0';
+
+  char *utf8 = zip_cp437_to_utf8(src);
+  free(src);
+  if (!utf8) R_THROW_ERROR("Cannot decode CP437 file name, out of memory");
+
+  SEXP result = PROTECT(ScalarString(mkCharCE(utf8, CE_UTF8)));
+  free(utf8);
+  UNPROTECT(1);
+  return result;
+}
+
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
 	       SEXP compression_level, SEXP append, SEXP total_bytes) {
 
@@ -464,7 +481,7 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
   return R_NilValue;
 }
 
-SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size) {
+SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size, SEXP raw) {
   int status;
   mz_stream stream;
   size_t cpos = INTEGER(pos)[0] - 1;
@@ -485,7 +502,8 @@ SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size) {
   stream.next_out = RAW(output);
   stream.avail_out = csize;
 
-  status = mz_inflateInit2(&stream, MZ_DEFAULT_WINDOW_BITS);
+  int wbits = LOGICAL(raw)[0] ? -MZ_DEFAULT_WINDOW_BITS : MZ_DEFAULT_WINDOW_BITS;
+  status = mz_inflateInit2(&stream, wbits);
 
   if (status != 0) {
     error("Failed to initiaalize decompressor");

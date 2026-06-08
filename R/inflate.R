@@ -17,16 +17,17 @@
 #' data_gz <- deflate(charToRaw("Hello world!"))
 #' inflate(data_gz$output)
 
-inflate <- function(buffer, pos = 1L, size = NULL) {
+inflate <- function(buffer, pos = 1L, size = NULL, raw = FALSE) {
   stopifnot(
     is.raw(buffer),
     is_count(pos),
-    is.null(size) || is_count(size)
+    is.null(size) || is_count(size),
+    is_flag(raw)
   )
   if (!is.null(size)) {
     size <- as.integer(size)
   }
-  .Call(c_R_inflate, buffer, as.integer(pos), size)
+  .Call(c_R_inflate, buffer, as.integer(pos), size, raw)
 }
 
 #' Compress a raw GZIP stream
