@@ -73,6 +73,14 @@
 # unzip falls back to full download when ranges unsupported
 
     Code
+      unzip(url, exdir = exdir)
+    Condition
+      Warning in `warn_no_range()`:
+      Server '127.0.0.1' does not support HTTP range requests, downloading the whole file.
+
+---
+
+    Code
       extracted_tree(exdir, za$ex)
     Output
                     path contents
@@ -82,6 +90,14 @@
       4    <root>/file11   file11
 
 # unzip falls back to full download per entry when ranges drop out
+
+    Code
+      unzip(url, exdir = exdir)
+    Condition
+      Warning in `warn_no_range()`:
+      Server '127.0.0.1' does not support HTTP range requests, downloading the whole file.
+
+---
 
     Code
       extracted_tree(exdir, za$ex)

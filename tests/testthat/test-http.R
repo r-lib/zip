@@ -76,8 +76,7 @@ test_that("unzip falls back to full download when ranges unsupported", {
   url <- range_server$url(zip_path(za$zip, "no-range"))
 
   exdir <- test_temp_dir()
-  unzip(url, exdir = exdir)
-
+  expect_snapshot(unzip(url, exdir = exdir))
   expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
@@ -89,8 +88,7 @@ test_that("unzip falls back to full download per entry when ranges drop out", {
   url <- range_server$url(zip_path(za$zip, "mixed"))
 
   exdir <- test_temp_dir()
-  unzip(url, exdir = exdir)
-
+  expect_snapshot(unzip(url, exdir = exdir))
   expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
