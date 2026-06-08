@@ -173,12 +173,12 @@ int zip_set_permissions(mz_zip_archive *zip_archive, mz_uint file_index,
 #endif
 }
 
-#ifdef _WIN32
-int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
-  *mode = stat->m_is_directory ? 0700 : 0600;
-  return 0;
-}
-#else
+/* Permissions are decoded from the archive bytes, not the host filesystem, so
+   this is platform-independent: a ZIP made on Unix reports its stored mode the
+   same way everywhere (and matches the R-based HTTP reader in R/http.R). For
+   archives that carry no Unix permissions (not made by Unix, or a zero
+   permission field, e.g. anything zipped on Windows) we fall back to a
+   sensible default. */
 int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
   mz_uint16 version_by = (stat->m_version_made_by >> 8) & 0xFF;
   mz_uint32 external_attr = (stat->m_external_attr >> 16) & 0xFFFF;
@@ -194,7 +194,6 @@ int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
 
   return 0;
 }
-#endif
 
 int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 	      int coverwrite, int cjunkpaths, const char *cexdir,
