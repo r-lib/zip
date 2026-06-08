@@ -84,7 +84,14 @@ test_that("zip_list reads Info-ZIP forced ZIP64 (`zip -fz`)", {
   lst <- zip_list(zf)
   expect_equal(
     lst$filename,
-    c("src/", "src/file11", "src/dir/", "src/dir/file3", "src/dir/file2", "src/file1")
+    c(
+      "src/",
+      "src/file11",
+      "src/dir/",
+      "src/dir/file3",
+      "src/dir/file2",
+      "src/file1"
+    )
   )
   expect_equal(lst$uncompressed_size, c(0, 7, 0, 6, 6, 6))
 })

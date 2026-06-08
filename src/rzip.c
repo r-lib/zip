@@ -154,7 +154,11 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
     REAL(VECTOR_ELT(result, 6))[i] = (double) file_stat.m_local_header_ofs;
     INTEGER(VECTOR_ELT(result, 7))[i] = 0;
     mz_uint32 attr = file_stat.m_external_attr >> 16;
-    if (S_ISBLK(attr)) {
+    /* miniz flags directories from the trailing slash or the DOS directory
+       bit, which catches entries whose Unix mode bits lack S_IFDIR. */
+    if (file_stat.m_is_directory) {
+      INTEGER(VECTOR_ELT(result, 7))[i] = 3;
+    } else if (S_ISBLK(attr)) {
       INTEGER(VECTOR_ELT(result, 7))[i] = 1;
     } else if (S_ISCHR(attr)) {
       INTEGER(VECTOR_ELT(result, 7))[i] = 2;
@@ -204,6 +208,23 @@ static SEXP make_progress_bar(double total, const char *name) {
   cli_progress_set_name(bar, name);
   UNPROTECT(1);
   return bar;
+}
+
+SEXP R_zip_cp437_to_utf8(SEXP bytes) {
+  R_xlen_t n = XLENGTH(bytes);
+  char *src = malloc(n + 1);
+  if (!src) R_THROW_ERROR("Cannot decode CP437 file name, out of memory");
+  memcpy(src, RAW(bytes), n);
+  src[n] = '\0';
+
+  char *utf8 = zip_cp437_to_utf8(src);
+  free(src);
+  if (!utf8) R_THROW_ERROR("Cannot decode CP437 file name, out of memory");
+
+  SEXP result = PROTECT(ScalarString(mkCharCE(utf8, CE_UTF8)));
+  free(utf8);
+  UNPROTECT(1);
+  return result;
 }
 
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
@@ -275,10 +296,12 @@ static void r_unzip_entry_fn(int n, int i,
 
   INTEGER(VECTOR_ELT(result, 7))[i] = 0;
   mz_uint32 attr = stat->m_external_attr >> 16;
-  if (S_ISBLK(attr))       INTEGER(VECTOR_ELT(result, 7))[i] = 1;
-  else if (S_ISCHR(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 2;
-  else if (S_ISDIR(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 3;
-  else if (S_ISFIFO(attr)) INTEGER(VECTOR_ELT(result, 7))[i] = 4;
+  /* see R_zip_list: trust miniz's directory flag before the Unix mode bits */
+  if (stat->m_is_directory) INTEGER(VECTOR_ELT(result, 7))[i] = 3;
+  else if (S_ISBLK(attr))   INTEGER(VECTOR_ELT(result, 7))[i] = 1;
+  else if (S_ISCHR(attr))   INTEGER(VECTOR_ELT(result, 7))[i] = 2;
+  else if (S_ISDIR(attr))   INTEGER(VECTOR_ELT(result, 7))[i] = 3;
+  else if (S_ISFIFO(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 4;
   else if (S_ISLNK(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 5;
   else if (S_ISSOCK(attr)) INTEGER(VECTOR_ELT(result, 7))[i] = 6;
 
@@ -464,7 +487,7 @@ SEXP R_make_big_file(SEXP filename, SEXP mb) {
   return R_NilValue;
 }
 
-SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size) {
+SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size, SEXP raw) {
   int status;
   mz_stream stream;
   size_t cpos = INTEGER(pos)[0] - 1;
@@ -485,7 +508,8 @@ SEXP R_inflate(SEXP buffer, SEXP pos, SEXP size) {
   stream.next_out = RAW(output);
   stream.avail_out = csize;
 
-  status = mz_inflateInit2(&stream, MZ_DEFAULT_WINDOW_BITS);
+  int wbits = LOGICAL(raw)[0] ? -MZ_DEFAULT_WINDOW_BITS : MZ_DEFAULT_WINDOW_BITS;
+  status = mz_inflateInit2(&stream, wbits);
 
   if (status != 0) {
     error("Failed to initiaalize decompressor");

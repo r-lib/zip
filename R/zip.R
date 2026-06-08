@@ -344,6 +344,9 @@ zip_internal <- function(
 #' @export
 
 zip_list <- function(zipfile, encoding = NULL) {
+  if (startsWith(zipfile, "http://") || startsWith(zipfile, "https://")) {
+    return(zip_list_url(zipfile, encoding))
+  }
   zipfile <- enc2c(normalizePath(zipfile))
   res <- .Call(c_R_zip_list, zipfile, encoding)
   if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {
@@ -430,6 +433,9 @@ unzip <- function(
   exdir = ".",
   encoding = NULL
 ) {
+  if (startsWith(zipfile, "http://") || startsWith(zipfile, "https://")) {
+    return(unzip_url(zipfile, files, overwrite, junkpaths, exdir, encoding))
+  }
   stopifnot(
     is_string(zipfile),
     is_character_or_null(files),
