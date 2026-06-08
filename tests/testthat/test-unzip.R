@@ -240,6 +240,17 @@ test_that("unzip works on files with STORED comp_size=0 quirk", {
   )
 })
 
+test_that("unzip reads Info-ZIP forced ZIP64 (`zip -fz`)", {
+  # See tools/extra/make-zip64-infozip.sh. Exercises the zero-length STORED
+  # directory entries that the bundled miniz reader used to reject.
+  zf <- test_path("fixtures/zip64.zip")
+  tmp <- test_temp_dir()
+  zip::unzip(zf, exdir = tmp)
+  expect_true(dir.exists(file.path(tmp, "src", "dir")))
+  expect_equal(readLines(file.path(tmp, "src", "file1")), "file1")
+  expect_equal(readLines(file.path(tmp, "src", "dir", "file2")), "file2")
+})
+
 test_that("unzip() shows progress bar when zip.progress = TRUE", {
   skip_if_not_installed("cli")
   withr::local_options(zip.progress = FALSE)

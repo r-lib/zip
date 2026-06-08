@@ -13,19 +13,21 @@ diff --git a/src/miniz.c b/src/miniz.c
 +                        (MZ_READ_LE16(p + MZ_ZIP_CDH_METHOD_OFS) && decomp_size && !comp_size))
                          return mz_zip_set_error(pZip, MZ_ZIP_INVALID_HEADER_OR_CORRUPTED);
                  }
-
-@@ -4317,6 +4321,9 @@
-         pStat->m_crc32 = MZ_READ_LE32(p + MZ_ZIP_CDH_CRC32_OFS);
-         pStat->m_comp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_COMPRESSED_SIZE_OFS);
-         pStat->m_uncomp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_DECOMPRESSED_SIZE_OFS);
-+        /* Some zip creators write comp_size=0 for STORED entries; treat as comp_size=uncomp_size. */
+ 
+@@ -4409,6 +4413,12 @@
+                 } while (extra_size_remaining);
+             }
+         }
++
++        /* Some zip creators write comp_size=0 for STORED entries; treat as comp_size=uncomp_size.
++           Done after resolving any zip64 fields so the placeholder 0xFFFFFFFF (e.g. Info-ZIP
++           forced-zip64 directory entries) is not mistaken for a real uncompressed size. */
 +        if ((pStat->m_method == 0) && (pStat->m_comp_size == 0) && (pStat->m_uncomp_size > 0))
 +            pStat->m_comp_size = pStat->m_uncomp_size;
-         pStat->m_internal_attr = MZ_READ_LE16(p + MZ_ZIP_CDH_INTERNAL_ATTR_OFS);
-         pStat->m_external_attr = MZ_READ_LE32(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
-         pStat->m_local_header_ofs = MZ_READ_LE32(p + MZ_ZIP_CDH_LOCAL_HEADER_OFS);
-
-@@ -5421,6 +5428,9 @@
+ 
+         return MZ_TRUE;
+     }
+@@ -5421,6 +5431,9 @@
          local_header_extra_len = MZ_READ_LE16(pLocal_header + MZ_ZIP_LDH_EXTRA_LEN_OFS);
          local_header_comp_size = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_COMPRESSED_SIZE_OFS);
          local_header_uncomp_size = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_DECOMPRESSED_SIZE_OFS);
@@ -35,11 +37,10 @@ diff --git a/src/miniz.c b/src/miniz.c
          local_header_crc32 = MZ_READ_LE32(pLocal_header + MZ_ZIP_LDH_CRC32_OFS);
          local_header_bit_flags = MZ_READ_LE16(pLocal_header + MZ_ZIP_LDH_BIT_FLAG_OFS);
          has_data_descriptor = (local_header_bit_flags & 8) != 0;
-
-@@ -6241,7 +6251,14 @@
+@@ -6241,7 +6254,14 @@
          if (*pArchive_name == '/')
              return MZ_FALSE;
-
+ 
 -        /* Making sure the name does not contain drive letters or DOS style backward slashes is the responsibility of the program using miniz*/
 +        while (*pArchive_name)
 +        {
@@ -49,22 +50,23 @@ diff --git a/src/miniz.c b/src/miniz.c
 +                return MZ_FALSE;
 +            pArchive_name++;
 +        }
-
+ 
          return MZ_TRUE;
      }
-
-@@ -7902,6 +7919,38 @@
+@@ -7900,8 +7920,40 @@
+ #endif
+ 
          return MZ_FALSE;
-     }
-
++    }
++
 +    int mz_zip_get_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
 +                                   mz_uint16 *value) {
 +        mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
 +        if (!p) return 0;
 +        *value = MZ_READ_LE16(p + MZ_ZIP_CDH_VERSION_MADE_BY_OFS);
 +        return 1;
-+    }
-+
+     }
+ 
 +    int mz_zip_set_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
 +                                   mz_uint16 value) {
 +        mz_uint8 *p = (mz_uint8*) mz_zip_get_cdh(pZip, file_index);
@@ -96,9 +98,9 @@ diff --git a/src/miniz.h b/src/miniz.h
 --- a/src/miniz.h
 +++ b/src/miniz.h
 @@ -1503,6 +1503,15 @@
-
+ 
  #endif /* #ifndef MINIZ_NO_ARCHIVE_WRITING_APIS */
-
+ 
 +    int mz_zip_get_version_made_by(mz_zip_archive *pZip, mz_uint file_index,
 +                                   mz_uint16 *value);
 +    int mz_zip_set_version_made_by(mz_zip_archive *pZip, mz_uint file_index,

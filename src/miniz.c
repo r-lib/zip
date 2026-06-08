@@ -4321,9 +4321,6 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
         pStat->m_crc32 = MZ_READ_LE32(p + MZ_ZIP_CDH_CRC32_OFS);
         pStat->m_comp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_COMPRESSED_SIZE_OFS);
         pStat->m_uncomp_size = MZ_READ_LE32(p + MZ_ZIP_CDH_DECOMPRESSED_SIZE_OFS);
-        /* Some zip creators write comp_size=0 for STORED entries; treat as comp_size=uncomp_size. */
-        if ((pStat->m_method == 0) && (pStat->m_comp_size == 0) && (pStat->m_uncomp_size > 0))
-            pStat->m_comp_size = pStat->m_uncomp_size;
         pStat->m_internal_attr = MZ_READ_LE16(p + MZ_ZIP_CDH_INTERNAL_ATTR_OFS);
         pStat->m_external_attr = MZ_READ_LE32(p + MZ_ZIP_CDH_EXTERNAL_ATTR_OFS);
         pStat->m_local_header_ofs = MZ_READ_LE32(p + MZ_ZIP_CDH_LOCAL_HEADER_OFS);
@@ -4416,6 +4413,12 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
                 } while (extra_size_remaining);
             }
         }
+
+        /* Some zip creators write comp_size=0 for STORED entries; treat as comp_size=uncomp_size.
+           Done after resolving any zip64 fields so the placeholder 0xFFFFFFFF (e.g. Info-ZIP
+           forced-zip64 directory entries) is not mistaken for a real uncompressed size. */
+        if ((pStat->m_method == 0) && (pStat->m_comp_size == 0) && (pStat->m_uncomp_size > 0))
+            pStat->m_comp_size = pStat->m_uncomp_size;
 
         return MZ_TRUE;
     }
