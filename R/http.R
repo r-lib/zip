@@ -152,6 +152,21 @@ parse_zip64_extra <- function(extra_raw, comp_size, uncomp_size, local_offset) {
   if (length(result)) result else NULL
 }
 
+url_host <- function(url) {
+  host <- tryCatch(curl::curl_parse_url(url)$host, error = function(e) NULL)
+  if (is.null(host) || !nzchar(host)) url else host
+}
+
+warn_no_range <- function(url) {
+  warning(sprintf(
+    paste0(
+      "Server '%s' does not support HTTP range requests, ",
+      "downloading the whole file."
+    ),
+    url_host(url)
+  ))
+}
+
 zip_range_get <- function(url, range_str, handle) {
   curl::handle_setheaders(handle, "Range" = range_str)
   resp <- curl::curl_fetch_memory(url, handle = handle)
@@ -364,6 +379,7 @@ zip_list_url <- function(url, encoding) {
   h <- curl::new_handle()
   cd_info <- zip_fetch_cd(url, h)
   if (!cd_info$use_range) {
+    warn_no_range(url)
     tmp <- tempfile(fileext = ".zip")
     on.exit(unlink(tmp), add = TRUE)
     writeBin(cd_info$body, tmp)
@@ -400,6 +416,7 @@ unzip_url <- function(url, files, overwrite, junkpaths, exdir, encoding) {
   cd_info <- zip_fetch_cd(url, h)
 
   if (!cd_info$use_range) {
+    warn_no_range(url)
     tmp <- tempfile(fileext = ".zip")
     on.exit(unlink(tmp), add = TRUE)
     writeBin(cd_info$body, tmp)
@@ -483,6 +500,7 @@ unzip_url <- function(url, files, overwrite, junkpaths, exdir, encoding) {
     # Use the downloaded archive to extract this and all remaining entries at
     # once, instead of re-requesting (and re-downloading) the file per entry.
     if (resp$status == 200L) {
+      warn_no_range(url)
       tmp <- tempfile(fileext = ".zip")
       on.exit(unlink(tmp), add = TRUE)
       writeBin(resp$content, tmp)
