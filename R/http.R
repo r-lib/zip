@@ -165,6 +165,26 @@ zip_range_get <- function(url, range_str, handle) {
 zip_fetch_cd <- function(url, handle) {
   resp <- zip_range_get(url, "bytes=-65536", handle)
 
+  # Some servers (e.g. GitHub's CDN) reject a suffix range that is larger
+  # than the file with 416 Range Not Satisfiable instead of returning the
+  # whole file. The 416 response still reports the size in its Content-Range
+  # header ("bytes */SIZE"), so retry with an explicit range anchored at the
+  # start of the last 64k (or the start of the file when it is smaller).
+  if (resp$status == 416L) {
+    cr <- resp$headers[["content-range"]]
+    filesize <- if (!is.null(cr)) {
+      as.numeric(sub(".*/([0-9]+)$", "\\1", cr))
+    } else {
+      NA_real_
+    }
+    range_str <- if (!is.na(filesize)) {
+      sprintf("bytes=%.0f-", max(0, filesize - 65536))
+    } else {
+      "bytes=0-"
+    }
+    resp <- zip_range_get(url, range_str, handle)
+  }
+
   if (resp$status == 200L) {
     return(list(use_range = FALSE, body = resp$content))
   }
