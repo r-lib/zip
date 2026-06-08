@@ -1,5 +1,11 @@
 # zip (development version)
 
+* `zip_list()` and `unzip()` now report `type == "directory"` for directory
+  entries whose Unix mode bits lack `S_IFDIR` but that are marked as
+  directories by a trailing slash or the DOS directory attribute (e.g.
+  archives created by `zip()` itself). Previously these were reported as
+  `"file"`.
+
 * `zip()` and `unzip()` now show a progress bar when the `cli` package is
   installed. For `zip()`, progress is byte-level, so large single files are
   tracked smoothly. For `unzip()`, progress advances once per extracted

@@ -154,7 +154,11 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
     REAL(VECTOR_ELT(result, 6))[i] = (double) file_stat.m_local_header_ofs;
     INTEGER(VECTOR_ELT(result, 7))[i] = 0;
     mz_uint32 attr = file_stat.m_external_attr >> 16;
-    if (S_ISBLK(attr)) {
+    /* miniz flags directories from the trailing slash or the DOS directory
+       bit, which catches entries whose Unix mode bits lack S_IFDIR. */
+    if (file_stat.m_is_directory) {
+      INTEGER(VECTOR_ELT(result, 7))[i] = 3;
+    } else if (S_ISBLK(attr)) {
       INTEGER(VECTOR_ELT(result, 7))[i] = 1;
     } else if (S_ISCHR(attr)) {
       INTEGER(VECTOR_ELT(result, 7))[i] = 2;
@@ -292,10 +296,12 @@ static void r_unzip_entry_fn(int n, int i,
 
   INTEGER(VECTOR_ELT(result, 7))[i] = 0;
   mz_uint32 attr = stat->m_external_attr >> 16;
-  if (S_ISBLK(attr))       INTEGER(VECTOR_ELT(result, 7))[i] = 1;
-  else if (S_ISCHR(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 2;
-  else if (S_ISDIR(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 3;
-  else if (S_ISFIFO(attr)) INTEGER(VECTOR_ELT(result, 7))[i] = 4;
+  /* see R_zip_list: trust miniz's directory flag before the Unix mode bits */
+  if (stat->m_is_directory) INTEGER(VECTOR_ELT(result, 7))[i] = 3;
+  else if (S_ISBLK(attr))   INTEGER(VECTOR_ELT(result, 7))[i] = 1;
+  else if (S_ISCHR(attr))   INTEGER(VECTOR_ELT(result, 7))[i] = 2;
+  else if (S_ISDIR(attr))   INTEGER(VECTOR_ELT(result, 7))[i] = 3;
+  else if (S_ISFIFO(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 4;
   else if (S_ISLNK(attr))  INTEGER(VECTOR_ELT(result, 7))[i] = 5;
   else if (S_ISSOCK(attr)) INTEGER(VECTOR_ELT(result, 7))[i] = 6;
 
