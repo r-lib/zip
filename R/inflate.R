@@ -4,6 +4,9 @@
 #' @param pos Start position of data to uncompress in `buffer`.
 #' @param size Uncompressed size estimate, or `NULL`. If not given, or too
 #'   small, the output buffer is resized multiple times.
+#' @param raw Whether `buffer` contains a raw DEFLATE stream, i.e. one
+#'   without a zlib header and trailer. The default (`FALSE`) expects a
+#'   zlib stream.
 #' @return Named list with three entries:
 #'   - `output`: raw vector, the uncompressed data,
 #'   - `bytes_read`: number of bytes used from `buffer`,
