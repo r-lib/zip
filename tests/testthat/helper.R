@@ -79,6 +79,44 @@ test_temp_dir <- function(
   }
 }
 
+zip_list_snapshot <- function(x, root = NULL, sort = FALSE) {
+  withr::local_options(width = 200)
+  lst <- zip_list(x)
+  if (!is.null(root)) {
+    lst$filename <- sub(basename(root), "<root>", lst$filename, fixed = TRUE)
+  }
+  if (sort) {
+    lst <- lst[order(lst$filename), , drop = FALSE]
+  }
+  lst$timestamp <- NULL
+  lst <- as.data.frame(lst)
+  rownames(lst) <- NULL
+  print(lst)
+  invisible(lst)
+}
+
+# offset may change because of the random temporary file/dir names
+transform_offset <- function(x) {
+  sub("([0-9a-f]{8}) +[0-9]+", "\\1 <offset>", x)
+}
+
+extracted_tree <- function(dir, root = NULL) {
+  withr::local_options(width = 200)
+  files <- sort(list.files(dir, recursive = TRUE))
+  contents <- vapply(
+    file.path(dir, files),
+    function(f) paste(readLines(f), collapse = "\n"),
+    character(1),
+    USE.NAMES = FALSE
+  )
+  if (!is.null(root)) {
+    files <- sub(basename(root), "<root>", files, fixed = TRUE)
+  }
+  out <- data.frame(path = files, contents = contents, stringsAsFactors = FALSE)
+  print(out)
+  invisible(out)
+}
+
 make_a_zip <- function(
   mtime = Sys.time(),
   envir = parent.frame(),

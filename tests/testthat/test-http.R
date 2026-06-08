@@ -5,26 +5,7 @@ test_that("zip_list works with range request server", {
   za <- make_a_zip()
   url <- range_server$url(zip_path(za$zip))
 
-  lst <- zip_list(url)
-
-  expect_equal(
-    colnames(lst),
-    c(
-      "filename",
-      "compressed_size",
-      "uncompressed_size",
-      "timestamp",
-      "permissions",
-      "crc32",
-      "offset",
-      "type"
-    )
-  )
-  lst_local <- zip_list(za$zip)
-  expect_equal(lst$filename, lst_local$filename)
-
-  expect_true(inherits(lst$crc32, "hexmode"))
-  expect_true(is.numeric(lst$offset))
+  expect_snapshot(zip_list_snapshot(url, za$ex), transform = transform_offset)
 })
 
 test_that("unzip works with range request server", {
@@ -35,16 +16,9 @@ test_that("unzip works with range request server", {
   url <- range_server$url(zip_path(za$zip))
 
   exdir <- test_temp_dir()
-  result <- unzip(url, exdir = exdir)
+  unzip(url, exdir = exdir)
 
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "file1")))
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "file11")))
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "dir", "file2")))
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "dir", "file3")))
-  f1 <- file.path(exdir, basename(za$ex), "file1")
-  f2 <- file.path(exdir, basename(za$ex), "dir", "file2")
-  expect_equal(readLines(f1), "file1")
-  expect_equal(readLines(f2), "file2")
+  expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
 test_that("unzip extracts specific files with range request server", {
@@ -56,11 +30,9 @@ test_that("unzip extracts specific files with range request server", {
 
   exdir <- test_temp_dir()
   target <- paste0(basename(za$ex), "/file1")
-  result <- unzip(url, files = target, exdir = exdir)
+  unzip(url, files = target, exdir = exdir)
 
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "file1")))
-  expect_false(file.exists(file.path(exdir, basename(za$ex), "file11")))
-  expect_equal(nrow(result), 1L)
+  expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
 test_that("zip_list falls back to full download when ranges unsupported", {
@@ -70,9 +42,7 @@ test_that("zip_list falls back to full download when ranges unsupported", {
   za <- make_a_zip()
   url <- range_server$url(zip_path(za$zip, "no-range"))
 
-  lst <- zip_list(url)
-  lst_local <- zip_list(za$zip)
-  expect_equal(lst, lst_local)
+  expect_snapshot(zip_list_snapshot(url, za$ex), transform = transform_offset)
 })
 
 test_that("zip_list recovers when an oversized suffix range gives 416", {
@@ -82,9 +52,7 @@ test_that("zip_list recovers when an oversized suffix range gives 416", {
   za <- make_a_zip()
   url <- range_server$url(zip_path(za$zip, "suffix-416"))
 
-  lst <- zip_list(url)
-  lst_local <- zip_list(za$zip)
-  expect_equal(lst$filename, lst_local$filename)
+  expect_snapshot(zip_list_snapshot(url, za$ex), transform = transform_offset)
 })
 
 test_that("unzip recovers when an oversized suffix range gives 416", {
@@ -97,12 +65,7 @@ test_that("unzip recovers when an oversized suffix range gives 416", {
   exdir <- test_temp_dir()
   unzip(url, exdir = exdir)
 
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "file1")))
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "dir", "file2")))
-  expect_equal(
-    readLines(file.path(exdir, basename(za$ex), "file1")),
-    "file1"
-  )
+  expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
 test_that("unzip falls back to full download when ranges unsupported", {
@@ -113,16 +76,9 @@ test_that("unzip falls back to full download when ranges unsupported", {
   url <- range_server$url(zip_path(za$zip, "no-range"))
 
   exdir <- test_temp_dir()
-  result <- unzip(url, exdir = exdir)
+  unzip(url, exdir = exdir)
 
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "file1")))
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "file11")))
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "dir", "file2")))
-  expect_true(file.exists(file.path(exdir, basename(za$ex), "dir", "file3")))
-  f1 <- file.path(exdir, basename(za$ex), "file1")
-  f2 <- file.path(exdir, basename(za$ex), "dir", "file2")
-  expect_equal(readLines(f1), "file1")
-  expect_equal(readLines(f2), "file2")
+  expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
 test_that("unzip falls back to full download per entry when ranges drop out", {
@@ -135,11 +91,7 @@ test_that("unzip falls back to full download per entry when ranges drop out", {
   exdir <- test_temp_dir()
   unzip(url, exdir = exdir)
 
-  f1 <- file.path(exdir, basename(za$ex), "file1")
-  f2 <- file.path(exdir, basename(za$ex), "dir", "file2")
-  expect_true(file.exists(f1))
-  expect_equal(readLines(f1), "file1")
-  expect_equal(readLines(f2), "file2")
+  expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
 test_that("unzip fetches data separately when entry range is truncated", {
@@ -152,11 +104,7 @@ test_that("unzip fetches data separately when entry range is truncated", {
   exdir <- test_temp_dir()
   unzip(url, exdir = exdir)
 
-  f1 <- file.path(exdir, basename(za$ex), "file1")
-  f2 <- file.path(exdir, basename(za$ex), "dir", "file2")
-  expect_true(file.exists(f1))
-  expect_equal(readLines(f1), "file1")
-  expect_equal(readLines(f2), "file2")
+  expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
 test_that("zip_list reads a ZIP64 EOCD archive over range requests", {
@@ -166,12 +114,7 @@ test_that("zip_list reads a ZIP64 EOCD archive over range requests", {
   za <- make_a_zip64()
   url <- range_server$url(zip_path(za$zip))
 
-  lst <- zip_list(url)
-  ref <- zip_list(za$orig)
-
-  expect_equal(lst$filename, ref$filename)
-  expect_equal(lst$uncompressed_size, ref$uncompressed_size)
-  expect_equal(lst$offset, ref$offset)
+  expect_snapshot(zip_list_snapshot(url, za$ex), transform = transform_offset)
 })
 
 test_that("reads a real ZIP64 EOCD-record archive over range requests", {
@@ -180,23 +123,19 @@ test_that("reads a real ZIP64 EOCD-record archive over range requests", {
 
   # zip64.zip's classic EOCD has the cd_offset 0xFFFFFFFF sentinel, so the
   # real offset must be read from the ZIP64 EOCD record via its locator.
+  # ext_attr has the S_IFREG high bit set; permissions must decode without
+  # overflowing integer range.
   zf <- test_path("fixtures/zip64.zip")
   url <- range_server$url(zip_path(zf))
 
-  lst <- zip_list(url)
-  files <- lst[lst$type == "file", ]
-  expect_equal(
-    sort(files$filename),
-    c("src/dir/file2", "src/dir/file3", "src/file1", "src/file11")
+  expect_snapshot(
+    zip_list_snapshot(url, sort = TRUE),
+    transform = transform_offset
   )
-  # ext_attr has the S_IFREG high bit set; permissions must decode without
-  # overflowing integer range.
-  expect_equal(as.character(files$permissions), rep("644", 4))
 
   exdir <- test_temp_dir()
   unzip(url, exdir = exdir)
-  expect_equal(readLines(file.path(exdir, "src", "file1")), "file1")
-  expect_equal(readLines(file.path(exdir, "src", "dir", "file2")), "file2")
+  expect_snapshot(extracted_tree(exdir))
 })
 
 test_that("unzip reads a ZIP64 EOCD archive over range requests", {
@@ -209,11 +148,7 @@ test_that("unzip reads a ZIP64 EOCD archive over range requests", {
   exdir <- test_temp_dir()
   unzip(url, exdir = exdir)
 
-  f1 <- file.path(exdir, basename(za$ex), "file1")
-  f2 <- file.path(exdir, basename(za$ex), "dir", "file2")
-  expect_true(file.exists(f1))
-  expect_equal(readLines(f1), "file1")
-  expect_equal(readLines(f2), "file2")
+  expect_snapshot(extracted_tree(exdir, za$ex))
 })
 
 test_that("unzip with junkpaths works with range request server", {
@@ -226,8 +161,5 @@ test_that("unzip with junkpaths works with range request server", {
   exdir <- test_temp_dir()
   unzip(url, junkpaths = TRUE, exdir = exdir)
 
-  expect_equal(
-    sort(list.files(exdir, recursive = TRUE)),
-    c("file1", "file11", "file2", "file3")
-  )
+  expect_snapshot(extracted_tree(exdir))
 })
