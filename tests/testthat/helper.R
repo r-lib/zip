@@ -117,6 +117,11 @@ extracted_tree <- function(dir, root = NULL) {
   invisible(out)
 }
 
+http_fixture <- function(include_directories = TRUE) {
+  name <- if (include_directories) "http.zip" else "http-nodirs.zip"
+  list(zip = test_path("fixtures", name), ex = "ziptest")
+}
+
 make_a_zip <- function(
   mtime = Sys.time(),
   envir = parent.frame(),
@@ -151,7 +156,7 @@ le_bytes <- function(x, n) {
 # sentinels (0xFFFF / 0xFFFFFFFF). The central directory and local headers are
 # left untouched, so the file stays small but forces the ZIP64 EOCD code path.
 make_a_zip64 <- function(envir = parent.frame()) {
-  za <- make_a_zip(envir = envir, include_directories = FALSE)
+  za <- http_fixture(include_directories = FALSE)
   raw_bytes <- readBin(za$zip, "raw", file.info(za$zip)$size)
   n <- length(raw_bytes)
 

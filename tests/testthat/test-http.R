@@ -2,7 +2,7 @@ test_that("zip_list works with range request server", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip))
 
   expect_snapshot(zip_list_snapshot(url, za$ex), transform = transform_offset)
@@ -12,7 +12,7 @@ test_that("unzip works with range request server", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip))
 
   exdir <- test_temp_dir()
@@ -25,7 +25,7 @@ test_that("unzip extracts specific files with range request server", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip))
 
   exdir <- test_temp_dir()
@@ -39,7 +39,7 @@ test_that("zip_list falls back to full download when ranges unsupported", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip, "no-range"))
 
   expect_snapshot(zip_list_snapshot(url, za$ex), transform = transform_offset)
@@ -49,7 +49,7 @@ test_that("zip_list recovers when an oversized suffix range gives 416", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip, "suffix-416"))
 
   expect_snapshot(zip_list_snapshot(url, za$ex), transform = transform_offset)
@@ -59,7 +59,7 @@ test_that("unzip recovers when an oversized suffix range gives 416", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip, "suffix-416"))
 
   exdir <- test_temp_dir()
@@ -72,7 +72,7 @@ test_that("unzip falls back to full download when ranges unsupported", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip, "no-range"))
 
   exdir <- test_temp_dir()
@@ -84,7 +84,7 @@ test_that("unzip falls back to full download per entry when ranges drop out", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip, "mixed"))
 
   exdir <- test_temp_dir()
@@ -96,7 +96,7 @@ test_that("unzip fetches data separately when entry range is truncated", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip()
+  za <- http_fixture()
   url <- range_server$url(zip_path(za$zip, "truncating"))
 
   exdir <- test_temp_dir()
@@ -153,7 +153,7 @@ test_that("unzip with junkpaths works with range request server", {
   skip_if_not_installed("curl")
   skip_if_not_installed("webfakes")
 
-  za <- make_a_zip(include_directories = FALSE)
+  za <- http_fixture(include_directories = FALSE)
   url <- range_server$url(zip_path(za$zip))
 
   exdir <- test_temp_dir()
