@@ -182,106 +182,75 @@ local_temp_dir <- function(
   invisible(path)
 }
 
-range_server <- function(zipfile, envir = parent.frame()) {
-  zip_bytes <- readBin(zipfile, "raw", file.info(zipfile)$size)
+# A single webfakes app backing all HTTP range-request tests. Rather than
+# baking a particular ZIP into the app, each request names the file to serve via
+# the `path` query parameter (read fresh from disk on every request) and selects
+# the server's range-request behaviour via the first path segment (`mode`):
+#
+#   range       - full byte-range support
+#   no-range    - ignores the Range header, always replies 200 with the whole
+#                 file (forces the full-download fallback in unzip()/zip_list())
+#   mixed       - honours only the suffix range used for the EOCD/CD tail; replies
+#                 200 with the whole file to explicit per-entry ranges (forces the
+#                 per-entry full-download fallback in unzip_url())
+#   truncating  - honours ranges, but truncates a range starting at a local file
+#                 header to 40 bytes: enough to parse the header, never enough to
+#                 include the compressed data (forces the second, data-only range
+#                 fetch in unzip_url()). The follow-up request starts at the file
+#                 data, not a PK\03\04 signature, so it is served in full.
+#   suffix-416  - honours explicit ranges, but rejects a suffix range larger than
+#                 the file with 416 Range Not Satisfiable (as GitHub's CDN does),
+#                 reporting the size in the Content-Range header ("bytes */SIZE").
+#                 Forces the 416 recovery path in zip_fetch_cd().
+#
+# The handler runs in a separate R process (webfakes::new_app_process), so it
+# must be self-contained: it may only reference req/res and base R.
+range_server_app <- function() {
   app <- webfakes::new_app()
-  app$locals$zip_bytes <- zip_bytes
-  app$get("/file.zip", function(req, res) {
-    zip_bytes <- req$app$locals$zip_bytes
+  app$get("/:mode/file.zip", function(req, res) {
+    mode <- req$params$mode
+    zipfile <- req$query$path
+    zip_bytes <- readBin(zipfile, "raw", file.info(zipfile)$size)
     filesize <- length(zip_bytes)
     range_hdr <- req$get_header("range")
-    if (is.null(range_hdr) || !nzchar(range_hdr)) {
-      res$set_status(200L)$send(zip_bytes)
-      return()
-    }
-    if (grepl("^bytes=-[0-9]+$", range_hdr)) {
-      n <- as.integer(sub("bytes=-", "", range_hdr))
-      start <- max(0L, filesize - n)
-      end_byte <- filesize - 1L
-    } else {
-      m <- regmatches(
-        range_hdr,
-        regexec("bytes=([0-9]+)-([0-9]*)", range_hdr)
-      )[[1]]
-      start <- as.integer(m[2])
-      end_byte <- if (!nzchar(m[3])) filesize - 1L else as.integer(m[3])
-    }
-    content <- zip_bytes[(start + 1L):(end_byte + 1L)]
-    res$set_status(206L)$set_header(
-      "Content-Range",
-      sprintf("bytes %d-%d/%d", start, end_byte, filesize)
-    )$set_header("Content-Type", "application/zip")$send(content)
-  })
-  webfakes::local_app_process(app, .local_envir = envir)
-}
 
-# A server that pretends it does not support range requests: it ignores the
-# Range header entirely and always replies 200 with the whole file. Forces the
-# fall-back-to-full-download code path in unzip()/zip_list().
-no_range_server <- function(zipfile, envir = parent.frame()) {
-  zip_bytes <- readBin(zipfile, "raw", file.info(zipfile)$size)
-  app <- webfakes::new_app()
-  app$locals$zip_bytes <- zip_bytes
-  app$get("/file.zip", function(req, res) {
-    zip_bytes <- req$app$locals$zip_bytes
-    res$set_status(200L)$set_header(
-      "Content-Type",
-      "application/zip"
-    )$send(zip_bytes)
-  })
-  webfakes::local_app_process(app, .local_envir = envir)
-}
-
-# Supports ranges for the EOCD/CD tail request (the suffix `bytes=-N`) but then
-# returns 200 with the whole file for the explicit-range per-entry requests.
-# Forces the per-entry full-download fallback in unzip_url().
-mixed_range_server <- function(zipfile, envir = parent.frame()) {
-  zip_bytes <- readBin(zipfile, "raw", file.info(zipfile)$size)
-  app <- webfakes::new_app()
-  app$locals$zip_bytes <- zip_bytes
-  app$get("/file.zip", function(req, res) {
-    zip_bytes <- req$app$locals$zip_bytes
-    filesize <- length(zip_bytes)
-    range_hdr <- req$get_header("range")
-    # only honour suffix ranges (used for the EOCD/CD tail fetch); reply 200
-    # with the whole file to anything else
-    if (is.null(range_hdr) || !grepl("^bytes=-[0-9]+$", range_hdr)) {
+    send_full <- function() {
       res$set_status(200L)$set_header(
         "Content-Type",
         "application/zip"
       )$send(zip_bytes)
-      return()
     }
-    n <- as.integer(sub("bytes=-", "", range_hdr))
-    start <- max(0L, filesize - n)
-    end_byte <- filesize - 1L
-    content <- zip_bytes[(start + 1L):(end_byte + 1L)]
-    res$set_status(206L)$set_header(
-      "Content-Range",
-      sprintf("bytes %d-%d/%d", start, end_byte, filesize)
-    )$set_header("Content-Type", "application/zip")$send(content)
-  })
-  webfakes::local_app_process(app, .local_envir = envir)
-}
+    send_range <- function(start, end_byte) {
+      content <- zip_bytes[(start + 1L):(end_byte + 1L)]
+      res$set_status(206L)$set_header(
+        "Content-Range",
+        sprintf("bytes %d-%d/%d", start, end_byte, filesize)
+      )$set_header("Content-Type", "application/zip")$send(content)
+    }
 
-# Supports ranges, but truncates any range that starts at a local file header to
-# 40 bytes: enough to parse the header, never enough to include the compressed
-# data. Forces the second (data-only) range fetch in unzip_url(). The follow-up
-# request starts at the file data (not a PK\03\04 signature), so it is served
-# in full.
-truncating_range_server <- function(zipfile, envir = parent.frame()) {
-  zip_bytes <- readBin(zipfile, "raw", file.info(zipfile)$size)
-  app <- webfakes::new_app()
-  app$locals$zip_bytes <- zip_bytes
-  app$get("/file.zip", function(req, res) {
-    zip_bytes <- req$app$locals$zip_bytes
-    filesize <- length(zip_bytes)
-    range_hdr <- req$get_header("range")
-    if (is.null(range_hdr) || !nzchar(range_hdr)) {
-      res$set_status(200L)$send(zip_bytes)
-      return()
+    suffix <- !is.null(range_hdr) && grepl("^bytes=-[0-9]+$", range_hdr)
+
+    # No Range header, or a mode/request combination that declines ranges, falls
+    # back to serving the whole file with a 200.
+    no_range <- is.null(range_hdr) || !nzchar(range_hdr)
+    if (no_range || mode == "no-range" || (mode == "mixed" && !suffix)) {
+      return(send_full())
     }
-    suffix <- grepl("^bytes=-[0-9]+$", range_hdr)
+
+    # Reject an oversized suffix range with 416, reporting the size so the
+    # client can recover.
+    if (mode == "suffix-416" && suffix) {
+      n <- as.integer(sub("bytes=-", "", range_hdr))
+      if (n >= filesize) {
+        return(
+          res$set_status(416L)$set_header(
+            "Content-Range",
+            sprintf("bytes */%d", filesize)
+          )$send("")
+        )
+      }
+    }
+
     if (suffix) {
       n <- as.integer(sub("bytes=-", "", range_hdr))
       start <- max(0L, filesize - n)
@@ -294,24 +263,43 @@ truncating_range_server <- function(zipfile, envir = parent.frame()) {
       start <- as.integer(m[2])
       end_byte <- if (!nzchar(m[3])) filesize - 1L else as.integer(m[3])
     }
-    # Only truncate explicit-start per-entry requests, never the suffix range
-    # used for the EOCD/CD tail (which on a small file starts at offset 0, i.e.
-    # the first local header).
-    lfh_sig <- as.raw(c(0x50, 0x4b, 0x03, 0x04))
-    if (
-      !suffix &&
-        identical(zip_bytes[(start + 1L):(start + 4L)], lfh_sig) &&
-        end_byte - start + 1L > 40L
-    ) {
-      end_byte <- start + 39L
+
+    # Truncate explicit-start per-entry requests, never the suffix range used for
+    # the EOCD/CD tail (which on a small file starts at offset 0, i.e. the first
+    # local header).
+    if (mode == "truncating") {
+      lfh_sig <- as.raw(c(0x50, 0x4b, 0x03, 0x04))
+      if (
+        !suffix &&
+          identical(zip_bytes[(start + 1L):(start + 4L)], lfh_sig) &&
+          end_byte - start + 1L > 40L
+      ) {
+        end_byte <- start + 39L
+      }
     }
-    content <- zip_bytes[(start + 1L):(end_byte + 1L)]
-    res$set_status(206L)$set_header(
-      "Content-Range",
-      sprintf("bytes %d-%d/%d", start, end_byte, filesize)
-    )$set_header("Content-Type", "application/zip")$send(content)
+
+    send_range(start, end_byte)
   })
-  webfakes::local_app_process(app, .local_envir = envir)
+  app
+}
+
+# A single persistent server process backs every HTTP test, instead of spawning
+# one per test_that() block. Tests build their URL with range_server$url() and
+# zip_path(), choosing the file and behaviour mode per request. Created only when
+# webfakes is available; the HTTP tests skip otherwise.
+range_server <- if (requireNamespace("webfakes", quietly = TRUE)) {
+  webfakes::new_app_process(range_server_app())
+}
+
+# Build the path (with query string) under range_server that serves `zipfile`
+# with the given range-request behaviour mode. Used as range_server$url(...).
+zip_path <- function(zipfile, mode = "range") {
+  paste0(
+    "/",
+    mode,
+    "/file.zip?path=",
+    utils::URLencode(normalizePath(zipfile), reserved = TRUE)
+  )
 }
 
 transform_tempdir <- function(x) {

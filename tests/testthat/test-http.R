@@ -3,8 +3,7 @@ test_that("zip_list works with range request server", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip()
-  proc <- range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip))
 
   lst <- zip_list(url)
 
@@ -33,8 +32,7 @@ test_that("unzip works with range request server", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip()
-  proc <- range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip))
 
   exdir <- test_temp_dir()
   result <- unzip(url, exdir = exdir)
@@ -54,8 +52,7 @@ test_that("unzip extracts specific files with range request server", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip()
-  proc <- range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip))
 
   exdir <- test_temp_dir()
   target <- paste0(basename(za$ex), "/file1")
@@ -71,12 +68,41 @@ test_that("zip_list falls back to full download when ranges unsupported", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip()
-  proc <- no_range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip, "no-range"))
 
   lst <- zip_list(url)
   lst_local <- zip_list(za$zip)
   expect_equal(lst, lst_local)
+})
+
+test_that("zip_list recovers when an oversized suffix range gives 416", {
+  skip_if_not_installed("curl")
+  skip_if_not_installed("webfakes")
+
+  za <- make_a_zip()
+  url <- range_server$url(zip_path(za$zip, "suffix-416"))
+
+  lst <- zip_list(url)
+  lst_local <- zip_list(za$zip)
+  expect_equal(lst$filename, lst_local$filename)
+})
+
+test_that("unzip recovers when an oversized suffix range gives 416", {
+  skip_if_not_installed("curl")
+  skip_if_not_installed("webfakes")
+
+  za <- make_a_zip()
+  url <- range_server$url(zip_path(za$zip, "suffix-416"))
+
+  exdir <- test_temp_dir()
+  unzip(url, exdir = exdir)
+
+  expect_true(file.exists(file.path(exdir, basename(za$ex), "file1")))
+  expect_true(file.exists(file.path(exdir, basename(za$ex), "dir", "file2")))
+  expect_equal(
+    readLines(file.path(exdir, basename(za$ex), "file1")),
+    "file1"
+  )
 })
 
 test_that("unzip falls back to full download when ranges unsupported", {
@@ -84,8 +110,7 @@ test_that("unzip falls back to full download when ranges unsupported", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip()
-  proc <- no_range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip, "no-range"))
 
   exdir <- test_temp_dir()
   result <- unzip(url, exdir = exdir)
@@ -105,8 +130,7 @@ test_that("unzip falls back to full download per entry when ranges drop out", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip()
-  proc <- mixed_range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip, "mixed"))
 
   exdir <- test_temp_dir()
   unzip(url, exdir = exdir)
@@ -123,8 +147,7 @@ test_that("unzip fetches data separately when entry range is truncated", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip()
-  proc <- truncating_range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip, "truncating"))
 
   exdir <- test_temp_dir()
   unzip(url, exdir = exdir)
@@ -141,8 +164,7 @@ test_that("zip_list reads a ZIP64 EOCD archive over range requests", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip64()
-  proc <- range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip))
 
   lst <- zip_list(url)
   ref <- zip_list(za$orig)
@@ -159,8 +181,7 @@ test_that("reads a real ZIP64 EOCD-record archive over range requests", {
   # zip64.zip's classic EOCD has the cd_offset 0xFFFFFFFF sentinel, so the
   # real offset must be read from the ZIP64 EOCD record via its locator.
   zf <- test_path("fixtures/zip64.zip")
-  proc <- range_server(zf)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(zf))
 
   lst <- zip_list(url)
   files <- lst[lst$type == "file", ]
@@ -183,8 +204,7 @@ test_that("unzip reads a ZIP64 EOCD archive over range requests", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip64()
-  proc <- range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip))
 
   exdir <- test_temp_dir()
   unzip(url, exdir = exdir)
@@ -201,8 +221,7 @@ test_that("unzip with junkpaths works with range request server", {
   skip_if_not_installed("webfakes")
 
   za <- make_a_zip(include_directories = FALSE)
-  proc <- range_server(za$zip)
-  url <- proc$url("/file.zip")
+  url <- range_server$url(zip_path(za$zip))
 
   exdir <- test_temp_dir()
   unzip(url, junkpaths = TRUE, exdir = exdir)
