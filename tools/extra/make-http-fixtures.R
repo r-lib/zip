@@ -17,8 +17,14 @@
 #
 # Run from anywhere; writes alongside this script.
 stopifnot(.Platform$OS.type == "unix")
-here <- dirname(sub("^--file=", "", grep("^--file=", commandArgs(), value = TRUE)))
-if (length(here) == 0) here <- "."
+here <- dirname(sub(
+  "^--file=",
+  "",
+  grep("^--file=", commandArgs(), value = TRUE)
+))
+if (length(here) == 0) {
+  here <- "."
+}
 
 work <- tempfile("http-fixture-")
 root <- file.path(work, "ziptest")
