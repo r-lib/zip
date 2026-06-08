@@ -5,13 +5,13 @@ MBEDTLS_CPPFLAGS = -Imbedtls/include -Imbedtls/library \
 	-DMBEDTLS_CONFIG_FILE='"zip_mbedtls_config.h"'
 MBEDTLS_SRC = mbedtls/library/aes.c mbedtls/library/sha1.c \
 	mbedtls/library/md.c mbedtls/library/pkcs5.c \
-	mbedtls/library/platform_util.c
+	mbedtls/library/platform.c mbedtls/library/platform_util.c
 MBEDTLS_OBJ = $(MBEDTLS_SRC:.c=.o)
 
 PKG_CPPFLAGS = $(MBEDTLS_CPPFLAGS)
 PKG_CFLAGS = $(C_VISIBILITY)
 
-OBJECTS = init.o miniz.o rzip.o zip.o unixutils.o errors.o cleancall.o $(MBEDTLS_OBJ)
+OBJECTS = init.o miniz.o rzip.o zip.o crypto.o unixutils.o errors.o cleancall.o $(MBEDTLS_OBJ)
 
 .PHONY: all clean
 

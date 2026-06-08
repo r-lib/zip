@@ -5,6 +5,12 @@
  *   - SHA-1      (for HMAC-SHA1 and PBKDF2)            -> MBEDTLS_SHA1_C
  *   - MD layer   (provides HMAC-SHA1)                  -> MBEDTLS_MD_C
  *   - PKCS#5     (provides PBKDF2-HMAC-SHA1)           -> MBEDTLS_PKCS5_C
+ *   - Platform   (required on Windows/MinGW, see below)-> MBEDTLS_PLATFORM_C
+ *
+ * MBEDTLS_PLATFORM_C is mandated by check_config.h on MinGW/old MSVC, where
+ * Mbed TLS auto-enables the snprintf/vsnprintf "ALT" wrappers implemented in
+ * platform.c. With this minimal config platform.c is effectively empty on
+ * other platforms.
  *
  * Deliberately NOT enabled: PSA crypto, ASN.1, cipher/OID layers, TLS, x509,
  * bignum, ECC, RSA, etc. This keeps the compiled subset to a handful of files
@@ -19,5 +25,6 @@
 #define MBEDTLS_SHA1_C
 #define MBEDTLS_MD_C
 #define MBEDTLS_PKCS5_C
+#define MBEDTLS_PLATFORM_C
 
 #endif /* ZIP_MBEDTLS_CONFIG_H */

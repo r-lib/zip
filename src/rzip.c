@@ -16,6 +16,7 @@
 #include "errors.h"
 #include "miniz.h"
 #include "zip.h"
+#include "crypto.h"
 #include "cleancall.h"
 #include <cli/progress.h>
 
@@ -640,5 +641,94 @@ SEXP R_deflate(SEXP buffer, SEXP level, SEXP pos, SEXP size) {
   SET_VECTOR_ELT(result, 1, Rf_ScalarInteger(stream.total_in));
   SET_VECTOR_ELT(result, 2, Rf_ScalarInteger(stream.total_out));
   UNPROTECT(3);
+  return result;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Test shims for the WinZip AES crypto primitives in crypto.c.             */
+/* These exist so the published test vectors (PBKDF2 RFC 6070, HMAC-SHA1    */
+/* RFC 2202, AES, WinZip key block derivation) can be checked from          */
+/* testthat. They are not part of the package's public API.                 */
+/* ------------------------------------------------------------------------ */
+
+SEXP R_crypto_pbkdf2_sha1(SEXP password, SEXP salt, SEXP iterations,
+                          SEXP dklen) {
+  size_t cdklen = (size_t) INTEGER(dklen)[0];
+  SEXP output = PROTECT(allocVector(RAWSXP, cdklen));
+  int ret = zip_pbkdf2_sha1(
+    RAW(password), (size_t) LENGTH(password),
+    RAW(salt), (size_t) LENGTH(salt),
+    (unsigned int) INTEGER(iterations)[0],
+    RAW(output), cdklen
+  );
+  if (ret != 0) {
+    error("PBKDF2-HMAC-SHA1 failed (mbedtls error %d)", ret);
+  }
+  UNPROTECT(1);
+  return output;
+}
+
+SEXP R_crypto_hmac_sha1(SEXP key, SEXP data) {
+  SEXP output = PROTECT(allocVector(RAWSXP, 20));
+  int ret = zip_hmac_sha1(
+    RAW(key), (size_t) LENGTH(key),
+    RAW(data), (size_t) LENGTH(data),
+    RAW(output)
+  );
+  if (ret != 0) {
+    error("HMAC-SHA1 failed (mbedtls error %d)", ret);
+  }
+  UNPROTECT(1);
+  return output;
+}
+
+SEXP R_crypto_aes_ctr(SEXP key, SEXP data) {
+  int keybits = LENGTH(key) * 8;
+  size_t len = (size_t) LENGTH(data);
+  SEXP output;
+  int ret;
+  if (keybits != 128 && keybits != 192 && keybits != 256) {
+    error("AES key must be 16, 24 or 32 bytes, not %d", LENGTH(key));
+  }
+  output = PROTECT(allocVector(RAWSXP, len));
+  ret = zip_aes_ctr_crypt(
+    RAW(key), keybits, RAW(data), RAW(output), len
+  );
+  if (ret != 0) {
+    error("AES-CTR failed (mbedtls error %d)", ret);
+  }
+  UNPROTECT(1);
+  return output;
+}
+
+SEXP R_crypto_winzip_keys(SEXP password, SEXP salt, SEXP strength) {
+  int cstrength = INTEGER(strength)[0];
+  int keylen = zip_winzip_key_len(cstrength);
+  const char *nms[] = { "enc_key", "mac_key", "verifier", "" };
+  SEXP result, enc_key, mac_key, verifier;
+  int ret;
+
+  if (keylen < 0) {
+    error("Invalid WinZip AES strength %d (must be 1, 2 or 3)", cstrength);
+  }
+
+  result = PROTECT(Rf_mkNamed(VECSXP, nms));
+  enc_key = PROTECT(allocVector(RAWSXP, keylen));
+  mac_key = PROTECT(allocVector(RAWSXP, keylen));
+  verifier = PROTECT(allocVector(RAWSXP, 2));
+
+  ret = zip_winzip_aes_keys(
+    RAW(password), (size_t) LENGTH(password),
+    RAW(salt), (size_t) LENGTH(salt),
+    cstrength, RAW(enc_key), RAW(mac_key), RAW(verifier)
+  );
+  if (ret != 0) {
+    error("WinZip AES key derivation failed (mbedtls error %d)", ret);
+  }
+
+  SET_VECTOR_ELT(result, 0, enc_key);
+  SET_VECTOR_ELT(result, 1, mac_key);
+  SET_VECTOR_ELT(result, 2, verifier);
+  UNPROTECT(4);
   return result;
 }

@@ -17,6 +17,10 @@ extern SEXP R_make_big_file(SEXP, SEXP);
 extern SEXP R_inflate(SEXP, SEXP, SEXP, SEXP);
 extern SEXP R_deflate(SEXP, SEXP, SEXP, SEXP);
 extern SEXP R_zip_cp437_to_utf8(SEXP);
+extern SEXP R_crypto_pbkdf2_sha1(SEXP, SEXP, SEXP, SEXP);
+extern SEXP R_crypto_hmac_sha1(SEXP, SEXP);
+extern SEXP R_crypto_aes_ctr(SEXP, SEXP);
+extern SEXP R_crypto_winzip_keys(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
   CLEANCALL_METHOD_RECORD,
@@ -27,6 +31,10 @@ static const R_CallMethodDef CallEntries[] = {
   { "R_inflate",           (DL_FUNC) &R_inflate,           4 },
   { "R_deflate",           (DL_FUNC) &R_deflate,           4 },
   { "R_zip_cp437_to_utf8", (DL_FUNC) &R_zip_cp437_to_utf8, 1 },
+  { "R_crypto_pbkdf2_sha1", (DL_FUNC) &R_crypto_pbkdf2_sha1, 4 },
+  { "R_crypto_hmac_sha1",   (DL_FUNC) &R_crypto_hmac_sha1,   2 },
+  { "R_crypto_aes_ctr",     (DL_FUNC) &R_crypto_aes_ctr,     2 },
+  { "R_crypto_winzip_keys", (DL_FUNC) &R_crypto_winzip_keys, 3 },
   { NULL, NULL, 0 }
 };
 
