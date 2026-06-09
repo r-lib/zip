@@ -1,4 +1,4 @@
-# Tests for the WinZip AES writer path (Step 2 of PASSWORD-SUPPORT-PLAN.md).
+# Tests for the WinZip AES writer path. See src/ENCRYPTION.md.
 #
 # The package cannot yet *read* encrypted archives (that is Step 3), so the
 # writer is verified two independent ways:

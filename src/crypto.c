@@ -1,5 +1,5 @@
 /* WinZip AES crypto primitives, built on the vendored Mbed TLS subset.
-   See PASSWORD-SUPPORT-PLAN.md (step 1) and src/mbedtls/VENDORING.md.
+   See ENCRYPTION.md and mbedtls/VENDORING.md.
 
    This file is intentionally free of any R dependency so it can be linked
    into the standalone cmdzip/cmdunzip tools as well as the R shared library.
