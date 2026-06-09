@@ -98,6 +98,17 @@ unzip("sources.zip", exdir = exdir)
 dir(exdir)
 ```
 
+### Password-protected archives
+
+Pass a `password` argument to encrypt entries with WinZip AES-256 (the
+default), which is supported by 7-Zip, WinZip, and macOS Archive Utility:
+
+```{r}
+zip("secret.zip", "R", password = "hunter2")
+zip_list("secret.zip")
+unzip("secret.zip", exdir = tempfile(), password = "hunter2")
+```
+
 ### Compressing and uncompressing in background processes
 
 You can use the `zip_process()` and  `unzip_process()` functions to

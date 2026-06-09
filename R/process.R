@@ -133,8 +133,9 @@ unzip_process <- function() {
 #'
 #' Arguments:
 #' * `zipfile`: Path to the zip file to create.
-#' * `files`: Character vector of paths to files to add to the archive. Each specified file
-#'    or directory in is created as a top-level entry in the zip archive.
+#' * `files`: Character vector of paths to files to add to the archive.
+#'    Each specified file or directory in is created as a top-level entry
+#'    in the zip archive.
 #' * `recurse`: Whether to add the contents of directories recursively.
 #' * `include_directories`: Whether to explicitly include directories
 #'   in the archive. Including directories might confuse MS Office when

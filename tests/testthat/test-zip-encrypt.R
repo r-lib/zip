@@ -58,7 +58,8 @@ test_that("directory entries are added unencrypted alongside encrypted files", {
   )
   hdrs <- list_local_headers(zipfile)
   names(hdrs) <- vapply(hdrs, `[[`, "", "name")
-  # the file is encrypted (method 99); the directory entry is stored, unencrypted
+  # the file is encrypted (method 99); the directory entry is stored,
+  # unencrypted
   expect_true(hdrs[["d/f.txt"]]$encrypted)
   expect_equal(hdrs[["d/f.txt"]]$method, 99)
   expect_false(hdrs[["d/"]]$encrypted)
@@ -271,7 +272,7 @@ test_that("unzip() errors clearly when no password given for encrypted entry", {
   )
 })
 
-test_that("unzip() extracts AES archives produced by 7-Zip (interop fixtures)", {
+test_that("unzip() extracts AES archives by 7-Zip (interop fixtures)", {
   for (strength in c("aes256", "aes192", "aes128")) {
     fixture <- test_path("fixtures", paste0(strength, ".zip"))
     exdir <- withr::local_tempdir()
@@ -295,7 +296,7 @@ test_that("unzip() extracts AES archives produced by 7-Zip (interop fixtures)", 
   }
 })
 
-test_that("unzip() extracts ZipCrypto archive produced by Info-ZIP (interop fixture)", {
+test_that("unzip() extracts ZipCrypto archive by Info-ZIP (interop fixture)", {
   fixture <- test_path("fixtures", "zipcrypto.zip")
   exdir <- withr::local_tempdir()
   unzip(fixture, exdir = exdir, password = "secret")
@@ -458,7 +459,7 @@ test_that("zip_append() with password adds encrypted entries", {
   expect_equal(lst$encryption[lst$filename == "second.txt"], "aes256")
 })
 
-test_that("zip() with password = NULL produces unencrypted output (backward compat)", {
+test_that("zip() with password = NULL produces unencrypted (backward compat)", {
   src <- withr::local_tempdir()
   writeLines("plain", file.path(src, "a.txt"))
   zipfile <- withr::local_tempfile(fileext = ".zip")
@@ -472,7 +473,7 @@ test_that("zip() with password = NULL produces unencrypted output (backward comp
   expect_equal(readLines(file.path(exdir, "a.txt")), "plain")
 })
 
-test_that("zip_process() with password encrypts and unzip_process() with password decrypts", {
+test_that("zip_process() and unzip_process() with password", {
   skip_if_not_installed("processx")
   skip_if_not_installed("R6")
   src <- withr::local_tempdir()

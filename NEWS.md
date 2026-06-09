@@ -1,5 +1,12 @@
 # zip (development version)
 
+* `zip()`, `zipr()`, `zip_append()`, `zipr_append()`, `zip_process()`, and
+  `unzip()` / `unzip_process()` now support password-protected archives
+  using WinZIP AES-256, and other encryption schemes.
+
+* `zip_list()` now reports an `encryption` column indicating the encryption
+  scheme used for each entry.
+
 * `zip_list()` and `unzip()` now work directly on `http://` and `https://`
   URLs. They use HTTP range requests to download only the central directory
   and the requested entries, so listing or extracting a few files from a

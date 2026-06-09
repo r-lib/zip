@@ -119,7 +119,7 @@ extracted_tree <- function(dir, root = NULL) {
 
 http_fixture <- function(include_directories = TRUE) {
   name <- if (include_directories) "http.zip" else "http-nodirs.zip"
-  list(zip = test_path("fixtures", name), ex = "ziptest")
+  list(zip = testthat::test_path("fixtures", name), ex = "ziptest")
 }
 
 make_a_zip <- function(
@@ -226,25 +226,31 @@ local_temp_dir <- function(
 }
 
 # A single webfakes app backing all HTTP range-request tests. Rather than
-# baking a particular ZIP into the app, each request names the file to serve via
-# the `path` query parameter (read fresh from disk on every request) and selects
-# the server's range-request behaviour via the first path segment (`mode`):
+# baking a particular ZIP into the app, each request names the file to
+# serve via the `path` query parameter (read fresh from disk on every
+# request) and selects the server's range-request behaviour via the first
+# path segment (`mode`):
 #
 #   range       - full byte-range support
-#   no-range    - ignores the Range header, always replies 200 with the whole
-#                 file (forces the full-download fallback in unzip()/zip_list())
-#   mixed       - honours only the suffix range used for the EOCD/CD tail; replies
-#                 200 with the whole file to explicit per-entry ranges (forces the
-#                 per-entry full-download fallback in unzip_url())
-#   truncating  - honours ranges, but truncates a range starting at a local file
-#                 header to 40 bytes: enough to parse the header, never enough to
-#                 include the compressed data (forces the second, data-only range
-#                 fetch in unzip_url()). The follow-up request starts at the file
+#   no-range    - ignores the Range header, always replies 200 with the
+#                 whole file (forces the full-download fallback in
+#                 unzip()/zip_list())
+#   mixed       - honours only the suffix range used for the EOCD/CD tail;
+#                 replies 200 with the whole file to explicit per-entry
+#                 ranges (forces the per-entry full-download fallback in
+#                 unzip_url())
+#   truncating  - honours ranges, but truncates a range starting at a local
+#                 file header to 40 bytes: enough to parse the header,
+#                 never enough to include the compressed data (forces the
+#                 second, data-only range fetch in unzip_url()). The
+#                 follow-up request starts at the file fetch in
+#                 unzip_url()). The follow-up request starts at the file
 #                 data, not a PK\03\04 signature, so it is served in full.
-#   suffix-416  - honours explicit ranges, but rejects a suffix range larger than
-#                 the file with 416 Range Not Satisfiable (as GitHub's CDN does),
-#                 reporting the size in the Content-Range header ("bytes */SIZE").
-#                 Forces the 416 recovery path in zip_fetch_cd().
+#   suffix-416  - honours explicit ranges, but rejects a suffix range
+#                 larger than the file with 416 Range Not Satisfiable
+#                 (as GitHub's CDN does), reporting the size in the
+#                 Content-Range header ("bytes */SIZE"). Forces the 416
+#                 recovery path in zip_fetch_cd().
 #
 # The handler runs in a separate R process (webfakes::new_app_process), so it
 # must be self-contained: it may only reference req/res and base R.
@@ -307,9 +313,9 @@ range_server_app <- function() {
       end_byte <- if (!nzchar(m[3])) filesize - 1L else as.integer(m[3])
     }
 
-    # Truncate explicit-start per-entry requests, never the suffix range used for
-    # the EOCD/CD tail (which on a small file starts at offset 0, i.e. the first
-    # local header).
+    # Truncate explicit-start per-entry requests, never the suffix range
+    # used for the EOCD/CD tail (which on a small file starts at offset 0,
+    # i.e. the first local header).
     if (mode == "truncating") {
       lfh_sig <- as.raw(c(0x50, 0x4b, 0x03, 0x04))
       if (
@@ -326,10 +332,11 @@ range_server_app <- function() {
   app
 }
 
-# A single persistent server process backs every HTTP test, instead of spawning
-# one per test_that() block. Tests build their URL with range_server$url() and
-# zip_path(), choosing the file and behaviour mode per request. Created only when
-# webfakes is available; the HTTP tests skip otherwise.
+# A single persistent server process backs every HTTP test, instead of
+# spawning one per test_that() block. Tests build their URL with
+# range_server$url() and zip_path(), choosing the file and behaviour mode
+# per request. Created only when webfakes is available; the HTTP
+# tests skip otherwise.
 range_server <- if (requireNamespace("webfakes", quietly = TRUE)) {
   webfakes::new_app_process(range_server_app())
 }
