@@ -3,6 +3,12 @@
 
 #include <stddef.h>
 
+/* Fill `buf` with `len` cryptographically random bytes from the operating
+   system CSPRNG (/dev/urandom on Unix, BCryptGenRandom on Windows). Used to
+   generate per-entry WinZip AES salts. Returns 0 on success, non-zero on
+   failure. */
+int zip_rand_bytes(unsigned char *buf, size_t len);
+
 /* WinZip AES key-length / salt-length for a given strength byte.
    strength: 1 = AES-128, 2 = AES-192, 3 = AES-256.
    Return the relevant length in bytes, or -1 for an invalid strength. */

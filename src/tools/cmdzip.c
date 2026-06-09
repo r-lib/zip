@@ -109,6 +109,8 @@ int MAIN(int argc, CHAR* argv[]) {
 
   if (zip_zip(fn, num_files, ckeys, cfiles, cdirs, ctimes,
 	      /* compression_level= */ 9, /* cappend= */ 0,
+	      /* cpassword= */ NULL, /* cpassword_len= */ 0,
+	      /* cencryption= */ ZIP_ENCRYPTION_NONE,
 	      /* progress_fn= */ NULL, /* progress_data= */ NULL)) {
     ZERROR(11);
   }

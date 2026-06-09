@@ -27,8 +27,18 @@ typedef enum zip_error_codes {
   R_ZIP_ECREATE      = 15,
   R_ZIP_EOPENX       = 16,
   R_ZIP_FILESIZE     = 17,
-  R_ZIP_ECREATELINK  = 18
+  R_ZIP_ECREATELINK  = 18,
+  R_ZIP_EENCRYPT     = 19
 } zip_error_codes_t;
+
+/* Encryption scheme for zip_zip(). The non-zero values double as the WinZip
+   AES strength byte (1 = AES-128, 2 = AES-192, 3 = AES-256). */
+typedef enum zip_encryption {
+  ZIP_ENCRYPTION_NONE   = 0,
+  ZIP_ENCRYPTION_AES128 = 1,
+  ZIP_ENCRYPTION_AES192 = 2,
+  ZIP_ENCRYPTION_AES256 = 3
+} zip_encryption_t;
 
 typedef void zip_error_handler_t(const char *reason, const char *file,
 				 int line, int zip_errno, int eno);
@@ -45,6 +55,8 @@ typedef void (*zip_progress_fn)(mz_uint64 bytes_done, void *data);
 int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 	    const char **cfiles, int *cdirs, double *cmtimes,
 	    int compression_level, int cappend,
+	    const unsigned char *cpassword, size_t cpassword_len,
+	    int cencryption,
 	    zip_progress_fn progress_fn, void *progress_data);
 
 typedef char *(*zip_decode_fn)(const char *src, void *data);

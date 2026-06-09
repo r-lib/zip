@@ -250,6 +250,50 @@ enc2c <- function(x) {
   }
 }
 
+# Resolve the `password` argument of zip() to a raw vector of password bytes,
+# or NULL for no encryption. Accepts NULL, a length-1 character string, a raw
+# vector, or a function/callback returning a string or raw vector (so the
+# password need not be stored in a variable). Text passwords are encoded as
+# UTF-8 bytes, matching WinZip's password byte convention.
+resolve_password <- function(password) {
+  if (is.null(password)) {
+    return(NULL)
+  }
+  if (is.function(password)) {
+    password <- password()
+  }
+  if (is.raw(password)) {
+    if (length(password) == 0) {
+      stop("`password` must not be empty")
+    }
+    return(password)
+  }
+  if (!is.character(password) || length(password) != 1 || is.na(password)) {
+    stop(
+      "`password` must be a string, a raw vector, or a function returning one"
+    )
+  }
+  if (!nzchar(password)) {
+    stop("`password` must not be empty")
+  }
+  charToRaw(enc2utf8(password))
+}
+
+# Map the `encryption` argument to the integer scheme code understood by the C
+# layer (see zip_encryption_t in src/zip.h): aes256 = 3, aes128 = 1. AES-192
+# (code 2) is intentionally not offered. ZipCrypto is not implemented yet.
+encryption_code <- function(encryption) {
+  encryption <- match.arg(encryption, c("aes256", "aes128", "zipcrypto"))
+  switch(
+    encryption,
+    aes256 = 3L,
+    aes128 = 1L,
+    zipcrypto = stop(
+      "ZipCrypto encryption is not supported yet; use \"aes256\" or \"aes128\""
+    )
+  )
+}
+
 is_true_option <- function(name) {
   opt <- getOption(name)
   if (is.null(opt)) {

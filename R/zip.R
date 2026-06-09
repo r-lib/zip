@@ -269,7 +269,9 @@ zip_internal <- function(
   root,
   keep_path,
   include_directories,
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = "aes256"
 ) {
   if (!is.null(keys)) {
     if (length(keys) != length(files)) {
@@ -307,6 +309,9 @@ zip_internal <- function(
     NA_real_
   }
 
+  pw <- resolve_password(password)
+  enc <- if (is.null(pw)) 0L else encryption_code(encryption)
+
   call_with_cleanup(
     c_R_zip_zip,
     enc2c(zipfile),
@@ -316,7 +321,9 @@ zip_internal <- function(
     fi$mtime,
     as.integer(compression_level),
     append,
-    total_bytes
+    total_bytes,
+    pw,
+    enc
   )
 
   invisible(zipfile)

@@ -17,6 +17,7 @@
 
 #include "miniz.h"
 #include "zip.h"
+#include "crypto.h"
 
 /* ZIP spec: when bit 11 of general purpose bit flag is not set, filenames
    are encoded in IBM CP437. These are the Unicode codepoints for CP437
@@ -96,7 +97,8 @@ static const char *zip_error_strings[] = {
   /*15 R_ZIP_ECREATE      */ "Could not create zip archive `%s`",
   /*16 R_ZIP_EOPENX       */ "Cannot extract file `%s`",
   /*17 R_ZIP_FILESIZE     */ "Cannot determine size of `%s`",
-  /*18 R_ZIP_ECREATELINK  */ "Cannot create symlink `%s` in archive `%s`"
+  /*18 R_ZIP_ECREATELINK  */ "Cannot create symlink `%s` in archive `%s`",
+  /*19 R_ZIP_EENCRYPT     */ "Cannot encrypt file `%s` in archive `%s`"
 };
 
 static zip_error_handler_t *zip_error_handler = 0;
@@ -480,9 +482,137 @@ static size_t zip_read_with_progress(void *pOpaque, mz_uint64 file_ofs,
   return ret;
 }
 
+/* WinZip AES constants. We emit AE-2 (vendor version 2), which stores the
+   CRC-32 as 0 and relies on the HMAC-SHA1 authentication code for integrity. */
+#define ZIP_AES_VENDOR_VERSION 2
+#define ZIP_AES_AUTHCODE_LEN   10
+#define ZIP_WINZIP_METHOD      99
+#define ZIP_WINZIP_EXTRA_LEN   11
+
+/* Build the WinZip AES "0x9901" extra field (11 bytes). `real_method` is the
+   compression method actually used for the data (0 = stored, 8 = deflated). */
+static void zip_winzip_extra_field(unsigned char out[ZIP_WINZIP_EXTRA_LEN],
+                                   int strength, int real_method) {
+  out[0]  = 0x01; out[1] = 0x99;                       /* header id 0x9901 (LE) */
+  out[2]  = 0x07; out[3] = 0x00;                       /* data size = 7         */
+  out[4]  = (unsigned char) ZIP_AES_VENDOR_VERSION;    /* vendor version (LE)   */
+  out[5]  = 0x00;
+  out[6]  = 'A';  out[7] = 'E';                        /* vendor id "AE"        */
+  out[8]  = (unsigned char) strength;                  /* 1/2/3 = 128/192/256   */
+  out[9]  = (unsigned char) (real_method & 0xFF);      /* real method (LE)      */
+  out[10] = (unsigned char) ((real_method >> 8) & 0xFF);
+}
+
+/* Compress (raw deflate, falling back to stored), encrypt and add `plain`
+   (`plain_len` bytes) to the open writer `wtr` as a WinZip AES entry under
+   `key`. `strength` is 1/2/3 (AES-128/192/256). On a miniz writer failure the
+   function sets `*mz_err` to the miniz error string and returns 2; on a crypto
+   or allocation failure it returns 1; on success it returns 0. */
+static int zip_writer_add_aes(mz_zip_archive *wtr, const char *key,
+                              const unsigned char *plain, size_t plain_len,
+                              MZ_TIME_T *cmtime, int level,
+                              const unsigned char *pw, size_t pwlen,
+                              int strength, const char **mz_err) {
+
+  int salt_len = zip_winzip_salt_len(strength);
+  int key_len  = zip_winzip_key_len(strength);
+  unsigned char salt[16];
+  unsigned char enc_key[32], mac_key[32], verifier[2];
+  unsigned char mac[20];
+  unsigned char extra[ZIP_WINZIP_EXTRA_LEN];
+  unsigned char *comp = NULL, *payload = NULL, *ct;
+  const unsigned char *data;
+  size_t data_len, payload_len;
+  int real_method = 0, ret = 1;
+
+  *mz_err = NULL;
+  if (salt_len < 0 || key_len < 0) return 1;
+
+  /* 1. Compress with raw deflate. Keep the result only if it actually shrank
+     the data; otherwise store it (method 0), mirroring miniz's own writer. */
+  if (level > 0 && plain_len > 3) {
+    size_t out_len = 0;
+    void *p = tdefl_compress_mem_to_heap(
+      plain, plain_len, &out_len,
+      tdefl_create_comp_flags_from_zip_params(level, -15, MZ_DEFAULT_STRATEGY));
+    if (p != NULL && out_len < plain_len) {
+      comp = (unsigned char *) p;
+      data = comp;
+      data_len = out_len;
+      real_method = MZ_DEFLATED;
+    } else {
+      if (p != NULL) free(p);
+      data = plain;
+      data_len = plain_len;
+    }
+  } else {
+    data = plain;
+    data_len = plain_len;
+  }
+
+  /* 2. Per-entry random salt, then derive the encryption/authentication keys
+     and the 2-byte password verifier. */
+  if (zip_rand_bytes(salt, (size_t) salt_len)) goto done;
+  if (zip_winzip_aes_keys(pw, pwlen, salt, (size_t) salt_len, strength,
+                          enc_key, mac_key, verifier)) goto done;
+
+  /* 3. payload = salt || verifier(2) || ciphertext || authcode(10) */
+  payload_len = (size_t) salt_len + 2 + data_len + ZIP_AES_AUTHCODE_LEN;
+  payload = malloc(payload_len);
+  if (payload == NULL) goto done;
+  memcpy(payload, salt, (size_t) salt_len);
+  memcpy(payload + salt_len, verifier, 2);
+  ct = payload + salt_len + 2;
+  if (zip_aes_ctr_crypt(enc_key, key_len * 8, data, ct, data_len)) goto done;
+
+  /* 4. HMAC-SHA1 over the ciphertext, truncated to 10 bytes. */
+  if (zip_hmac_sha1(mac_key, (size_t) key_len, ct, data_len, mac)) goto done;
+  memcpy(ct + data_len, mac, ZIP_AES_AUTHCODE_LEN);
+
+  /* 5. Write the entry: method 99, encrypted + UTF-8 flags, CRC 0 (AE-2),
+     and the 0x9901 extra field in both the local and central headers. */
+  zip_winzip_extra_field(extra, strength, real_method);
+  if (!mz_zip_writer_add_mem_raw(
+        wtr, key, payload, payload_len,
+        ZIP_WINZIP_METHOD, /* bit_flags= */ (mz_uint16) (1 | (1 << 11)),
+        /* uncomp_crc32= */ 0, (mz_uint64) plain_len, cmtime,
+        /* ext_attributes= */ 0,
+        (const char *) extra, ZIP_WINZIP_EXTRA_LEN,
+        (const char *) extra, ZIP_WINZIP_EXTRA_LEN)) {
+    *mz_err = mz_zip_get_error_string(mz_zip_get_last_error(wtr));
+    ret = 2;
+    goto done;
+  }
+  ret = 0;
+
+done:
+  /* Scrub key material from the stack. */
+  memset(enc_key, 0, sizeof(enc_key));
+  memset(mac_key, 0, sizeof(mac_key));
+  memset(verifier, 0, sizeof(verifier));
+  if (comp != NULL) free(comp);
+  if (payload != NULL) free(payload);
+  return ret;
+}
+
+/* Read the whole regular file `fh` (of size `size`) into a freshly malloc'd
+   buffer. Returns the buffer (caller frees) or NULL on error. A zero-length
+   file yields a 1-byte allocation so the result is never NULL for size 0. */
+static unsigned char *zip_read_file_fully(FILE *fh, mz_uint64 size) {
+  unsigned char *buf = malloc(size > 0 ? (size_t) size : 1);
+  if (buf == NULL) return NULL;
+  if (size > 0 && fread(buf, 1, (size_t) size, fh) != (size_t) size) {
+    free(buf);
+    return NULL;
+  }
+  return buf;
+}
+
 int zip_zip(const char *czipfile, int num_files, const char **ckeys,
 	    const char **cfiles, int *cdirs, double *cmtimes,
 	    int compression_level, int cappend,
+	    const unsigned char *cpassword, size_t cpassword_len,
+	    int cencryption,
 	    zip_progress_fn progress_fn, void *progress_data) {
 
   mz_uint ccompression_level = (mz_uint) compression_level;
@@ -637,24 +767,55 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
             if (filenameu16) free(filenameu16);
             ZIP_ERROR(R_ZIP_FILESIZE, filename);
           }
-          zip_read_ctx_t rctx;
-          rctx.fh = fh;
-          rctx.bytes_done_ptr = &bytes_done;
-          rctx.progress_fn = progress_fn;
-          rctx.progress_data = progress_data;
-          int ret = mz_zip_writer_add_read_buf_callback(
-              &wtr, key, zip_read_with_progress, &rctx, uncomp_size,
-              &cmtime, NULL, 0, ccompression_level, NULL, 0, NULL, 0);
-          fclose(fh);
-          if (!ret) {
-            const char *mz_err =
-              mz_zip_get_error_string(mz_zip_get_last_error(&wtr));
-            mz_zip_writer_end(&wtr);
-            fclose(tmp_fh);
-            zip_remove_file(tmp_path);
-            free(tmp_path);
-            if (filenameu16) free(filenameu16);
-            ZIP_ERROR_MZ(R_ZIP_EADDFILE, mz_err, key, czipfile);
+          if (cencryption != ZIP_ENCRYPTION_NONE) {
+            unsigned char *plain = zip_read_file_fully(fh, uncomp_size);
+            fclose(fh);
+            if (!plain) {
+              mz_zip_writer_end(&wtr);
+              fclose(tmp_fh);
+              zip_remove_file(tmp_path);
+              free(tmp_path);
+              if (filenameu16) free(filenameu16);
+              ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+            }
+            const char *mz_err = NULL;
+            int ret = zip_writer_add_aes(&wtr, key, plain, (size_t) uncomp_size,
+                                         &cmtime, ccompression_level, cpassword,
+                                         cpassword_len, cencryption, &mz_err);
+            free(plain);
+            if (ret) {
+              mz_zip_writer_end(&wtr);
+              fclose(tmp_fh);
+              zip_remove_file(tmp_path);
+              free(tmp_path);
+              if (filenameu16) free(filenameu16);
+              if (ret == 2) ZIP_ERROR_MZ(R_ZIP_EADDFILE, mz_err, key, czipfile);
+              ZIP_ERROR(R_ZIP_EENCRYPT, key, czipfile);
+            }
+            if (progress_fn) {
+              bytes_done += uncomp_size;
+              progress_fn(bytes_done, progress_data);
+            }
+          } else {
+            zip_read_ctx_t rctx;
+            rctx.fh = fh;
+            rctx.bytes_done_ptr = &bytes_done;
+            rctx.progress_fn = progress_fn;
+            rctx.progress_data = progress_data;
+            int ret = mz_zip_writer_add_read_buf_callback(
+                &wtr, key, zip_read_with_progress, &rctx, uncomp_size,
+                &cmtime, NULL, 0, ccompression_level, NULL, 0, NULL, 0);
+            fclose(fh);
+            if (!ret) {
+              const char *mz_err =
+                mz_zip_get_error_string(mz_zip_get_last_error(&wtr));
+              mz_zip_writer_end(&wtr);
+              fclose(tmp_fh);
+              zip_remove_file(tmp_path);
+              free(tmp_path);
+              if (filenameu16) free(filenameu16);
+              ZIP_ERROR_MZ(R_ZIP_EADDFILE, mz_err, key, czipfile);
+            }
           }
         }
         if (zip_set_permissions(&wtr, num_copied + i, filename)) {
@@ -758,26 +919,54 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
         fclose(zfh);
         ZIP_ERROR(R_ZIP_FILESIZE, filename);
       }
-      zip_read_ctx_t rctx;
-      rctx.fh = fh;
-      rctx.bytes_done_ptr = &bytes_done;
-      rctx.progress_fn = progress_fn;
-      rctx.progress_data = progress_data;
-      int ret = mz_zip_writer_add_read_buf_callback(
-          &zip_archive, key, zip_read_with_progress, &rctx,
-          /* max_size= */ uncomp_size, /* pFile_time= */ &cmtime,
-          /* pComment= */ NULL, /* comment_size= */ 0,
-          /* level_and_flags= */ ccompression_level,
-          /* user_extra_data_local= */ NULL, /* ...len= */ 0,
-          /* user_extra_data_central= */ NULL, /* ...len= */ 0);
-      fclose(fh);
-      if (!ret) {
-        const char *mz_err =
-          mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
-        mz_zip_writer_end(&zip_archive);
-        if (filenameu16) free(filenameu16);
-        fclose(zfh);
-        ZIP_ERROR_MZ(R_ZIP_EADDFILE, mz_err, key, czipfile);
+      if (cencryption != ZIP_ENCRYPTION_NONE) {
+        unsigned char *plain = zip_read_file_fully(fh, uncomp_size);
+        fclose(fh);
+        if (!plain) {
+          mz_zip_writer_end(&zip_archive);
+          if (filenameu16) free(filenameu16);
+          fclose(zfh);
+          ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
+        }
+        const char *mz_err = NULL;
+        int ret = zip_writer_add_aes(&zip_archive, key, plain,
+                                     (size_t) uncomp_size, &cmtime,
+                                     ccompression_level, cpassword,
+                                     cpassword_len, cencryption, &mz_err);
+        free(plain);
+        if (ret) {
+          mz_zip_writer_end(&zip_archive);
+          if (filenameu16) free(filenameu16);
+          fclose(zfh);
+          if (ret == 2) ZIP_ERROR_MZ(R_ZIP_EADDFILE, mz_err, key, czipfile);
+          ZIP_ERROR(R_ZIP_EENCRYPT, key, czipfile);
+        }
+        if (progress_fn) {
+          bytes_done += uncomp_size;
+          progress_fn(bytes_done, progress_data);
+        }
+      } else {
+        zip_read_ctx_t rctx;
+        rctx.fh = fh;
+        rctx.bytes_done_ptr = &bytes_done;
+        rctx.progress_fn = progress_fn;
+        rctx.progress_data = progress_data;
+        int ret = mz_zip_writer_add_read_buf_callback(
+            &zip_archive, key, zip_read_with_progress, &rctx,
+            /* max_size= */ uncomp_size, /* pFile_time= */ &cmtime,
+            /* pComment= */ NULL, /* comment_size= */ 0,
+            /* level_and_flags= */ ccompression_level,
+            /* user_extra_data_local= */ NULL, /* ...len= */ 0,
+            /* user_extra_data_central= */ NULL, /* ...len= */ 0);
+        fclose(fh);
+        if (!ret) {
+          const char *mz_err =
+            mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
+          mz_zip_writer_end(&zip_archive);
+          if (filenameu16) free(filenameu16);
+          fclose(zfh);
+          ZIP_ERROR_MZ(R_ZIP_EADDFILE, mz_err, key, czipfile);
+        }
       }
     }
 

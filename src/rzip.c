@@ -229,7 +229,8 @@ SEXP R_zip_cp437_to_utf8(SEXP bytes) {
 }
 
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
-	       SEXP compression_level, SEXP append, SEXP total_bytes) {
+	       SEXP compression_level, SEXP append, SEXP total_bytes,
+	       SEXP password, SEXP encryption) {
 
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   const char **ckeys = 0, **cfiles = 0;
@@ -239,6 +240,12 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
   int cappend = LOGICAL(append)[0];
   double ctotal_bytes = REAL(total_bytes)[0];
   int cshow_progress = !ISNA(ctotal_bytes);
+  /* password is a raw vector of the password bytes, or NULL for no encryption.
+     encryption is the scheme/strength (see zip_encryption_t): 0 = none,
+     1/2/3 = WinZip AES-128/192/256. */
+  const unsigned char *cpassword = isNull(password) ? NULL : RAW(password);
+  size_t cpassword_len = isNull(password) ? 0 : (size_t) LENGTH(password);
+  int cencryption = isNull(password) ? 0 : INTEGER(encryption)[0];
   int i, n = LENGTH(keys);
 
   /* The reason we allocate n+1 here is that otherwise R_alloc will
@@ -257,7 +264,8 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
   zip_set_error_handler(R_zip_error_handler);
 
   zip_zip(czipfile, n, ckeys, cfiles, cdirs, cmtimes, ccompression_level,
-	  cappend, cshow_progress ? r_zip_progress_fn : NULL, bar);
+	  cappend, cpassword, cpassword_len, cencryption,
+	  cshow_progress ? r_zip_progress_fn : NULL, bar);
 
   cli_progress_done(bar);
   UNPROTECT(1);

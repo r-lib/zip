@@ -6,6 +6,12 @@
    The R-callable test shims live in rzip.c. */
 
 #include <string.h>
+#include <stdio.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <bcrypt.h>
+#endif
 
 #include "mbedtls/aes.h"
 #include "mbedtls/md.h"
@@ -16,6 +22,21 @@
 #define WINZIP_AES_BLOCK_SIZE 16
 #define WINZIP_KEYING_ITERATIONS 1000
 #define WINZIP_PWD_VERIFIER_LEN 2
+
+int zip_rand_bytes(unsigned char *buf, size_t len) {
+#ifdef _WIN32
+  NTSTATUS st = BCryptGenRandom(NULL, buf, (ULONG) len,
+                                BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+  return BCRYPT_SUCCESS(st) ? 0 : -1;
+#else
+  FILE *f = fopen("/dev/urandom", "rb");
+  size_t got;
+  if (f == NULL) return -1;
+  got = fread(buf, 1, len, f);
+  fclose(f);
+  return got == len ? 0 : -1;
+#endif
+}
 
 int zip_winzip_key_len(int strength) {
   switch (strength) {

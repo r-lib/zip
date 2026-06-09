@@ -17,11 +17,11 @@ OBJECTS = init.o miniz.o rzip.o zip.o crypto.o unixutils.o errors.o cleancall.o 
 
 all: tools/cmdzip tools/cmdunzip $(SHLIB)
 
-tools/cmdzip: miniz.c zip.c unixutils.c $(MBEDTLS_SRC) tools/cmdzip.c
-	$(CC) $(CFLAGS) $(MBEDTLS_CPPFLAGS) miniz.c zip.c unixutils.c $(MBEDTLS_SRC) tools/cmdzip.c -o tools/cmdzip
+tools/cmdzip: miniz.c zip.c crypto.c unixutils.c $(MBEDTLS_SRC) tools/cmdzip.c
+	$(CC) $(CFLAGS) $(MBEDTLS_CPPFLAGS) miniz.c zip.c crypto.c unixutils.c $(MBEDTLS_SRC) tools/cmdzip.c -o tools/cmdzip
 
-tools/cmdunzip: miniz.c zip.c unixutils.c $(MBEDTLS_SRC) tools/cmdunzip.c
-	$(CC) $(CFLAGS) $(MBEDTLS_CPPFLAGS) miniz.c zip.c unixutils.c $(MBEDTLS_SRC) tools/cmdunzip.c -o tools/cmdunzip
+tools/cmdunzip: miniz.c zip.c crypto.c unixutils.c $(MBEDTLS_SRC) tools/cmdunzip.c
+	$(CC) $(CFLAGS) $(MBEDTLS_CPPFLAGS) miniz.c zip.c crypto.c unixutils.c $(MBEDTLS_SRC) tools/cmdunzip.c -o tools/cmdunzip
 
 clean:
 	rm -rf $(SHLIB) $(OBJECTS) \
