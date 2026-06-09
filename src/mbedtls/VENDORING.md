@@ -2,7 +2,7 @@
 
 This directory contains a **trimmed subset** of [Mbed TLS](https://github.com/Mbed-TLS/mbedtls),
 used only for WinZip AES (ZIP compression method 99): AES (runtime 128/192/256),
-SHA-1, HMAC-SHA1 and PBKDF2-HMAC-SHA1. See `../ENCRYPTION.md`.
+SHA-1, HMAC-SHA1 and PBKDF2-HMAC-SHA1. See `man/internal/ENCRYPTION.md`.
 
 - **Upstream:** https://github.com/Mbed-TLS/mbedtls (branch `mbedtls-3.6`)
 - **Version:** 3.6.6 (see `include/mbedtls/build_info.h`)
