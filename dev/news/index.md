@@ -2,6 +2,20 @@
 
 ## zip (development version)
 
+- [`zip()`](https://r-lib.github.io/zip/dev/reference/zip.md),
+  [`zipr()`](https://r-lib.github.io/zip/dev/reference/zip.md),
+  [`zip_append()`](https://r-lib.github.io/zip/dev/reference/zip.md),
+  [`zipr_append()`](https://r-lib.github.io/zip/dev/reference/zip.md),
+  [`zip_process()`](https://r-lib.github.io/zip/dev/reference/zip_process.md),
+  and [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) /
+  [`unzip_process()`](https://r-lib.github.io/zip/dev/reference/unzip_process.md)
+  now support password-protected archives using WinZIP AES-256, and
+  other encryption schemes.
+
+- [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
+  now reports an `encryption` column indicating the encryption scheme
+  used for each entry.
+
 - [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
   and [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md)
   now work directly on `http://` and `https://` URLs. They use HTTP

@@ -13,7 +13,9 @@ zip(
   include_directories = TRUE,
   root = ".",
   mode = c("mirror", "cherry-pick"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 )
 
 zipr(
@@ -24,7 +26,9 @@ zipr(
   include_directories = TRUE,
   root = ".",
   mode = c("cherry-pick", "mirror"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 )
 
 zip_append(
@@ -35,7 +39,9 @@ zip_append(
   include_directories = TRUE,
   root = ".",
   mode = c("mirror", "cherry-pick"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 )
 
 zipr_append(
@@ -46,7 +52,9 @@ zipr_append(
   include_directories = TRUE,
   root = ".",
   mode = c("cherry-pick", "mirror"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 )
 ```
 
@@ -94,6 +102,27 @@ zipr_append(
   becomes the directory prefix under which all contents are stored. If
   `NULL` (default), paths are determined by `mode`. `"."` may not appear
   in `files` when `keys` is specified.
+
+- password:
+
+  Password for encrypting the archive entries. It can be a string, a raw
+  vector of bytes, or a zero-argument function that returns one of
+  these. If `NULL` (the default), the `zip_password` option is
+  consulted; if that is also `NULL`, entries are stored unencrypted. The
+  password is interpreted as UTF-8 bytes regardless of the current
+  locale, which matches the WinZip/7-Zip convention and ensures
+  interoperability across platforms.
+
+- encryption:
+
+  Encryption scheme to use when `password` is not `NULL`. `"aes256"`
+  (the default) and `"aes128"` use WinZip AES encryption (AES-256 or
+  AES-128 in CTR mode, key derived via PBKDF2-HMAC-SHA1, with an
+  HMAC-SHA1 authentication tag). This scheme is supported by 7-Zip,
+  WinZip, and macOS Archive Utility. `"zipcrypto"` uses the legacy
+  PKWARE ZipCrypto stream cipher, which is **cryptographically weak**
+  and should only be used for compatibility with tools that do not
+  support AES encryption.
 
 ## Value
 
@@ -205,24 +234,26 @@ zip::zip(zipfile, "mydir", root = tmp)
 
 ## List contents
 zip_list(zipfile)
-#> # A data frame: 3 × 8
+#> # A data frame: 3 × 9
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-08 12:11:54 755        
-#> 2 mydir/file1              15                10 2026-06-08 12:11:54 644        
-#> 3 mydir/file2              16                11 2026-06-08 12:11:54 644        
-#> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
+#> 1 mydir/                    0                 0 2026-06-09 11:03:34 755        
+#> 2 mydir/file1              15                10 2026-06-09 11:03:34 644        
+#> 3 mydir/file2              16                11 2026-06-09 11:03:36 644        
+#> # ℹ 4 more variables: crc32 <hexmode>, offset <dbl>, type <chr>,
+#> #   encryption <chr>
 
 ## Add another file
 cat("third file", file = file.path(tmp, "mydir", "file3"))
 zip_append(zipfile, file.path("mydir", "file3"), root = tmp)
 zip_list(zipfile)
-#> # A data frame: 4 × 8
+#> # A data frame: 4 × 9
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-08 12:11:54 755        
-#> 2 mydir/file1              15                10 2026-06-08 12:11:54 644        
-#> 3 mydir/file2              16                11 2026-06-08 12:11:54 644        
-#> 4 mydir/file3              15                10 2026-06-08 12:11:54 644        
-#> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
+#> 1 mydir/                    0                 0 2026-06-09 11:03:34 755        
+#> 2 mydir/file1              15                10 2026-06-09 11:03:34 644        
+#> 3 mydir/file2              16                11 2026-06-09 11:03:36 644        
+#> 4 mydir/file3              15                10 2026-06-09 11:03:36 644        
+#> # ℹ 4 more variables: crc32 <hexmode>, offset <dbl>, type <chr>,
+#> #   encryption <chr>
 ```

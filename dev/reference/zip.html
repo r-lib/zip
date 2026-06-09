@@ -47,7 +47,9 @@
 <span>  include_directories <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  root <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mirror"</span>, <span class="st">"cherry-pick"</span><span class="op">)</span>,</span>
-<span>  keys <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  keys <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  password <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  encryption <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aes256"</span>, <span class="st">"aes128"</span>, <span class="st">"zipcrypto"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">zipr</span><span class="op">(</span></span>
@@ -58,7 +60,9 @@
 <span>  include_directories <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  root <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cherry-pick"</span>, <span class="st">"mirror"</span><span class="op">)</span>,</span>
-<span>  keys <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  keys <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  password <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  encryption <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aes256"</span>, <span class="st">"aes128"</span>, <span class="st">"zipcrypto"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">zip_append</span><span class="op">(</span></span>
@@ -69,7 +73,9 @@
 <span>  include_directories <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  root <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mirror"</span>, <span class="st">"cherry-pick"</span><span class="op">)</span>,</span>
-<span>  keys <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  keys <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  password <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  encryption <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aes256"</span>, <span class="st">"aes128"</span>, <span class="st">"zipcrypto"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">zipr_append</span><span class="op">(</span></span>
@@ -80,7 +86,9 @@
 <span>  include_directories <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  root <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cherry-pick"</span>, <span class="st">"mirror"</span><span class="op">)</span>,</span>
-<span>  keys <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  keys <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  password <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  encryption <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aes256"</span>, <span class="st">"aes128"</span>, <span class="st">"zipcrypto"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -132,6 +140,27 @@ archive. For a file, the key is the exact archive path. For a
 directory, the key becomes the directory prefix under which all
 contents are stored. If <code>NULL</code> (default), paths are determined by
 <code>mode</code>. <code>"."</code> may not appear in <code>files</code> when <code>keys</code> is specified.</p></dd>
+
+
+<dt id="arg-password">password<a class="anchor" aria-label="anchor" href="#arg-password"></a></dt>
+<dd><p>Password for encrypting the archive entries. It can be a
+string, a raw vector of bytes, or a zero-argument function that returns
+one of these. If <code>NULL</code> (the default), the <code>zip_password</code> option is
+consulted; if that is also <code>NULL</code>, entries are stored unencrypted.
+The password is interpreted as UTF-8 bytes regardless of the current
+locale, which matches the WinZip/7-Zip convention and ensures
+interoperability across platforms.</p></dd>
+
+
+<dt id="arg-encryption">encryption<a class="anchor" aria-label="anchor" href="#arg-encryption"></a></dt>
+<dd><p>Encryption scheme to use when <code>password</code> is not <code>NULL</code>.
+<code>"aes256"</code> (the default) and <code>"aes128"</code> use WinZip AES encryption
+(AES-256 or AES-128 in CTR mode, key derived via PBKDF2-HMAC-SHA1,
+with an HMAC-SHA1 authentication tag). This scheme is supported by
+7-Zip, WinZip, and macOS Archive Utility. <code>"zipcrypto"</code> uses the
+legacy PKWARE ZipCrypto stream cipher, which is <strong>cryptographically
+weak</strong> and should only be used for compatibility with tools that do
+not support AES encryption.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -252,26 +281,28 @@ to <code>zip()</code> and <code>zip_append()</code> with a different default for
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## List contents</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="zip_list.html">zip_list</a></span><span class="op">(</span><span class="va">zipfile</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 3 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 3 × 9</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-08 <span style="color: #949494;">12:11:54</span> 755        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-08 <span style="color: #949494;">12:11:54</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-08 <span style="color: #949494;">12:11:54</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-09 <span style="color: #949494;">11:03:34</span> 755        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-09 <span style="color: #949494;">11:03:34</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-09 <span style="color: #949494;">11:03:36</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   encryption &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Add another file</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"third file"</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">tmp</span>, <span class="st">"mydir"</span>, <span class="st">"file3"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">zip_append</span><span class="op">(</span><span class="va">zipfile</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"mydir"</span>, <span class="st">"file3"</span><span class="op">)</span>, root <span class="op">=</span> <span class="va">tmp</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="zip_list.html">zip_list</a></span><span class="op">(</span><span class="va">zipfile</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 4 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 4 × 9</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-08 <span style="color: #949494;">12:11:54</span> 755        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-08 <span style="color: #949494;">12:11:54</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-08 <span style="color: #949494;">12:11:54</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> mydir/file3              15                10 2026-06-08 <span style="color: #949494;">12:11:54</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-09 <span style="color: #949494;">11:03:34</span> 755        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-09 <span style="color: #949494;">11:03:34</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-09 <span style="color: #949494;">11:03:36</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> mydir/file3              15                10 2026-06-09 <span style="color: #949494;">11:03:36</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   encryption &lt;chr&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

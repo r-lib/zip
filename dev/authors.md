@@ -8,6 +8,9 @@
 
 - **Rich Geldreich**. Contributor.
 
+- **Arm Limited**. Contributor, copyright holder.  
+  bundled Mbed TLS crypto subset in src/mbedtls/ (Apache-2.0)
+
 - **Posit Software, PBC**. Copyright holder, funder.
   [![ROR](https://raw.githubusercontent.com/ror-community/ror-logos/main/ror-icon-rgb.svg)](https://ror.org/03wc8by49)
 

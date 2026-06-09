@@ -28,5 +28,8 @@ Other contributors:
 
 - Rich Geldreich \[contributor\]
 
+- Arm Limited (bundled Mbed TLS crypto subset in src/mbedtls/
+  (Apache-2.0)) \[contributor, copyright holder\]
+
 - Posit Software, PBC ([ROR](https://ror.org/03wc8by49)) \[copyright
   holder, funder\]

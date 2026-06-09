@@ -63,10 +63,11 @@ zp$wait()
 zp$get_exit_status()
 #> [1] 0
 zip_list(zipfile)
-#> # A data frame: 2 × 8
+#> # A data frame: 2 × 9
 #>   filename     compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                  <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 file1b6a4b5…               0                 0 2026-06-08 12:11:54 755        
-#> 2 file1b6a4b5…            1126              4818 2026-06-08 12:11:54 644        
-#> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
+#> 1 file1aca443…               0                 0 2026-06-09 11:03:36 755        
+#> 2 file1aca443…            1126              4818 2026-06-09 11:03:36 644        
+#> # ℹ 4 more variables: crc32 <hexmode>, offset <dbl>, type <chr>,
+#> #   encryption <chr>
 ```

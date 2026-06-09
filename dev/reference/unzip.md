@@ -12,7 +12,8 @@ unzip(
   overwrite = TRUE,
   junkpaths = FALSE,
   exdir = ".",
-  encoding = NULL
+  encoding = NULL,
+  password = NULL
 )
 ```
 
@@ -53,6 +54,14 @@ unzip(
   specification prescribes for legacy entries. The value is passed to
   [`iconv()`](https://rdrr.io/r/base/iconv.html).
 
+- password:
+
+  Password for decrypting encrypted entries. It can be a string, a raw
+  vector, or a function that returns one of these. If `NULL` (the
+  default), the `zip_password` option is used, or no password if that is
+  also `NULL`. The password is silently ignored for entries that are not
+  encrypted.
+
 ## Value
 
 A data frame with one row per extracted entry and columns, invisibly:
@@ -86,13 +95,14 @@ zip::zip(zipfile, "mydir", root = tmp)
 
 ## List contents
 zip_list(zipfile)
-#> # A data frame: 3 × 8
+#> # A data frame: 3 × 9
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-08 12:11:52 755        
-#> 2 mydir/file1              15                10 2026-06-08 12:11:52 644        
-#> 3 mydir/file2              16                11 2026-06-08 12:11:52 644        
-#> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
+#> 1 mydir/                    0                 0 2026-06-09 11:03:34 755        
+#> 2 mydir/file1              15                10 2026-06-09 11:03:34 644        
+#> 3 mydir/file2              16                11 2026-06-09 11:03:34 644        
+#> # ℹ 4 more variables: crc32 <hexmode>, offset <dbl>, type <chr>,
+#> #   encryption <chr>
 
 ## Extract and inspect result
 tmp2 <- tempfile()
@@ -101,7 +111,7 @@ result[, c("filename", "path")]
 #> # A data frame: 3 × 2
 #>   filename    path                                        
 #>   <chr>       <chr>                                       
-#> 1 mydir/      /tmp/Rtmp33KHbL/file1b6a5d3d7d58/mydir/     
-#> 2 mydir/file1 /tmp/Rtmp33KHbL/file1b6a5d3d7d58/mydir/file1
-#> 3 mydir/file2 /tmp/Rtmp33KHbL/file1b6a5d3d7d58/mydir/file2
+#> 1 mydir/      /tmp/Rtmpm2lP7u/file1aca55685d21/mydir/     
+#> 2 mydir/file1 /tmp/Rtmpm2lP7u/file1aca55685d21/mydir/file1
+#> 3 mydir/file2 /tmp/Rtmpm2lP7u/file1aca55685d21/mydir/file2
 ```

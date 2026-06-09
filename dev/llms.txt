@@ -99,6 +99,33 @@ dir(exdir)
 #> [1] "R"   "src"
 ```
 
+### Password-protected archives
+
+Pass a `password` argument to encrypt entries with WinZip AES-256 (the
+default), which is supported by 7-Zip, WinZip, and macOS Archive
+Utility:
+
+``` r
+
+zip("secret.zip", "R", password = "hunter2")
+zip_list("secret.zip")
+#> # A data frame: 9 × 9
+#>   filename     compressed_size uncompressed_size timestamp           permissions
+#>   <chr>                  <dbl>             <dbl> <dttm>              <octmode>  
+#> 1 R/                         0                 0 2026-06-09 10:32:24 755        
+#> 2 R/assertion…             178               388 2026-06-08 09:00:44 644        
+#> 3 R/compat-vc…            3415             14344 2026-06-08 09:00:44 644        
+#> 4 R/http.R                4893             16515 2026-06-08 12:10:24 644        
+#> 5 R/inflate.R              769              2390 2026-06-08 12:10:24 644        
+#> 6 R/process.R             2140              7474 2026-06-09 10:42:48 644        
+#> 7 R/utils.R               2249              7483 2026-06-09 10:27:50 644        
+#> 8 R/zip-packa…             127               122 2026-06-08 09:00:44 644        
+#> 9 R/zip.R                 5218             16564 2026-06-09 10:32:24 644        
+#> # ℹ 4 more variables: crc32 <hexmode>, offset <dbl>, type <chr>,
+#> #   encryption <chr>
+unzip("secret.zip", exdir = tempfile(), password = "hunter2")
+```
+
 ### Compressing and uncompressing in background processes
 
 You can use the
@@ -123,6 +150,9 @@ disabled by default (for now), but can be enabled by setting the
 
 #### Options
 
+- `zip_password`: The default password for ZIP encryption and
+  decryption. Can be set to a string, a raw vector, or a function
+  returning one.
 - `zip_progress`: If set to `TRUE`, progress bars are enabled. Takes
   precedence over the `ZIP_PROGRESS` environment variable.
 

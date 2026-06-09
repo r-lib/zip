@@ -26,9 +26,11 @@ zip_list(zipfile, encoding = NULL)
 ## Value
 
 A data frame with columns: `filename`, `compressed_size`,
-`uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset` and
-`type`. `type` is one of `file`, `block_device`, `character_device`,
-`directory`, `FIFO`, `symlink` or `socket`.
+`uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset`,
+`type` and `encryption`. `type` is one of `file`, `block_device`,
+`character_device`, `directory`, `FIFO`, `symlink` or `socket`.
+`encryption` is one of `none`, `aes128`, `aes192`, `aes256`,
+`zipcrypto`, or `NA` if encrypted but the scheme cannot be determined.
 
 ## Details
 
