@@ -124,6 +124,8 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 	      zip_entry_fn entry_fn, void *entry_data,
 	      const unsigned char *cpassword, size_t cpassword_len);
 
+int zip_entry_encryption_type(FILE *fh, const mz_zip_archive_file_stat *fs);
+
 char *zip_cp437_to_utf8(const char *src);
 
 FILE *zip_open_utf8(const char *filename, const zip_char_t *mode,

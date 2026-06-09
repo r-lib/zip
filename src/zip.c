@@ -294,6 +294,28 @@ static int zip_find_aes_extra(const unsigned char *extra, mz_uint16 extra_len,
   return 1;
 }
 
+/* Returns the zip_encryption_t for entry fs. For WinZip AES (method 99),
+   reads the local-header extra field to determine key strength; returns -1
+   if not encrypted or if the local header can't be read. */
+int zip_entry_encryption_type(FILE *fh, const mz_zip_archive_file_stat *fs) {
+  if (!fs->m_is_encrypted) return ZIP_ENCRYPTION_NONE;
+  if (fs->m_method != ZIP_WINZIP_METHOD) return ZIP_ENCRYPTION_ZIPCRYPTO;
+
+  mz_uint64 data_ofs = 0;
+  unsigned char *extra = NULL;
+  mz_uint16 extra_len = 0;
+  if (zip_read_local_header(fh, fs->m_local_header_ofs,
+                             &data_ofs, &extra, &extra_len)) {
+    return -1;
+  }
+  int strength = 0, real_method = -1;
+  int found = !extra || zip_find_aes_extra(extra, extra_len, &strength, &real_method);
+  if (extra) free(extra);
+  if (found) return -1;
+  /* strength: 1=AES-128, 2=AES-192, 3=AES-256 — matches zip_encryption_t */
+  return strength;
+}
+
 /* Decrypt (and inflate if needed) one encrypted entry.  The entry's raw
    payload is read directly from `zfh` using the local-header offset in
    `file_stat`.  On success returns 0 and sets *out and *out_len (caller frees).

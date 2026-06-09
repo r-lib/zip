@@ -301,7 +301,10 @@ test_that("unzip() extracts ZipCrypto archive produced by Info-ZIP (interop fixt
   unzip(fixture, exdir = exdir, password = "secret")
 
   expect_equal(readLines(file.path(exdir, "a.txt")), "first fixture file")
-  expect_equal(readLines(file.path(exdir, "sub", "b.txt")), "second file in subdir")
+  expect_equal(
+    readLines(file.path(exdir, "sub", "b.txt")),
+    "second file in subdir"
+  )
   expect_equal(length(readLines(file.path(exdir, "big.txt"))), 400L)
 })
 
@@ -325,4 +328,84 @@ test_that("unzip() with password leaves unencrypted entries unaffected", {
   # password is ignored for unencrypted entries
   unzip(zipfile, exdir = exdir, password = "ignored")
   expect_identical(readLines(file.path(exdir, "a.txt")), "plain text")
+})
+
+# ---- Step 4: zip_list encryption column ------------------------------------
+
+test_that("zip_list reports 'none' for unencrypted entries", {
+  src <- withr::local_tempdir()
+  writeLines("plain", file.path(src, "a.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip_internal(
+    zipfile,
+    files = file.path(src, "a.txt"),
+    recurse = FALSE,
+    compression_level = 6,
+    append = FALSE,
+    root = src,
+    keep_path = FALSE,
+    include_directories = FALSE,
+    password = NULL
+  )
+  lst <- zip_list(zipfile)
+  expect_equal(lst$encryption, "none")
+})
+
+test_that("zip_list reports 'aes256' and 'aes128' for WinZip AES entries", {
+  for (enc in c("aes256", "aes128")) {
+    src <- withr::local_tempdir()
+    writeLines("secret", file.path(src, "a.txt"))
+    zipfile <- withr::local_tempfile(fileext = ".zip")
+    zip_enc(zipfile, file.path(src, "a.txt"), src, "pw", enc)
+    lst <- zip_list(zipfile)
+    expect_equal(lst$encryption, enc, info = enc)
+  }
+})
+
+test_that("zip_list reports 'zipcrypto' for ZipCrypto entries", {
+  z <- seven_zip()
+  src <- withr::local_tempdir()
+  writeLines("secret", file.path(src, "a.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip_enc(zipfile, file.path(src, "a.txt"), src, "pw", "zipcrypto")
+  lst <- zip_list(zipfile)
+  expect_equal(lst$encryption, "zipcrypto")
+})
+
+test_that("zip_list encryption column matches for interop fixtures", {
+  for (strength in c("aes256", "aes192", "aes128")) {
+    fixture <- test_path("fixtures", paste0(strength, ".zip"))
+    lst <- zip_list(fixture)
+    expect_true(
+      all(lst$encryption[lst$type == "file"] == strength),
+      info = strength
+    )
+  }
+  fixture <- test_path("fixtures", "zipcrypto.zip")
+  lst <- zip_list(fixture)
+  expect_true(all(lst$encryption[lst$type == "file"] == "zipcrypto"))
+})
+
+test_that("zip_list mixed: directory 'none', file encrypted", {
+  src <- withr::local_tempdir()
+  dir.create(file.path(src, "d"))
+  writeLines("hi", file.path(src, "d", "f.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip_internal(
+    zipfile,
+    files = "d",
+    recurse = TRUE,
+    compression_level = 6,
+    append = FALSE,
+    root = src,
+    keep_path = TRUE,
+    include_directories = TRUE,
+    password = "pw",
+    encryption = "aes256"
+  )
+  lst <- zip_list(zipfile)
+  dir_row <- lst[lst$type == "directory", ]
+  file_row <- lst[lst$type == "file", ]
+  expect_equal(dir_row$encryption, "none")
+  expect_equal(file_row$encryption, "aes256")
 })

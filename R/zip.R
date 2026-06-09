@@ -343,9 +343,11 @@ zip_internal <- function(
 #'   ZIP specification prescribes for legacy entries. The value is passed
 #'   to [iconv()].
 #' @return A data frame with columns: `filename`, `compressed_size`,
-#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset` and
-#'   `type`. `type` is one of `file`, `block_device`, `character_device`,
-#'   `directory`, `FIFO`, `symlink` or `socket`.
+#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset`,
+#'   `type` and `encryption`. `type` is one of `file`, `block_device`,
+#'   `character_device`, `directory`, `FIFO`, `symlink` or `socket`.
+#'   `encryption` is one of `none`, `aes128`, `aes192`, `aes256`,
+#'   `zipcrypto`, or `NA` if encrypted but the scheme cannot be determined.
 #'
 #' @family zip/unzip functions
 #' @export
@@ -371,6 +373,7 @@ zip_list <- function(zipfile, encoding = NULL) {
   df$offset <- res[[7]]
   # names are the same as in `fs::file_info()`
   df$type <- file_types[res[[8]] + 1L]
+  df$encryption <- encryption_types[res[[9]] + 2L]
   df
 }
 
@@ -382,6 +385,17 @@ file_types <- c(
   "FIFO",
   "symlink",
   "socket"
+)
+
+# C returns: -1=unknown, 0=none, 1=aes128, 2=aes192, 3=aes256, 4=zipcrypto
+# + 2L shifts to 1-based index
+encryption_types <- c(
+  NA_character_,
+  "none",
+  "aes128",
+  "aes192",
+  "aes256",
+  "zipcrypto"
 )
 
 #' Uncompress 'zip' Archives

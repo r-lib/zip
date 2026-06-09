@@ -116,7 +116,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   }
 
   num_files = mz_zip_reader_get_num_files(&zip_archive);
-  result = PROTECT(allocVector(VECSXP, 8));
+  result = PROTECT(allocVector(VECSXP, 9));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP, num_files));
   SET_VECTOR_ELT(result, 1, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 2, allocVector(REALSXP, num_files));
@@ -125,6 +125,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   SET_VECTOR_ELT(result, 5, allocVector(INTSXP, num_files));
   SET_VECTOR_ELT(result, 6, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 7, allocVector(INTSXP, num_files));
+  SET_VECTOR_ELT(result, 8, allocVector(INTSXP, num_files));
 
   for (i = 0; i < num_files; i++) {
     mz_zip_archive_file_stat file_stat;
@@ -170,6 +171,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
     } else if (S_ISSOCK(attr)) {
       INTEGER(VECTOR_ELT(result, 7))[i] = 6;
     }
+    INTEGER(VECTOR_ELT(result, 8))[i] = zip_entry_encryption_type(fh, &file_stat);
   }
 
   fclose(fh);

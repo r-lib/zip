@@ -30,7 +30,8 @@ test_that("can list a zip file", {
       "permissions",
       "crc32",
       "offset",
-      "type"
+      "type",
+      "encryption"
     )
   )
   expect_true(is.numeric(list$offset))
