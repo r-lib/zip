@@ -409,3 +409,84 @@ test_that("zip_list mixed: directory 'none', file encrypted", {
   expect_equal(dir_row$encryption, "none")
   expect_equal(file_row$encryption, "aes256")
 })
+
+# ---- Step 5: public API (zip / unzip / zip_process / unzip_process) --------
+
+test_that("zip() with password encrypts and unzip() with password decrypts", {
+  src <- withr::local_tempdir()
+  writeLines("secret content", file.path(src, "a.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip(zipfile, "a.txt", root = src, password = "hunter2")
+
+  lst <- zip_list(zipfile)
+  expect_equal(lst$encryption, "aes256")
+
+  exdir <- withr::local_tempdir()
+  unzip(zipfile, exdir = exdir, password = "hunter2")
+  expect_equal(readLines(file.path(exdir, "a.txt")), "secret content")
+})
+
+test_that("zipr() with password encrypts", {
+  src <- withr::local_tempdir()
+  writeLines("hello zipr", file.path(src, "b.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zipr(zipfile, file.path(src, "b.txt"), password = "zipr-pass", encryption = "aes128")
+
+  lst <- zip_list(zipfile)
+  expect_equal(lst$encryption, "aes128")
+
+  exdir <- withr::local_tempdir()
+  unzip(zipfile, exdir = exdir, password = "zipr-pass")
+  expect_equal(readLines(file.path(exdir, "b.txt")), "hello zipr")
+})
+
+test_that("zip_append() with password adds encrypted entries", {
+  src <- withr::local_tempdir()
+  writeLines("first", file.path(src, "first.txt"))
+  writeLines("second", file.path(src, "second.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip(zipfile, "first.txt", root = src)
+  zip_append(zipfile, "second.txt", root = src, password = "append-pw")
+
+  lst <- zip_list(zipfile)
+  expect_equal(lst$encryption[lst$filename == "first.txt"], "none")
+  expect_equal(lst$encryption[lst$filename == "second.txt"], "aes256")
+})
+
+test_that("zip() with password = NULL produces unencrypted output (backward compat)", {
+  src <- withr::local_tempdir()
+  writeLines("plain", file.path(src, "a.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip(zipfile, "a.txt", root = src, password = NULL)
+
+  lst <- zip_list(zipfile)
+  expect_equal(lst$encryption, "none")
+
+  exdir <- withr::local_tempdir()
+  unzip(zipfile, exdir = exdir)
+  expect_equal(readLines(file.path(exdir, "a.txt")), "plain")
+})
+
+test_that("zip_process() with password encrypts and unzip_process() with password decrypts", {
+  skip_if_not_installed("processx")
+  skip_if_not_installed("R6")
+  src <- withr::local_tempdir()
+  writeLines("process secret", file.path(src, "c.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zp <- zip_process()$new(zipfile, src, password = "proc-pw")
+  zp$wait()
+  expect_equal(zp$get_exit_status(), 0L)
+
+  lst <- zip_list(zipfile)
+  expect_equal(lst$encryption[lst$type == "file"], "aes256")
+
+  exdir <- withr::local_tempdir()
+  up <- unzip_process()$new(zipfile, exdir = exdir, password = "proc-pw")
+  up$wait()
+  expect_equal(up$get_exit_status(), 0L)
+
+  expect_equal(
+    readLines(file.path(exdir, basename(src), "c.txt")),
+    "process secret"
+  )
+})

@@ -18,9 +18,11 @@ to \code{\link[=iconv]{iconv()}}.}
 }
 \value{
 A data frame with columns: \code{filename}, \code{compressed_size},
-\code{uncompressed_size}, \code{timestamp}, \code{permissions}, \code{crc32}, \code{offset} and
-\code{type}. \code{type} is one of \code{file}, \code{block_device}, \code{character_device},
-\code{directory}, \code{FIFO}, \code{symlink} or \code{socket}.
+\code{uncompressed_size}, \code{timestamp}, \code{permissions}, \code{crc32}, \code{offset},
+\code{type} and \code{encryption}. \code{type} is one of \code{file}, \code{block_device},
+\code{character_device}, \code{directory}, \code{FIFO}, \code{symlink} or \code{socket}.
+\code{encryption} is one of \code{none}, \code{aes128}, \code{aes192}, \code{aes256},
+\code{zipcrypto}, or \code{NA} if encrypted but the scheme cannot be determined.
 }
 \description{
 List Files in a 'zip' Archive

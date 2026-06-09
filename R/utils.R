@@ -250,6 +250,10 @@ enc2c <- function(x) {
   }
 }
 
+raw_to_hex <- function(x) {
+  paste0(sprintf("%02x", as.integer(x)), collapse = "")
+}
+
 resolve_password <- function(password) {
   password <- password %||% getOption("zip_password")
   if (is.null(password)) {

@@ -133,6 +133,21 @@ call_with_cleanup <- function(ptr, ...) {
 #'   directory, the key becomes the directory prefix under which all
 #'   contents are stored. If `NULL` (default), paths are determined by
 #'   `mode`. `"."` may not appear in `files` when `keys` is specified.
+#' @param password Password for encrypting the archive entries. It can be a
+#'   string, a raw vector of bytes, or a zero-argument function that returns
+#'   one of these. If `NULL` (the default), the `zip_password` option is
+#'   consulted; if that is also `NULL`, entries are stored unencrypted.
+#'   The password is interpreted as UTF-8 bytes regardless of the current
+#'   locale, which matches the WinZip/7-Zip convention and ensures
+#'   interoperability across platforms.
+#' @param encryption Encryption scheme to use when `password` is not `NULL`.
+#'   `"aes256"` (the default) and `"aes128"` use WinZip AES encryption
+#'   (AES-256 or AES-128 in CTR mode, key derived via PBKDF2-HMAC-SHA1,
+#'   with an HMAC-SHA1 authentication tag). This scheme is supported by
+#'   7-Zip, WinZip, and macOS Archive Utility. `"zipcrypto"` uses the
+#'   legacy PKWARE ZipCrypto stream cipher, which is **cryptographically
+#'   weak** and should only be used for compatibility with tools that do
+#'   not support AES encryption.
 #' @return The name of the created zip file, invisibly.
 #'
 #' @export
@@ -163,9 +178,12 @@ zip <- function(
   include_directories = TRUE,
   root = ".",
   mode = c("mirror", "cherry-pick"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 ) {
   mode <- match.arg(mode)
+  encryption <- match.arg(encryption)
   zip_internal(
     zipfile,
     files,
@@ -175,7 +193,9 @@ zip <- function(
     root = root,
     keep_path = (mode == "mirror"),
     include_directories = include_directories,
-    keys = keys
+    keys = keys,
+    password = password,
+    encryption = encryption
   )
 }
 
@@ -190,9 +210,12 @@ zipr <- function(
   include_directories = TRUE,
   root = ".",
   mode = c("cherry-pick", "mirror"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 ) {
   mode <- match.arg(mode)
+  encryption <- match.arg(encryption)
   zip_internal(
     zipfile,
     files,
@@ -202,7 +225,9 @@ zipr <- function(
     root = root,
     keep_path = (mode == "mirror"),
     include_directories = include_directories,
-    keys = keys
+    keys = keys,
+    password = password,
+    encryption = encryption
   )
 }
 
@@ -217,9 +242,12 @@ zip_append <- function(
   include_directories = TRUE,
   root = ".",
   mode = c("mirror", "cherry-pick"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 ) {
   mode <- match.arg(mode)
+  encryption <- match.arg(encryption)
   zip_internal(
     zipfile,
     files,
@@ -229,7 +257,9 @@ zip_append <- function(
     root = root,
     keep_path = (mode == "mirror"),
     include_directories = include_directories,
-    keys = keys
+    keys = keys,
+    password = password,
+    encryption = encryption
   )
 }
 
@@ -244,9 +274,12 @@ zipr_append <- function(
   include_directories = TRUE,
   root = ".",
   mode = c("cherry-pick", "mirror"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 ) {
   mode <- match.arg(mode)
+  encryption <- match.arg(encryption)
   zip_internal(
     zipfile,
     files,
@@ -256,7 +289,9 @@ zipr_append <- function(
     root = root,
     keep_path = (mode == "mirror"),
     include_directories = include_directories,
-    keys = keys
+    keys = keys,
+    password = password,
+    encryption = encryption
   )
 }
 
