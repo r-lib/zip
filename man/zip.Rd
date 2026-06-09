@@ -15,7 +15,9 @@ zip(
   include_directories = TRUE,
   root = ".",
   mode = c("mirror", "cherry-pick"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 )
 
 zipr(
@@ -26,7 +28,9 @@ zipr(
   include_directories = TRUE,
   root = ".",
   mode = c("cherry-pick", "mirror"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 )
 
 zip_append(
@@ -37,7 +41,9 @@ zip_append(
   include_directories = TRUE,
   root = ".",
   mode = c("mirror", "cherry-pick"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 )
 
 zipr_append(
@@ -48,7 +54,9 @@ zipr_append(
   include_directories = TRUE,
   root = ".",
   mode = c("cherry-pick", "mirror"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 )
 }
 \arguments{
@@ -81,6 +89,23 @@ archive. For a file, the key is the exact archive path. For a
 directory, the key becomes the directory prefix under which all
 contents are stored. If \code{NULL} (default), paths are determined by
 \code{mode}. \code{"."} may not appear in \code{files} when \code{keys} is specified.}
+
+\item{password}{Password for encrypting the archive entries. It can be a
+string, a raw vector of bytes, or a zero-argument function that returns
+one of these. If \code{NULL} (the default), the \code{zip_password} option is
+consulted; if that is also \code{NULL}, entries are stored unencrypted.
+The password is interpreted as UTF-8 bytes regardless of the current
+locale, which matches the WinZip/7-Zip convention and ensures
+interoperability across platforms.}
+
+\item{encryption}{Encryption scheme to use when \code{password} is not \code{NULL}.
+\code{"aes256"} (the default) and \code{"aes128"} use WinZip AES encryption
+(AES-256 or AES-128 in CTR mode, key derived via PBKDF2-HMAC-SHA1,
+with an HMAC-SHA1 authentication tag). This scheme is supported by
+7-Zip, WinZip, and macOS Archive Utility. \code{"zipcrypto"} uses the
+legacy PKWARE ZipCrypto stream cipher, which is \strong{cryptographically
+weak} and should only be used for compatibility with tools that do
+not support AES encryption.}
 }
 \value{
 The name of the created zip file, invisibly.

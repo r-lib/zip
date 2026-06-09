@@ -38,13 +38,13 @@
       Warning in `warn_no_range()`:
       Server '127.0.0.1' does not support HTTP range requests, downloading the whole file.
     Output
-                filename compressed_size uncompressed_size permissions    crc32 offset      type
-      1          <root>/               0                 0         755 00000000 <offset> directory
-      2      <root>/dir/               0                 0         755 00000000 <offset> directory
-      3 <root>/dir/file2              11                 6         644 c904a4c7 <offset>      file
-      4 <root>/dir/file3              11                 6         644 d01f9586 <offset>      file
-      5     <root>/file1              11                 6         644 e229f704 <offset>      file
-      6    <root>/file11              12                 7         644 09ea0445 <offset>      file
+                filename compressed_size uncompressed_size permissions    crc32 offset      type encryption
+      1          <root>/               0                 0         755 00000000 <offset> directory       none
+      2      <root>/dir/               0                 0         755 00000000 <offset> directory       none
+      3 <root>/dir/file2              11                 6         644 c904a4c7 <offset>      file       none
+      4 <root>/dir/file3              11                 6         644 d01f9586 <offset>      file       none
+      5     <root>/file1              11                 6         644 e229f704 <offset>      file       none
+      6    <root>/file11              12                 7         644 09ea0445 <offset>      file       none
 
 # zip_list recovers when an oversized suffix range gives 416
 

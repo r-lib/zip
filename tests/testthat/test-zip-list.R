@@ -30,11 +30,12 @@ test_that("can list a zip file", {
       "permissions",
       "crc32",
       "offset",
-      "type"
+      "type",
+      "encryption"
     )
   )
   expect_true(is.numeric(list$offset))
-  expect_true(inherits(list$crc32, 'hexmode'))
+  expect_true(inherits(list$crc32, "hexmode"))
 })
 
 test_that("CP932-encoded filename is decoded to UTF-8 when encoding is set", {
@@ -77,9 +78,10 @@ test_that("zip_list works on files with STORED comp_size=0 quirk", {
 })
 
 test_that("zip_list reads Info-ZIP forced ZIP64 (`zip -fz`)", {
-  # Every entry has uncompressed_size set to the 0xFFFFFFFF sentinel + a ZIP64
-  # extra field, including zero-length STORED directory entries. These used to
-  # be rejected by the bundled miniz reader. See tools/extra/make-zip64-infozip.sh.
+  # Every entry has uncompressed_size set to the 0xFFFFFFFF sentinel + a
+  # ZIP64 extra field, including zero-length STORED directory entries.
+  # These used to be rejected by the bundled miniz reader.
+  # See tools/extra/make-zip64-infozip.sh.
   zf <- test_path("fixtures/zip64.zip")
   lst <- zip_list(zf)
   expect_equal(

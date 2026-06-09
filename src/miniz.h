@@ -1450,6 +1450,15 @@ extern "C"
                                                      mz_uint64 uncomp_size, mz_uint32 uncomp_crc32, MZ_TIME_T *last_modified, const char *user_extra_data_local, mz_uint user_extra_data_local_len,
                                                      const char *user_extra_data_central, mz_uint user_extra_data_central_len);
 
+    /* Adds a pre-framed entry: pBuf/buf_size are stored verbatim as the entry payload, with the
+       caller-supplied compression method, general purpose bit flags, CRC-32 and uncompressed size.
+       Does not compress, does not emit a data descriptor, and writes real sizes into the local
+       header. Used to emit WinZip-AES (method 99) entries. zip64 is not supported. */
+    MINIZ_EXPORT mz_bool mz_zip_writer_add_mem_raw(mz_zip_archive *pZip, const char *pArchive_name, const void *pBuf, size_t buf_size,
+                                                   mz_uint16 method, mz_uint16 bit_flags, mz_uint32 uncomp_crc32, mz_uint64 uncomp_size,
+                                                   MZ_TIME_T *last_modified, mz_uint32 ext_attributes, const char *user_extra_data_local, mz_uint user_extra_data_local_len,
+                                                   const char *user_extra_data_central, mz_uint user_extra_data_central_len);
+
     /* Adds the contents of a file to an archive. This function also records the disk file's modified time into the archive. */
     /* File data is supplied via a read callback function. User mz_zip_writer_add_(c)file to add a file directly.*/
     MINIZ_EXPORT mz_bool mz_zip_writer_add_read_buf_callback(mz_zip_archive *pZip, const char *pArchive_name, mz_file_read_func read_callback, void *callback_opaque, mz_uint64 max_size,

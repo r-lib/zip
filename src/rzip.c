@@ -16,6 +16,7 @@
 #include "errors.h"
 #include "miniz.h"
 #include "zip.h"
+#include "crypto.h"
 #include "cleancall.h"
 #include <cli/progress.h>
 
@@ -84,8 +85,6 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   wchar_t *uzipfile = NULL;
 
 #ifdef _WIN32
-  #define R_ZIP_FSEEK64 _fseeki64
-  #define R_ZIP_FTELL64 _ftelli64
   size_t uzipfile_len = 0;
   if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
     if (uzipfile) free(uzipfile);
@@ -93,8 +92,6 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   }
   fh = zip_long_wfopen(uzipfile, L"rb");
 #else
-  #define R_ZIP_FSEEK64 fseek
-  #define R_ZIP_FTELL64 ftell
   fh = fopen(czipfile, "rb");
 #endif
 
@@ -103,9 +100,9 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
     R_THROW_ERROR("Cannot open zip file `%s`", czipfile);
   }
 
-  R_ZIP_FSEEK64(fh, 0, SEEK_END);
-  mz_uint64 file_size = R_ZIP_FTELL64(fh);
-  R_ZIP_FSEEK64(fh, 0, SEEK_SET);
+  zip_fseek(fh, 0, SEEK_END);
+  mz_uint64 file_size = zip_ftell(fh);
+  zip_fseek64(fh, 0);
 
   memset(&zip_archive, 0, sizeof(zip_archive));
   status = mz_zip_reader_init_cfile(&zip_archive, fh, file_size, 0);
@@ -119,7 +116,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   }
 
   num_files = mz_zip_reader_get_num_files(&zip_archive);
-  result = PROTECT(allocVector(VECSXP, 8));
+  result = PROTECT(allocVector(VECSXP, 9));
   SET_VECTOR_ELT(result, 0, allocVector(STRSXP, num_files));
   SET_VECTOR_ELT(result, 1, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 2, allocVector(REALSXP, num_files));
@@ -128,6 +125,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   SET_VECTOR_ELT(result, 5, allocVector(INTSXP, num_files));
   SET_VECTOR_ELT(result, 6, allocVector(REALSXP, num_files));
   SET_VECTOR_ELT(result, 7, allocVector(INTSXP, num_files));
+  SET_VECTOR_ELT(result, 8, allocVector(INTSXP, num_files));
 
   for (i = 0; i < num_files; i++) {
     mz_zip_archive_file_stat file_stat;
@@ -173,6 +171,7 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
     } else if (S_ISSOCK(attr)) {
       INTEGER(VECTOR_ELT(result, 7))[i] = 6;
     }
+    INTEGER(VECTOR_ELT(result, 8))[i] = zip_entry_encryption_type(fh, &file_stat);
   }
 
   fclose(fh);
@@ -228,7 +227,8 @@ SEXP R_zip_cp437_to_utf8(SEXP bytes) {
 }
 
 SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
-	       SEXP compression_level, SEXP append, SEXP total_bytes) {
+	       SEXP compression_level, SEXP append, SEXP total_bytes,
+	       SEXP password, SEXP encryption) {
 
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   const char **ckeys = 0, **cfiles = 0;
@@ -238,6 +238,12 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
   int cappend = LOGICAL(append)[0];
   double ctotal_bytes = REAL(total_bytes)[0];
   int cshow_progress = !ISNA(ctotal_bytes);
+  /* password is a raw vector of the password bytes, or NULL for no encryption.
+     encryption is the scheme/strength (see zip_encryption_t): 0 = none,
+     1/2/3 = WinZip AES-128/192/256. */
+  const unsigned char *cpassword = isNull(password) ? NULL : RAW(password);
+  size_t cpassword_len = isNull(password) ? 0 : (size_t) LENGTH(password);
+  int cencryption = isNull(password) ? 0 : INTEGER(encryption)[0];
   int i, n = LENGTH(keys);
 
   /* The reason we allocate n+1 here is that otherwise R_alloc will
@@ -256,7 +262,8 @@ SEXP R_zip_zip(SEXP zipfile, SEXP keys, SEXP files, SEXP dirs, SEXP mtime,
   zip_set_error_handler(R_zip_error_handler);
 
   zip_zip(czipfile, n, ckeys, cfiles, cdirs, cmtimes, ccompression_level,
-	  cappend, cshow_progress ? r_zip_progress_fn : NULL, bar);
+	  cappend, cpassword, cpassword_len, cencryption,
+	  cshow_progress ? r_zip_progress_fn : NULL, bar);
 
   cli_progress_done(bar);
   UNPROTECT(1);
@@ -316,7 +323,7 @@ static void r_unzip_entry_fn(int n, int i,
 }
 
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
-		 SEXP exdir, SEXP encoding, SEXP show_progress) {
+		 SEXP exdir, SEXP encoding, SEXP show_progress, SEXP password) {
 
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   int coverwrite = LOGICAL(overwrite)[0];
@@ -324,6 +331,8 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   const char *cexdir = CHAR(STRING_ELT(exdir, 0));
   const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
   int cshow_progress = LOGICAL(show_progress)[0];
+  const unsigned char *cpassword = isNull(password) ? NULL : RAW(password);
+  size_t cpassword_len = isNull(password) ? 0 : (size_t) LENGTH(password);
   if (r_check_encoding(cencoding))
     R_THROW_ERROR("zip: unsupported encoding: '%s'", cencoding);
   int allfiles = isNull(files);
@@ -382,7 +391,8 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   zip_set_error_handler(R_zip_error_handler);
   zip_unzip(czipfile, cfiles, n, coverwrite, cjunkpaths, cexdir,
             cencoding ? r_decode_filename : NULL, (void *) cencoding,
-            r_unzip_entry_fn, &data);
+            r_unzip_entry_fn, &data,
+            cpassword, cpassword_len);
 
 #ifdef _WIN32
   if (data.path_utf8) free(data.path_utf8);
@@ -640,5 +650,94 @@ SEXP R_deflate(SEXP buffer, SEXP level, SEXP pos, SEXP size) {
   SET_VECTOR_ELT(result, 1, Rf_ScalarInteger(stream.total_in));
   SET_VECTOR_ELT(result, 2, Rf_ScalarInteger(stream.total_out));
   UNPROTECT(3);
+  return result;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Test shims for the WinZip AES crypto primitives in crypto.c.             */
+/* These exist so the published test vectors (PBKDF2 RFC 6070, HMAC-SHA1    */
+/* RFC 2202, AES, WinZip key block derivation) can be checked from          */
+/* testthat. They are not part of the package's public API.                 */
+/* ------------------------------------------------------------------------ */
+
+SEXP R_crypto_pbkdf2_sha1(SEXP password, SEXP salt, SEXP iterations,
+                          SEXP dklen) {
+  size_t cdklen = (size_t) INTEGER(dklen)[0];
+  SEXP output = PROTECT(allocVector(RAWSXP, cdklen));
+  int ret = zip_pbkdf2_sha1(
+    RAW(password), (size_t) LENGTH(password),
+    RAW(salt), (size_t) LENGTH(salt),
+    (unsigned int) INTEGER(iterations)[0],
+    RAW(output), cdklen
+  );
+  if (ret != 0) {
+    error("PBKDF2-HMAC-SHA1 failed (mbedtls error %d)", ret);
+  }
+  UNPROTECT(1);
+  return output;
+}
+
+SEXP R_crypto_hmac_sha1(SEXP key, SEXP data) {
+  SEXP output = PROTECT(allocVector(RAWSXP, 20));
+  int ret = zip_hmac_sha1(
+    RAW(key), (size_t) LENGTH(key),
+    RAW(data), (size_t) LENGTH(data),
+    RAW(output)
+  );
+  if (ret != 0) {
+    error("HMAC-SHA1 failed (mbedtls error %d)", ret);
+  }
+  UNPROTECT(1);
+  return output;
+}
+
+SEXP R_crypto_aes_ctr(SEXP key, SEXP data) {
+  int keybits = LENGTH(key) * 8;
+  size_t len = (size_t) LENGTH(data);
+  SEXP output;
+  int ret;
+  if (keybits != 128 && keybits != 192 && keybits != 256) {
+    error("AES key must be 16, 24 or 32 bytes, not %d", LENGTH(key));
+  }
+  output = PROTECT(allocVector(RAWSXP, len));
+  ret = zip_aes_ctr_crypt(
+    RAW(key), keybits, RAW(data), RAW(output), len
+  );
+  if (ret != 0) {
+    error("AES-CTR failed (mbedtls error %d)", ret);
+  }
+  UNPROTECT(1);
+  return output;
+}
+
+SEXP R_crypto_winzip_keys(SEXP password, SEXP salt, SEXP strength) {
+  int cstrength = INTEGER(strength)[0];
+  int keylen = zip_winzip_key_len(cstrength);
+  const char *nms[] = { "enc_key", "mac_key", "verifier", "" };
+  SEXP result, enc_key, mac_key, verifier;
+  int ret;
+
+  if (keylen < 0) {
+    error("Invalid WinZip AES strength %d (must be 1, 2 or 3)", cstrength);
+  }
+
+  result = PROTECT(Rf_mkNamed(VECSXP, nms));
+  enc_key = PROTECT(allocVector(RAWSXP, keylen));
+  mac_key = PROTECT(allocVector(RAWSXP, keylen));
+  verifier = PROTECT(allocVector(RAWSXP, 2));
+
+  ret = zip_winzip_aes_keys(
+    RAW(password), (size_t) LENGTH(password),
+    RAW(salt), (size_t) LENGTH(salt),
+    cstrength, RAW(enc_key), RAW(mac_key), RAW(verifier)
+  );
+  if (ret != 0) {
+    error("WinZip AES key derivation failed (mbedtls error %d)", ret);
+  }
+
+  SET_VECTOR_ELT(result, 0, enc_key);
+  SET_VECTOR_ELT(result, 1, mac_key);
+  SET_VECTOR_ELT(result, 2, verifier);
+  UNPROTECT(4);
   return result;
 }

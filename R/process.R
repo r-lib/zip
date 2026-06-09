@@ -86,6 +86,7 @@ unzip_process <- function() {
         initialize = function(
           zipfile,
           exdir = ".",
+          password = NULL,
           poll_connection = TRUE,
           stderr = tempfile(),
           ...
@@ -95,9 +96,14 @@ unzip_process <- function() {
             is_string(exdir)
           )
           exdir <- normalizePath(exdir, winslash = "\\", mustWork = FALSE)
+          pw <- resolve_password(password)
+          args <- enc2c(c(zipfile, exdir))
+          if (!is.null(pw)) {
+            args <- c(args, raw_to_hex(pw))
+          }
           super$initialize(
             unzip_exe(),
-            enc2c(c(zipfile, exdir)),
+            args,
             poll_connection = poll_connection,
             stderr = stderr,
             ...
@@ -127,8 +133,9 @@ unzip_process <- function() {
 #'
 #' Arguments:
 #' * `zipfile`: Path to the zip file to create.
-#' * `files`: Character vector of paths to files to add to the archive. Each specified file
-#'    or directory in is created as a top-level entry in the zip archive.
+#' * `files`: Character vector of paths to files to add to the archive.
+#'    Each specified file or directory in is created as a top-level entry
+#'    in the zip archive.
 #' * `recurse`: Whether to add the contents of directories recursively.
 #' * `include_directories`: Whether to explicitly include directories
 #'   in the archive. Including directories might confuse MS Office when
@@ -166,6 +173,8 @@ zip_process <- function() {
           files,
           recurse = TRUE,
           include_directories = TRUE,
+          password = NULL,
+          encryption = "aes256",
           poll_connection = TRUE,
           stderr = tempfile(),
           ...
@@ -181,9 +190,15 @@ zip_process <- function() {
             include_directories,
             private$params_file
           )
+          pw <- resolve_password(password)
+          enc <- if (is.null(pw)) NULL else encryption_code(encryption)
+          args <- enc2c(c(zipfile, private$params_file))
+          if (!is.null(pw)) {
+            args <- c(args, raw_to_hex(pw), as.character(enc))
+          }
           super$initialize(
             zip_exe(),
-            enc2c(c(zipfile, private$params_file)),
+            args,
             poll_connection = poll_connection,
             stderr = stderr,
             ...

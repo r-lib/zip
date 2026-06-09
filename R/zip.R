@@ -133,6 +133,21 @@ call_with_cleanup <- function(ptr, ...) {
 #'   directory, the key becomes the directory prefix under which all
 #'   contents are stored. If `NULL` (default), paths are determined by
 #'   `mode`. `"."` may not appear in `files` when `keys` is specified.
+#' @param password Password for encrypting the archive entries. It can be a
+#'   string, a raw vector of bytes, or a zero-argument function that returns
+#'   one of these. If `NULL` (the default), the `zip_password` option is
+#'   consulted; if that is also `NULL`, entries are stored unencrypted.
+#'   The password is interpreted as UTF-8 bytes regardless of the current
+#'   locale, which matches the WinZip/7-Zip convention and ensures
+#'   interoperability across platforms.
+#' @param encryption Encryption scheme to use when `password` is not `NULL`.
+#'   `"aes256"` (the default) and `"aes128"` use WinZip AES encryption
+#'   (AES-256 or AES-128 in CTR mode, key derived via PBKDF2-HMAC-SHA1,
+#'   with an HMAC-SHA1 authentication tag). This scheme is supported by
+#'   7-Zip, WinZip, and macOS Archive Utility. `"zipcrypto"` uses the
+#'   legacy PKWARE ZipCrypto stream cipher, which is **cryptographically
+#'   weak** and should only be used for compatibility with tools that do
+#'   not support AES encryption.
 #' @return The name of the created zip file, invisibly.
 #'
 #' @export
@@ -163,9 +178,12 @@ zip <- function(
   include_directories = TRUE,
   root = ".",
   mode = c("mirror", "cherry-pick"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 ) {
   mode <- match.arg(mode)
+  encryption <- match.arg(encryption)
   zip_internal(
     zipfile,
     files,
@@ -175,7 +193,9 @@ zip <- function(
     root = root,
     keep_path = (mode == "mirror"),
     include_directories = include_directories,
-    keys = keys
+    keys = keys,
+    password = password,
+    encryption = encryption
   )
 }
 
@@ -190,9 +210,12 @@ zipr <- function(
   include_directories = TRUE,
   root = ".",
   mode = c("cherry-pick", "mirror"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 ) {
   mode <- match.arg(mode)
+  encryption <- match.arg(encryption)
   zip_internal(
     zipfile,
     files,
@@ -202,7 +225,9 @@ zipr <- function(
     root = root,
     keep_path = (mode == "mirror"),
     include_directories = include_directories,
-    keys = keys
+    keys = keys,
+    password = password,
+    encryption = encryption
   )
 }
 
@@ -217,9 +242,12 @@ zip_append <- function(
   include_directories = TRUE,
   root = ".",
   mode = c("mirror", "cherry-pick"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 ) {
   mode <- match.arg(mode)
+  encryption <- match.arg(encryption)
   zip_internal(
     zipfile,
     files,
@@ -229,7 +257,9 @@ zip_append <- function(
     root = root,
     keep_path = (mode == "mirror"),
     include_directories = include_directories,
-    keys = keys
+    keys = keys,
+    password = password,
+    encryption = encryption
   )
 }
 
@@ -244,9 +274,12 @@ zipr_append <- function(
   include_directories = TRUE,
   root = ".",
   mode = c("cherry-pick", "mirror"),
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = c("aes256", "aes128", "zipcrypto")
 ) {
   mode <- match.arg(mode)
+  encryption <- match.arg(encryption)
   zip_internal(
     zipfile,
     files,
@@ -256,7 +289,9 @@ zipr_append <- function(
     root = root,
     keep_path = (mode == "mirror"),
     include_directories = include_directories,
-    keys = keys
+    keys = keys,
+    password = password,
+    encryption = encryption
   )
 }
 
@@ -269,7 +304,9 @@ zip_internal <- function(
   root,
   keep_path,
   include_directories,
-  keys = NULL
+  keys = NULL,
+  password = NULL,
+  encryption = "aes256"
 ) {
   if (!is.null(keys)) {
     if (length(keys) != length(files)) {
@@ -307,6 +344,9 @@ zip_internal <- function(
     NA_real_
   }
 
+  pw <- resolve_password(password)
+  enc <- if (is.null(pw)) 0L else encryption_code(encryption)
+
   call_with_cleanup(
     c_R_zip_zip,
     enc2c(zipfile),
@@ -316,7 +356,9 @@ zip_internal <- function(
     fi$mtime,
     as.integer(compression_level),
     append,
-    total_bytes
+    total_bytes,
+    pw,
+    enc
   )
 
   invisible(zipfile)
@@ -336,9 +378,11 @@ zip_internal <- function(
 #'   ZIP specification prescribes for legacy entries. The value is passed
 #'   to [iconv()].
 #' @return A data frame with columns: `filename`, `compressed_size`,
-#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset` and
-#'   `type`. `type` is one of `file`, `block_device`, `character_device`,
-#'   `directory`, `FIFO`, `symlink` or `socket`.
+#'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset`,
+#'   `type` and `encryption`. `type` is one of `file`, `block_device`,
+#'   `character_device`, `directory`, `FIFO`, `symlink` or `socket`.
+#'   `encryption` is one of `none`, `aes128`, `aes192`, `aes256`,
+#'   `zipcrypto`, or `NA` if encrypted but the scheme cannot be determined.
 #'
 #' @family zip/unzip functions
 #' @export
@@ -364,6 +408,7 @@ zip_list <- function(zipfile, encoding = NULL) {
   df$offset <- res[[7]]
   # names are the same as in `fs::file_info()`
   df$type <- file_types[res[[8]] + 1L]
+  df$encryption <- encryption_types[res[[9]] + 2L]
   df
 }
 
@@ -375,6 +420,17 @@ file_types <- c(
   "FIFO",
   "symlink",
   "socket"
+)
+
+# C returns: -1=unknown, 0=none, 1=aes128, 2=aes192, 3=aes256, 4=zipcrypto
+# + 2L shifts to 1-based index
+encryption_types <- c(
+  NA_character_,
+  "none",
+  "aes128",
+  "aes192",
+  "aes256",
+  "zipcrypto"
 )
 
 #' Uncompress 'zip' Archives
@@ -399,6 +455,11 @@ file_types <- c(
 #' @param exdir Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
 #' @inheritParams zip_list
+#' @param password Password for decrypting encrypted entries. It can be a
+#'   string, a raw vector, or a function that returns one of these. If `NULL`
+#'   (the default), the `zip_password` option is used, or no password if that
+#'   is also `NULL`. The password is silently ignored for entries that are not
+#'   encrypted.
 #' @return A data frame with one row per extracted entry and columns,
 #'   invisibly: `filename` (path within the archive), `compressed_size`,
 #'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset`,
@@ -431,7 +492,8 @@ unzip <- function(
   overwrite = TRUE,
   junkpaths = FALSE,
   exdir = ".",
-  encoding = NULL
+  encoding = NULL,
+  password = NULL
 ) {
   if (startsWith(zipfile, "http://") || startsWith(zipfile, "https://")) {
     return(unzip_url(zipfile, files, overwrite, junkpaths, exdir, encoding))
@@ -452,6 +514,8 @@ unzip <- function(
   mkdirp(exdir)
   exdir <- enc2c(normalizePath(exdir))
 
+  pw <- resolve_password(password)
+
   res <- call_with_cleanup(
     c_R_zip_unzip,
     zipfile,
@@ -460,7 +524,8 @@ unzip <- function(
     junkpaths,
     exdir,
     encoding,
-    is_progress_enabled()
+    is_progress_enabled(),
+    pw
   )
 
   if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {

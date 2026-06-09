@@ -12,7 +12,7 @@
       withr::with_dir(dirname(tmp), zipr(zipfile, basename(tmp)))
     Condition
       Error in `zip_internal()`:
-      ! Cannot add file `<random>` to archive `<tempdir>/<tempfile>.zip` @rzip.c:199 (R_zip_error_handler)
+      ! Cannot add file `<random>` to archive `<tempdir>/<tempfile>.zip` @rzip.c:198 (R_zip_error_handler)
 
 # zip_list on a non-ZIP file includes miniz error
 
