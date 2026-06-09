@@ -29,7 +29,7 @@ test_that("a wrong password is caught by the verifier", {
 test_that("a non-ASCII (UTF-8) password round-trips", {
   pw <- "naïve-π" # naïve-π
   src <- withr::local_tempdir()
-  writeLines("bonjour", file.path(src, "fr.txt"))
+  writeLines("bonjour", file.path(src, "fr.txt"), sep = "\n")
   zipfile <- withr::local_tempfile(fileext = ".zip")
   zip_enc(zipfile, file.path(src, "fr.txt"), src, pw)
 
@@ -42,7 +42,7 @@ test_that("a non-ASCII (UTF-8) password round-trips", {
 test_that("directory entries are added unencrypted alongside encrypted files", {
   src <- withr::local_tempdir()
   dir.create(file.path(src, "d"))
-  writeLines("inside", file.path(src, "d", "f.txt"))
+  writeLines("inside", file.path(src, "d", "f.txt"), sep = "\n")
   zipfile <- withr::local_tempfile(fileext = ".zip")
   zip_internal(
     zipfile,
@@ -75,12 +75,12 @@ test_that("7-Zip can extract what we encrypt", {
     src <- withr::local_tempdir()
     names <- make_fixture_files(src)
     zipfile <- withr::local_tempfile(fileext = ".zip")
-    zip_enc(zipfile, file.path(src, names), src, "open sesame", enc)
+    zip_enc(zipfile, file.path(src, names), src, "opensesame", enc)
 
     exdir <- withr::local_tempdir()
     status <- suppressWarnings(system2(
       z,
-      c("x", "-y", "-p'open sesame'", paste0("-o", exdir), zipfile),
+      c("x", "-y", "-popensesame", paste0("-o", exdir), zipfile),
       stdout = FALSE,
       stderr = FALSE
     ))
@@ -161,7 +161,7 @@ test_that("ZipCrypto write is extractable by 7-Zip", {
   src <- withr::local_tempdir()
   names <- make_fixture_files(src)
   zipfile <- withr::local_tempfile(fileext = ".zip")
-  zip_enc(zipfile, file.path(src, names), src, "open sesame", "zipcrypto")
+  zip_enc(zipfile, file.path(src, names), src, "opensesame", "zipcrypto")
 
   # zip_list can read the encrypted central directory
   lst <- zip_list(zipfile)
@@ -172,7 +172,7 @@ test_that("ZipCrypto write is extractable by 7-Zip", {
   exdir <- withr::local_tempdir()
   status <- suppressWarnings(system2(
     z,
-    c("x", "-y", "-p'open sesame'", paste0("-o", exdir), zipfile),
+    c("x", "-y", "-popensesame", paste0("-o", exdir), zipfile),
     stdout = FALSE,
     stderr = FALSE
   ))
