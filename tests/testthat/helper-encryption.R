@@ -95,12 +95,13 @@ list_local_headers <- function(zipfile) {
 }
 
 seven_zip <- function() {
+  testthat::skip_on_cran()
   z <- Sys.which("7zz")
   if (!nzchar(z)) {
     z <- Sys.which("7z")
   }
   if (!nzchar(z)) {
-    testthat::skip("7-Zip (7zz/7z) not available")
+    stop("7-Zip (7zz/7z) not available")
   }
   z
 }
