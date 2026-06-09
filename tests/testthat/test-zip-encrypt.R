@@ -430,7 +430,12 @@ test_that("zipr() with password encrypts", {
   src <- withr::local_tempdir()
   writeLines("hello zipr", file.path(src, "b.txt"))
   zipfile <- withr::local_tempfile(fileext = ".zip")
-  zipr(zipfile, file.path(src, "b.txt"), password = "zipr-pass", encryption = "aes128")
+  zipr(
+    zipfile,
+    file.path(src, "b.txt"),
+    password = "zipr-pass",
+    encryption = "aes128"
+  )
 
   lst <- zip_list(zipfile)
   expect_equal(lst$encryption, "aes128")
