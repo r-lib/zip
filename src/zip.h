@@ -27,8 +27,11 @@ typedef enum zip_error_codes {
   R_ZIP_ECREATE      = 15,
   R_ZIP_EOPENX       = 16,
   R_ZIP_FILESIZE     = 17,
-  R_ZIP_ECREATELINK  = 18,
-  R_ZIP_EENCRYPT     = 19
+  R_ZIP_ECREATELINK    = 18,
+  R_ZIP_EENCRYPT       = 19,
+  R_ZIP_EWRONGPASSWORD = 20,
+  R_ZIP_EBADHMAC       = 21,
+  R_ZIP_ENOPASSWORD    = 22
 } zip_error_codes_t;
 
 /* Encryption scheme for zip_zip(). The non-zero values double as the WinZip
@@ -80,6 +83,10 @@ FILE* zip_long_wfopen(const wchar_t *filename,
 #define ZIP__WRITE  L"wb"
 #define ZIP__APPEND L"r+b"
 
+/* Platform-portable 64-bit fseek / ftell. */
+#define zip_fseek(fh, ofs, whence) _fseeki64((fh), (__int64)(ofs), (whence))
+#define zip_ftell(fh)              _ftelli64(fh)
+
 #else
 
 #define zip_char_t char
@@ -88,7 +95,13 @@ FILE* zip_long_wfopen(const wchar_t *filename,
 #define ZIP__WRITE  "wb"
 #define ZIP__APPEND "r+b"
 
+#define zip_fseek(fh, ofs, whence) fseek((fh), (long)(ofs), (whence))
+#define zip_ftell(fh)              ftell(fh)
+
 #endif
+
+/* Absolute seek from start of file (SEEK_SET). */
+#define zip_fseek64(fh, ofs) zip_fseek((fh), (ofs), SEEK_SET)
 
 /* Called once per extracted entry after the entry is fully written.
    n  = total number of entries being extracted
@@ -108,7 +121,8 @@ typedef void (*zip_entry_fn)(
 int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 	      int coverwrite, int cjunkpaths, const char *exdir,
 	      zip_decode_fn decode_fn, void *decode_data,
-	      zip_entry_fn entry_fn, void *entry_data);
+	      zip_entry_fn entry_fn, void *entry_data,
+	      const unsigned char *cpassword, size_t cpassword_len);
 
 char *zip_cp437_to_utf8(const char *src);
 

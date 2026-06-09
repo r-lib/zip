@@ -85,8 +85,6 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   wchar_t *uzipfile = NULL;
 
 #ifdef _WIN32
-  #define R_ZIP_FSEEK64 _fseeki64
-  #define R_ZIP_FTELL64 _ftelli64
   size_t uzipfile_len = 0;
   if (zip__utf8_to_utf16(czipfile, &uzipfile, &uzipfile_len)) {
     if (uzipfile) free(uzipfile);
@@ -94,8 +92,6 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
   }
   fh = zip_long_wfopen(uzipfile, L"rb");
 #else
-  #define R_ZIP_FSEEK64 fseek
-  #define R_ZIP_FTELL64 ftell
   fh = fopen(czipfile, "rb");
 #endif
 
@@ -104,9 +100,9 @@ SEXP R_zip_list(SEXP zipfile, SEXP encoding) {
     R_THROW_ERROR("Cannot open zip file `%s`", czipfile);
   }
 
-  R_ZIP_FSEEK64(fh, 0, SEEK_END);
-  mz_uint64 file_size = R_ZIP_FTELL64(fh);
-  R_ZIP_FSEEK64(fh, 0, SEEK_SET);
+  zip_fseek(fh, 0, SEEK_END);
+  mz_uint64 file_size = zip_ftell(fh);
+  zip_fseek64(fh, 0);
 
   memset(&zip_archive, 0, sizeof(zip_archive));
   status = mz_zip_reader_init_cfile(&zip_archive, fh, file_size, 0);
@@ -325,7 +321,7 @@ static void r_unzip_entry_fn(int n, int i,
 }
 
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
-		 SEXP exdir, SEXP encoding, SEXP show_progress) {
+		 SEXP exdir, SEXP encoding, SEXP show_progress, SEXP password) {
 
   const char *czipfile = CHAR(STRING_ELT(zipfile, 0));
   int coverwrite = LOGICAL(overwrite)[0];
@@ -333,6 +329,8 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   const char *cexdir = CHAR(STRING_ELT(exdir, 0));
   const char *cencoding = isNull(encoding) ? NULL : CHAR(STRING_ELT(encoding, 0));
   int cshow_progress = LOGICAL(show_progress)[0];
+  const unsigned char *cpassword = isNull(password) ? NULL : RAW(password);
+  size_t cpassword_len = isNull(password) ? 0 : (size_t) LENGTH(password);
   if (r_check_encoding(cencoding))
     R_THROW_ERROR("zip: unsupported encoding: '%s'", cencoding);
   int allfiles = isNull(files);
@@ -391,7 +389,8 @@ SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
   zip_set_error_handler(R_zip_error_handler);
   zip_unzip(czipfile, cfiles, n, coverwrite, cjunkpaths, cexdir,
             cencoding ? r_decode_filename : NULL, (void *) cencoding,
-            r_unzip_entry_fn, &data);
+            r_unzip_entry_fn, &data,
+            cpassword, cpassword_len);
 
 #ifdef _WIN32
   if (data.path_utf8) free(data.path_utf8);

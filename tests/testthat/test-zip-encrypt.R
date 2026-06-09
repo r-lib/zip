@@ -185,3 +185,144 @@ test_that("ZipCrypto write is extractable by 7-Zip", {
     )
   }
 })
+
+# ---- Step 3: reader/extract path ----------------------------------------
+
+test_that("unzip() round-trips AES-encrypted archives (zip then unzip)", {
+  for (enc in c("aes256", "aes128")) {
+    src <- withr::local_tempdir()
+    names <- make_fixture_files(src)
+    orig <- lapply(file.path(src, names), readBin, "raw", n = 1e6)
+    names(orig) <- names
+
+    zipfile <- withr::local_tempfile(fileext = ".zip")
+    zip_enc(zipfile, file.path(src, names), src, "open sesame", enc)
+
+    exdir <- withr::local_tempdir()
+    unzip(zipfile, exdir = exdir, password = "open sesame")
+
+    for (nm in names) {
+      expect_identical(
+        readBin(file.path(exdir, nm), "raw", n = 1e6),
+        orig[[nm]],
+        info = paste(enc, nm)
+      )
+    }
+  }
+})
+
+test_that("unzip() round-trips ZipCrypto-encrypted archives", {
+  src <- withr::local_tempdir()
+  names <- make_fixture_files(src)
+  orig <- lapply(file.path(src, names), readBin, "raw", n = 1e6)
+  names(orig) <- names
+
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip_enc(zipfile, file.path(src, names), src, "opensesame", "zipcrypto")
+
+  exdir <- withr::local_tempdir()
+  unzip(zipfile, exdir = exdir, password = "opensesame")
+
+  for (nm in names) {
+    expect_identical(
+      readBin(file.path(exdir, nm), "raw", n = 1e6),
+      orig[[nm]],
+      info = nm
+    )
+  }
+})
+
+test_that("unzip() rejects a wrong password with a clear error", {
+  src <- withr::local_tempdir()
+  writeLines("secret text", file.path(src, "a.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip_enc(zipfile, file.path(src, "a.txt"), src, "correct horse")
+
+  exdir <- withr::local_tempdir()
+  expect_error(
+    unzip(zipfile, exdir = exdir, password = "wrong"),
+    "Wrong password"
+  )
+})
+
+test_that("unzip() with wrong password fails on ZipCrypto archives", {
+  src <- withr::local_tempdir()
+  writeLines("secret text", file.path(src, "a.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip_enc(zipfile, file.path(src, "a.txt"), src, "correct horse", "zipcrypto")
+
+  exdir <- withr::local_tempdir()
+  expect_error(
+    unzip(zipfile, exdir = exdir, password = "wrong"),
+    "Wrong password|Authentication|extract"
+  )
+})
+
+test_that("unzip() errors clearly when no password given for encrypted entry", {
+  src <- withr::local_tempdir()
+  writeLines("secret text", file.path(src, "a.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip_enc(zipfile, file.path(src, "a.txt"), src, "pw")
+
+  exdir <- withr::local_tempdir()
+  expect_error(
+    unzip(zipfile, exdir = exdir),
+    "encrypted but no password"
+  )
+})
+
+test_that("unzip() extracts AES archives produced by 7-Zip (interop fixtures)", {
+  for (strength in c("aes256", "aes192", "aes128")) {
+    fixture <- test_path("fixtures", paste0(strength, ".zip"))
+    exdir <- withr::local_tempdir()
+    unzip(fixture, exdir = exdir, password = "secret")
+
+    expect_equal(
+      readLines(file.path(exdir, "a.txt")),
+      "first fixture file",
+      info = strength
+    )
+    expect_equal(
+      readLines(file.path(exdir, "sub", "b.txt")),
+      "second file in subdir",
+      info = strength
+    )
+    expect_equal(
+      length(readLines(file.path(exdir, "big.txt"))),
+      400L,
+      info = strength
+    )
+  }
+})
+
+test_that("unzip() extracts ZipCrypto archive produced by Info-ZIP (interop fixture)", {
+  fixture <- test_path("fixtures", "zipcrypto.zip")
+  exdir <- withr::local_tempdir()
+  unzip(fixture, exdir = exdir, password = "secret")
+
+  expect_equal(readLines(file.path(exdir, "a.txt")), "first fixture file")
+  expect_equal(readLines(file.path(exdir, "sub", "b.txt")), "second file in subdir")
+  expect_equal(length(readLines(file.path(exdir, "big.txt"))), 400L)
+})
+
+test_that("unzip() with password leaves unencrypted entries unaffected", {
+  src <- withr::local_tempdir()
+  writeLines("plain text", file.path(src, "a.txt"))
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  # create an unencrypted archive
+  zip_internal(
+    zipfile,
+    files = file.path(src, "a.txt"),
+    recurse = FALSE,
+    compression_level = 6,
+    append = FALSE,
+    root = src,
+    keep_path = FALSE,
+    include_directories = FALSE,
+    password = NULL
+  )
+  exdir <- withr::local_tempdir()
+  # password is ignored for unencrypted entries
+  unzip(zipfile, exdir = exdir, password = "ignored")
+  expect_identical(readLines(file.path(exdir, "a.txt")), "plain text")
+})

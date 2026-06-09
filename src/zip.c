@@ -75,30 +75,34 @@ char *zip_cp437_to_utf8(const char *src) {
 static char zip_error_buffer[ZIP_ERROR_BUFFER_SIZE];
 
 static const char *zip_error_strings[] = {
-  /* 0 R_ZIP_ESUCCESS     */ "Success",
-  /* 1 R_ZIP_EOPEN        */ "Cannot open zip file `%s` for reading",
-  /* 2 R_ZIP_ENOMEM       */ "Cannot extract zip file `%s`, out of memory",
-  /* 3 R_ZIP_ENOENTRY     */ "Cannot find file `%s` in zip archive `%s`",
-  /* 4 R_ZIP_EBROKEN      */ "Cannot extract zip archive `%s`",
-  /* 5 R_ZIP_EBROKENENTRY */ "Cannot extract entry `%s` from archive `%s`",
-  /* 6 R_ZIP_EOVERWRITE   */ "Not overwriting `%s` when extracting `%s`",
-  /* 7 R_ZIP_ECREATEDIR   */
+  /* 0 R_ZIP_ESUCCESS       */ "Success",
+  /* 1 R_ZIP_EOPEN          */ "Cannot open zip file `%s` for reading",
+  /* 2 R_ZIP_ENOMEM         */ "Cannot extract zip file `%s`, out of memory",
+  /* 3 R_ZIP_ENOENTRY       */ "Cannot find file `%s` in zip archive `%s`",
+  /* 4 R_ZIP_EBROKEN        */ "Cannot extract zip archive `%s`",
+  /* 5 R_ZIP_EBROKENENTRY   */ "Cannot extract entry `%s` from archive `%s`",
+  /* 6 R_ZIP_EOVERWRITE     */ "Not overwriting `%s` when extracting `%s`",
+  /* 7 R_ZIP_ECREATEDIR     */
      "Cannot create directory `%s` to extract `%s` from arghive `%s`",
-  /* 8 R_ZIP_ESETPERM     */
+  /* 8 R_ZIP_ESETPERM       */
      "Cannot set permissions for `%s` from archive `%s`",
-  /* 9 R_ZIP_ESETMTIME    */
+  /* 9 R_ZIP_ESETMTIME      */
       "Failed to set mtime on `%s` while extracting `%s`",
-  /*10 R_ZIP_EOPENWRITE   */ "Cannot open zip file `%s` for writing",
-  /*11 R_ZIP_EOPENWRITE   */ "Cannot open zip file `%s` for appending",
-  /*12 R_ZIP_EADDDIR      */ "Cannot add directory `%s` to archive `%s`",
-  /*13 R_ZIP_EADDFILE     */ "Cannot add file `%s` to archive `%s`",
-  /*14 R_ZIP_ESETZIPPERM  */
+  /*10 R_ZIP_EOPENWRITE     */ "Cannot open zip file `%s` for writing",
+  /*11 R_ZIP_EOPENAPPEND    */ "Cannot open zip file `%s` for appending",
+  /*12 R_ZIP_EADDDIR        */ "Cannot add directory `%s` to archive `%s`",
+  /*13 R_ZIP_EADDFILE       */ "Cannot add file `%s` to archive `%s`",
+  /*14 R_ZIP_ESETZIPPERM    */
       "Cannot set permission on file `%s` in archive `%s`",
-  /*15 R_ZIP_ECREATE      */ "Could not create zip archive `%s`",
-  /*16 R_ZIP_EOPENX       */ "Cannot extract file `%s`",
-  /*17 R_ZIP_FILESIZE     */ "Cannot determine size of `%s`",
-  /*18 R_ZIP_ECREATELINK  */ "Cannot create symlink `%s` in archive `%s`",
-  /*19 R_ZIP_EENCRYPT     */ "Cannot encrypt file `%s` in archive `%s`"
+  /*15 R_ZIP_ECREATE        */ "Could not create zip archive `%s`",
+  /*16 R_ZIP_EOPENX         */ "Cannot extract file `%s`",
+  /*17 R_ZIP_FILESIZE       */ "Cannot determine size of `%s`",
+  /*18 R_ZIP_ECREATELINK    */ "Cannot create symlink `%s` in archive `%s`",
+  /*19 R_ZIP_EENCRYPT       */ "Cannot encrypt file `%s` in archive `%s`",
+  /*20 R_ZIP_EWRONGPASSWORD */ "Wrong password for `%s` in archive `%s`",
+  /*21 R_ZIP_EBADHMAC       */ "Authentication failed for `%s` in archive `%s`",
+  /*22 R_ZIP_ENOPASSWORD    */
+      "`%s` in `%s` is encrypted but no password was provided"
 };
 
 static zip_error_handler_t *zip_error_handler = 0;
@@ -197,10 +201,294 @@ int zip_get_permissions(mz_zip_archive_file_stat *stat, mode_t *mode) {
   return 0;
 }
 
+/* WinZip AES entry constants used by both the reader and writer helpers. */
+#define ZIP_AES_VENDOR_VERSION 2
+#define ZIP_AES_AUTHCODE_LEN   10
+#define ZIP_WINZIP_METHOD      99
+#define ZIP_WINZIP_EXTRA_LEN   11
+
+/* Inflate `in_len` bytes of raw-deflate data into a freshly malloc'd buffer.
+   The caller provides the expected uncompressed size `uncomp_len` so we can
+   allocate exactly right.  Returns 0 on success; *out (caller must free) and
+   *out_len are set.  Returns non-zero on any decompression error. */
+static int zip_inflate_raw(const unsigned char *in, size_t in_len,
+                            size_t uncomp_len,
+                            unsigned char **out, size_t *out_len) {
+  mz_stream stream;
+  unsigned char *buf;
+
+  buf = malloc(uncomp_len > 0 ? uncomp_len : 1);
+  if (!buf) return 1;
+
+  memset(&stream, 0, sizeof(stream));
+  stream.next_in   = in;
+  stream.avail_in  = (mz_uint32) in_len;
+  stream.next_out  = buf;
+  stream.avail_out = (mz_uint32) uncomp_len;
+
+  if (mz_inflateInit2(&stream, -MZ_DEFAULT_WINDOW_BITS) != MZ_OK) {
+    free(buf);
+    return 1;
+  }
+  if (mz_inflate(&stream, MZ_FINISH) != MZ_STREAM_END) {
+    mz_inflateEnd(&stream);
+    free(buf);
+    return 1;
+  }
+  mz_inflateEnd(&stream);
+  *out     = buf;
+  *out_len = (size_t) stream.total_out;
+  return 0;
+}
+
+/* Read the local header at `local_hdr_ofs` in `fh`.  Returns the byte offset
+   of the entry's data payload in *data_ofs_out, the raw extra-field bytes in
+   *extra_out (caller must free; length is *extra_len_out), and 0 on success. */
+static int zip_read_local_header(FILE *fh, mz_uint64 local_hdr_ofs,
+                                  mz_uint64 *data_ofs_out,
+                                  unsigned char **extra_out,
+                                  mz_uint16 *extra_len_out) {
+  unsigned char lhdr[30];
+  if (zip_fseek64(fh, local_hdr_ofs) != 0) return 1;
+  if (fread(lhdr, 1, 30, fh) != 30) return 1;
+  /* validate local file header signature */
+  if (lhdr[0] != 0x50 || lhdr[1] != 0x4b || lhdr[2] != 0x03 || lhdr[3] != 0x04)
+    return 1;
+
+  mz_uint16 fname_len = (mz_uint16)(lhdr[26] | (lhdr[27] << 8));
+  mz_uint16 extra_len = (mz_uint16)(lhdr[28] | (lhdr[29] << 8));
+
+  unsigned char *extra = NULL;
+  if (extra_len > 0) {
+    /* skip past the filename to reach the extra field */
+    if (zip_fseek64(fh, local_hdr_ofs + 30 + fname_len) != 0) return 1;
+    extra = malloc(extra_len);
+    if (!extra) return 1;
+    if (fread(extra, 1, extra_len, fh) != extra_len) {
+      free(extra);
+      return 1;
+    }
+  }
+
+  *data_ofs_out  = local_hdr_ofs + 30 + fname_len + extra_len;
+  *extra_out     = extra;
+  *extra_len_out = extra_len;
+  return 0;
+}
+
+/* Scan a local-header extra field for the WinZip AES "0x9901" record.
+   Returns 0 and sets *strength and *real_method if found, 1 if absent. */
+static int zip_find_aes_extra(const unsigned char *extra, mz_uint16 extra_len,
+                               int *strength, int *real_method) {
+  mz_uint16 p = 0;
+  while (p + 4 <= extra_len) {
+    mz_uint16 id = (mz_uint16)(extra[p] | (extra[p + 1] << 8));
+    mz_uint16 sz = (mz_uint16)(extra[p + 2] | (extra[p + 3] << 8));
+    if (id == 0x9901 && sz >= 7 && p + 4 + sz <= extra_len) {
+      *strength    = extra[p + 8];
+      *real_method = extra[p + 9] | (extra[p + 10] << 8);
+      return 0;
+    }
+    p += (mz_uint16)(4 + sz);
+  }
+  return 1;
+}
+
+/* Decrypt (and inflate if needed) one encrypted entry.  The entry's raw
+   payload is read directly from `zfh` using the local-header offset in
+   `file_stat`.  On success returns 0 and sets *out and *out_len (caller frees).
+   On failure returns non-zero and sets *errcode to the appropriate
+   R_ZIP_E* constant. */
+static int zip_decrypt_to_mem(FILE *zfh,
+                               const mz_zip_archive_file_stat *fs,
+                               const unsigned char *pw, size_t pwlen,
+                               unsigned char **out, size_t *out_len,
+                               int *errcode) {
+  mz_uint64 data_ofs = 0;
+  unsigned char *extra = NULL;
+  mz_uint16 extra_len = 0;
+
+  if (zip_read_local_header(zfh, fs->m_local_header_ofs,
+                             &data_ofs, &extra, &extra_len)) {
+    *errcode = R_ZIP_EBROKENENTRY;
+    return 1;
+  }
+
+  /* Read the raw entry payload (comp_size bytes). */
+  size_t raw_len = (size_t) fs->m_comp_size;
+  unsigned char *raw = malloc(raw_len > 0 ? raw_len : 1);
+  if (!raw) {
+    if (extra) free(extra);
+    *errcode = R_ZIP_ENOMEM;
+    return 1;
+  }
+  if (raw_len > 0) {
+    if (zip_fseek64(zfh, data_ofs) != 0 ||
+        fread(raw, 1, raw_len, zfh) != raw_len) {
+      free(raw);
+      if (extra) free(extra);
+      *errcode = R_ZIP_EBROKENENTRY;
+      return 1;
+    }
+  }
+
+  unsigned char *plain = NULL;
+  size_t plain_len = 0;
+
+  if (fs->m_method == ZIP_WINZIP_METHOD) {
+    /* ---- WinZip AES ---- */
+    int strength = 0, real_method = -1;
+    if (!extra || zip_find_aes_extra(extra, extra_len, &strength, &real_method)) {
+      free(raw);
+      if (extra) free(extra);
+      *errcode = R_ZIP_EBROKENENTRY;
+      return 1;
+    }
+    if (extra) { free(extra); extra = NULL; }
+
+    int salt_len = zip_winzip_salt_len(strength);
+    int key_len  = zip_winzip_key_len(strength);
+    if (salt_len < 0 || key_len < 0 ||
+        raw_len < (size_t)(salt_len + 2 + ZIP_AES_AUTHCODE_LEN)) {
+      free(raw);
+      *errcode = R_ZIP_EBROKENENTRY;
+      return 1;
+    }
+
+    unsigned char *salt         = raw;
+    unsigned char *file_verif   = raw + salt_len;
+    unsigned char *ct           = raw + salt_len + 2;
+    size_t         ct_len       = raw_len - (size_t)salt_len - 2 - ZIP_AES_AUTHCODE_LEN;
+    unsigned char *file_hmac    = ct + ct_len;
+
+    unsigned char enc_key[32], mac_key[32], verifier[2];
+    if (zip_winzip_aes_keys(pw, pwlen, salt, (size_t) salt_len, strength,
+                             enc_key, mac_key, verifier)) {
+      free(raw);
+      *errcode = R_ZIP_EBROKENENTRY;
+      return 1;
+    }
+
+    if (verifier[0] != file_verif[0] || verifier[1] != file_verif[1]) {
+      memset(enc_key, 0, sizeof(enc_key));
+      memset(mac_key, 0, sizeof(mac_key));
+      free(raw);
+      *errcode = R_ZIP_EWRONGPASSWORD;
+      return 1;
+    }
+
+    /* HMAC-SHA1 is over the ciphertext; verify before decrypting. */
+    unsigned char hmac[20];
+    if (zip_hmac_sha1(mac_key, (size_t) key_len, ct, ct_len, hmac)) {
+      memset(enc_key, 0, sizeof(enc_key));
+      memset(mac_key, 0, sizeof(mac_key));
+      free(raw);
+      *errcode = R_ZIP_EBROKENENTRY;
+      return 1;
+    }
+    if (memcmp(hmac, file_hmac, ZIP_AES_AUTHCODE_LEN) != 0) {
+      memset(enc_key, 0, sizeof(enc_key));
+      memset(mac_key, 0, sizeof(mac_key));
+      free(raw);
+      *errcode = R_ZIP_EBADHMAC;
+      return 1;
+    }
+    /* Decrypt ciphertext in-place. */
+    if (zip_aes_ctr_crypt(enc_key, key_len * 8, ct, ct, ct_len)) {
+      memset(enc_key, 0, sizeof(enc_key));
+      memset(mac_key, 0, sizeof(mac_key));
+      free(raw);
+      *errcode = R_ZIP_EBROKENENTRY;
+      return 1;
+    }
+    memset(enc_key, 0, sizeof(enc_key));
+    memset(mac_key, 0, sizeof(mac_key));
+
+    if (real_method == MZ_DEFLATED) {
+      if (zip_inflate_raw(ct, ct_len, (size_t) fs->m_uncomp_size,
+                           &plain, &plain_len)) {
+        free(raw);
+        *errcode = R_ZIP_EBROKENENTRY;
+        return 1;
+      }
+    } else {
+      plain = malloc(ct_len > 0 ? ct_len : 1);
+      if (!plain) {
+        free(raw);
+        *errcode = R_ZIP_ENOMEM;
+        return 1;
+      }
+      memcpy(plain, ct, ct_len);
+      plain_len = ct_len;
+    }
+
+  } else {
+    /* ---- ZipCrypto (Traditional PKWARE) ---- */
+    if (extra) { free(extra); extra = NULL; }
+    if (raw_len < 12) {
+      free(raw);
+      *errcode = R_ZIP_EBROKENENTRY;
+      return 1;
+    }
+
+    zip_zipcrypto_keys_t keys;
+    zip_zipcrypto_init(&keys, pw, pwlen);
+
+    /* Decrypt the 12-byte encryption header, then decrypt the payload.
+       The check byte (hdr[11]) varies by implementation (CRC high byte vs.
+       DOS time high byte), so we skip that fast-reject and rely entirely on
+       the CRC-32 verification after decompression. */
+    unsigned char hdr[12];
+    memcpy(hdr, raw, 12);
+    zip_zipcrypto_decrypt(&keys, hdr, 12);
+
+    /* Decrypt the compressed data in-place. */
+    zip_zipcrypto_decrypt(&keys, raw + 12, raw_len - 12);
+    memset(&keys, 0, sizeof(keys));
+
+    unsigned char *compressed = raw + 12;
+    size_t comp_len = raw_len - 12;
+
+    if (fs->m_method == MZ_DEFLATED) {
+      if (zip_inflate_raw(compressed, comp_len, (size_t) fs->m_uncomp_size,
+                           &plain, &plain_len)) {
+        free(raw);
+        *errcode = R_ZIP_EBROKENENTRY;
+        return 1;
+      }
+    } else {
+      plain = malloc(comp_len > 0 ? comp_len : 1);
+      if (!plain) {
+        free(raw);
+        *errcode = R_ZIP_ENOMEM;
+        return 1;
+      }
+      memcpy(plain, compressed, comp_len);
+      plain_len = comp_len;
+    }
+
+    /* Verify CRC-32 of the recovered plaintext. */
+    mz_uint32 crc = (mz_uint32) mz_crc32(mz_crc32(0, NULL, 0),
+                                           plain, plain_len);
+    if (crc != fs->m_crc32) {
+      free(plain);
+      free(raw);
+      *errcode = R_ZIP_EWRONGPASSWORD;
+      return 1;
+    }
+  }
+
+  free(raw);
+  *out     = plain;
+  *out_len = plain_len;
+  return 0;
+}
+
 int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
 	      int coverwrite, int cjunkpaths, const char *cexdir,
 	      zip_decode_fn decode_fn, void *decode_data,
-	      zip_entry_fn entry_fn, void *entry_data) {
+	      zip_entry_fn entry_fn, void *entry_data,
+	      const unsigned char *cpassword, size_t cpassword_len) {
 
   int allfiles = cfiles == NULL;
   int i, n;
@@ -293,36 +581,60 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
         fclose(zfh);
         ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
       }
-      char *tmpbuf = malloc(file_stat.m_uncomp_size + 1);
-      if (!tmpbuf) {
-	      mz_zip_reader_end(&zip_archive);
-	      if (buffer) free(buffer);
-	      fclose(zfh);
-	      ZIP_ERROR(R_ZIP_ENOMEM, key, czipfile);
+      char *tmpbuf;
+      if (file_stat.m_is_encrypted) {
+        if (!cpassword) {
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(zfh);
+          ZIP_ERROR(R_ZIP_ENOPASSWORD, key, czipfile);
+        }
+        unsigned char *plain = NULL;
+        size_t plain_len = 0;
+        int errcode = R_ZIP_EBROKENENTRY;
+        if (zip_decrypt_to_mem(zfh, &file_stat, cpassword, cpassword_len,
+                                &plain, &plain_len, &errcode)) {
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(zfh);
+          ZIP_ERROR(errcode, key, czipfile);
+        }
+        char *t = realloc(plain, plain_len + 1);
+        if (!t) {
+          free(plain);
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(zfh);
+          ZIP_ERROR(R_ZIP_ENOMEM, czipfile);
+        }
+        t[plain_len] = '\0';
+        tmpbuf = t;
+      } else {
+        tmpbuf = malloc(file_stat.m_uncomp_size + 1);
+        if (!tmpbuf) {
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(zfh);
+          ZIP_ERROR(R_ZIP_ENOMEM, key, czipfile);
+        }
+        if (!mz_zip_reader_extract_to_mem(
+          &zip_archive, idx, tmpbuf, file_stat.m_uncomp_size, 0)) {
+          const char *mz_err =
+            mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
+          free(tmpbuf);
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(zfh);
+          ZIP_ERROR_MZ(R_ZIP_EBROKENENTRY, mz_err, key, czipfile);
+        }
+        tmpbuf[file_stat.m_uncomp_size] = '\0';
       }
-
-      if (!mz_zip_reader_extract_to_mem(
-        &zip_archive,
-        idx,
-        tmpbuf,
-        file_stat.m_uncomp_size,
-        0
-      )) {
-        const char *mz_err =
-          mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
-        free(tmpbuf);
-	      mz_zip_reader_end(&zip_archive);
-	      if (buffer) free(buffer);
-	      fclose(zfh);
-	      ZIP_ERROR_MZ(R_ZIP_EBROKENENTRY, mz_err, key, czipfile);
-      }
-      tmpbuf[file_stat.m_uncomp_size] = '\0';
       if (symlink(tmpbuf, buffer)) {
         free(tmpbuf);
-	      mz_zip_reader_end(&zip_archive);
-	      if (buffer) free(buffer);
-	      fclose(zfh);
-	      ZIP_ERROR(R_ZIP_ECREATELINK, key, czipfile);
+        mz_zip_reader_end(&zip_archive);
+        if (buffer) free(buffer);
+        fclose(zfh);
+        ZIP_ERROR(R_ZIP_ECREATELINK, key, czipfile);
       }
       free(tmpbuf);
 
@@ -356,14 +668,44 @@ int zip_unzip(const char *czipfile, const char **cfiles, int num_files,
         ZIP_ERROR(R_ZIP_EOPENX, key);
       }
 
-      if (!mz_zip_reader_extract_to_cfile(&zip_archive, idx, fh, 0)) {
-	      const char *mz_err =
-	        mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
-	      mz_zip_reader_end(&zip_archive);
-	      if (buffer) free(buffer);
-	      fclose(fh);
-	      fclose(zfh);
-	      ZIP_ERROR_MZ(R_ZIP_EBROKENENTRY, mz_err, key, czipfile);
+      if (file_stat.m_is_encrypted) {
+        if (!cpassword) {
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(fh);
+          fclose(zfh);
+          ZIP_ERROR(R_ZIP_ENOPASSWORD, key, czipfile);
+        }
+        unsigned char *plain = NULL;
+        size_t plain_len = 0;
+        int errcode = R_ZIP_EBROKENENTRY;
+        if (zip_decrypt_to_mem(zfh, &file_stat, cpassword, cpassword_len,
+                                &plain, &plain_len, &errcode)) {
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(fh);
+          fclose(zfh);
+          ZIP_ERROR(errcode, key, czipfile);
+        }
+        if (plain_len > 0 && fwrite(plain, 1, plain_len, fh) != plain_len) {
+          free(plain);
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(fh);
+          fclose(zfh);
+          ZIP_ERROR(R_ZIP_EBROKENENTRY, key, czipfile);
+        }
+        free(plain);
+      } else {
+        if (!mz_zip_reader_extract_to_cfile(&zip_archive, idx, fh, 0)) {
+          const char *mz_err =
+            mz_zip_get_error_string(mz_zip_get_last_error(&zip_archive));
+          mz_zip_reader_end(&zip_archive);
+          if (buffer) free(buffer);
+          fclose(fh);
+          fclose(zfh);
+          ZIP_ERROR_MZ(R_ZIP_EBROKENENTRY, mz_err, key, czipfile);
+        }
       }
       fclose(fh);
     }
@@ -481,13 +823,6 @@ static size_t zip_read_with_progress(void *pOpaque, mz_uint64 file_ofs,
   }
   return ret;
 }
-
-/* WinZip AES constants. We emit AE-2 (vendor version 2), which stores the
-   CRC-32 as 0 and relies on the HMAC-SHA1 authentication code for integrity. */
-#define ZIP_AES_VENDOR_VERSION 2
-#define ZIP_AES_AUTHCODE_LEN   10
-#define ZIP_WINZIP_METHOD      99
-#define ZIP_WINZIP_EXTRA_LEN   11
 
 /* Build the WinZip AES "0x9901" extra field (11 bytes). `real_method` is the
    compression method actually used for the data (0 = stored, 8 = deflated). */

@@ -406,6 +406,11 @@ file_types <- c(
 #' @param exdir Directory to uncompress the archive to. If it does not
 #'   exist, it will be created.
 #' @inheritParams zip_list
+#' @param password Password for decrypting encrypted entries. It can be a
+#'   string, a raw vector, or a function that returns one of these. If `NULL`
+#'   (the default), the `zip_password` option is used, or no password if that
+#'   is also `NULL`. The password is silently ignored for entries that are not
+#'   encrypted.
 #' @return A data frame with one row per extracted entry and columns,
 #'   invisibly: `filename` (path within the archive), `compressed_size`,
 #'   `uncompressed_size`, `timestamp`, `permissions`, `crc32`, `offset`,
@@ -438,7 +443,8 @@ unzip <- function(
   overwrite = TRUE,
   junkpaths = FALSE,
   exdir = ".",
-  encoding = NULL
+  encoding = NULL,
+  password = NULL
 ) {
   if (startsWith(zipfile, "http://") || startsWith(zipfile, "https://")) {
     return(unzip_url(zipfile, files, overwrite, junkpaths, exdir, encoding))
@@ -459,6 +465,8 @@ unzip <- function(
   mkdirp(exdir)
   exdir <- enc2c(normalizePath(exdir))
 
+  pw <- resolve_password(password)
+
   res <- call_with_cleanup(
     c_R_zip_unzip,
     zipfile,
@@ -467,7 +475,8 @@ unzip <- function(
     junkpaths,
     exdir,
     encoding,
-    is_progress_enabled()
+    is_progress_enabled(),
+    pw
   )
 
   if (Sys.getenv("PKGCACHE_NO_PILLAR") == "") {

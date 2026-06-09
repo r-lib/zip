@@ -66,4 +66,9 @@ void zip_zipcrypto_init(zip_zipcrypto_keys_t *keys,
 void zip_zipcrypto_encrypt(zip_zipcrypto_keys_t *keys,
                            unsigned char *buf, size_t len);
 
+/* Decrypt `len` bytes in-place (keystream XOR; key updated with plaintext).
+   Unlike encrypt, the key is updated with the recovered plaintext byte. */
+void zip_zipcrypto_decrypt(zip_zipcrypto_keys_t *keys,
+                           unsigned char *buf, size_t len);
+
 #endif /* ZIP_CRYPTO_H */

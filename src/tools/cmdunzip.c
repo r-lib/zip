@@ -51,7 +51,8 @@ int MAIN(int argc, CHAR* argv[]) {
   zip_unzip(zipfile, /* cfiles= */ 0, /* num_files= */ 0,
 	    /* coverwrite= */ 1, /* cjunkpaths= */ 0, /* exdir= */ exdir,
 	    /* decode_fn= */ NULL, /* decode_data= */ NULL,
-	    /* entry_fn= */ NULL, /* entry_data= */ NULL);
+	    /* entry_fn= */ NULL, /* entry_data= */ NULL,
+	    /* cpassword= */ NULL, /* cpassword_len= */ 0);
 
 #ifdef _WIN32
 cleanup:

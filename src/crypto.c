@@ -154,6 +154,16 @@ void zip_zipcrypto_encrypt(zip_zipcrypto_keys_t *keys,
   }
 }
 
+void zip_zipcrypto_decrypt(zip_zipcrypto_keys_t *keys,
+                           unsigned char *buf, size_t len) {
+  size_t i;
+  for (i = 0; i < len; i++) {
+    unsigned char p = buf[i] ^ zipcrypto_ks_byte(keys);
+    buf[i] = p;
+    zipcrypto_update_keys(keys, p);
+  }
+}
+
 int zip_winzip_aes_keys(const unsigned char *pw, size_t pwlen,
                         const unsigned char *salt, size_t saltlen,
                         int strength,
