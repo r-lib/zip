@@ -250,12 +250,8 @@ enc2c <- function(x) {
   }
 }
 
-# Resolve the `password` argument of zip() to a raw vector of password bytes,
-# or NULL for no encryption. Accepts NULL, a length-1 character string, a raw
-# vector, or a function/callback returning a string or raw vector (so the
-# password need not be stored in a variable). Text passwords are encoded as
-# UTF-8 bytes, matching WinZip's password byte convention.
 resolve_password <- function(password) {
+  password <- password %||% getOption("zip_password")
   if (is.null(password)) {
     return(NULL)
   }
@@ -279,9 +275,6 @@ resolve_password <- function(password) {
   charToRaw(enc2utf8(password))
 }
 
-# Map the `encryption` argument to the integer scheme code understood by the C
-# layer (see zip_encryption_t in src/zip.h): aes256 = 3, aes128 = 1. AES-192
-# (code 2) is intentionally not offered. ZipCrypto is not implemented yet.
 encryption_code <- function(encryption) {
   encryption <- match.arg(encryption, c("aes256", "aes128", "zipcrypto"))
   switch(

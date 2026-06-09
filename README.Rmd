@@ -115,6 +115,8 @@ variable to `TRUE`.
 
 #### Options
 
+* `zip_password`: The default password for ZIP encryption and decryption.
+  Can be set to a string, a raw vector, or a function returning one.
 * `zip_progress`: If set to `TRUE`, progress bars are enabled. Takes
   precedence over the `ZIP_PROGRESS` environment variable.
 
