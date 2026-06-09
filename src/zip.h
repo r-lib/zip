@@ -34,10 +34,11 @@ typedef enum zip_error_codes {
 /* Encryption scheme for zip_zip(). The non-zero values double as the WinZip
    AES strength byte (1 = AES-128, 2 = AES-192, 3 = AES-256). */
 typedef enum zip_encryption {
-  ZIP_ENCRYPTION_NONE   = 0,
-  ZIP_ENCRYPTION_AES128 = 1,
-  ZIP_ENCRYPTION_AES192 = 2,
-  ZIP_ENCRYPTION_AES256 = 3
+  ZIP_ENCRYPTION_NONE      = 0,
+  ZIP_ENCRYPTION_AES128    = 1,
+  ZIP_ENCRYPTION_AES192    = 2,
+  ZIP_ENCRYPTION_AES256    = 3,
+  ZIP_ENCRYPTION_ZIPCRYPTO = 4
 } zip_encryption_t;
 
 typedef void zip_error_handler_t(const char *reason, const char *file,

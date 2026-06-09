@@ -112,6 +112,48 @@ int zip_hmac_sha1(const unsigned char *key, size_t keylen,
   return mbedtls_md_hmac(info, key, keylen, data, datalen, out);
 }
 
+/* ---- ZipCrypto (Traditional PKWARE) stream cipher ---- */
+
+static uint32_t zipcrypto_crc32_byte(uint32_t crc, unsigned char b) {
+  int i;
+  crc ^= b;
+  for (i = 0; i < 8; i++)
+    crc = (crc >> 1) ^ (0xEDB88320u & (uint32_t)(-(int)(crc & 1u)));
+  return crc;
+}
+
+static void zipcrypto_update_keys(zip_zipcrypto_keys_t *keys, unsigned char c) {
+  keys->k0 = zipcrypto_crc32_byte(keys->k0, c);
+  keys->k1 = keys->k1 + (keys->k0 & 0xffu);
+  keys->k1 = keys->k1 * 134775813u + 1u;
+  keys->k2 = zipcrypto_crc32_byte(keys->k2, (unsigned char)(keys->k1 >> 24));
+}
+
+static unsigned char zipcrypto_ks_byte(const zip_zipcrypto_keys_t *keys) {
+  uint32_t tmp = (keys->k2 & 0xffffu) | 2u;
+  return (unsigned char)((tmp * (tmp ^ 1u)) >> 8);
+}
+
+void zip_zipcrypto_init(zip_zipcrypto_keys_t *keys,
+                        const unsigned char *pw, size_t pwlen) {
+  size_t i;
+  keys->k0 = 305419896u;
+  keys->k1 = 591751049u;
+  keys->k2 = 878082192u;
+  for (i = 0; i < pwlen; i++)
+    zipcrypto_update_keys(keys, pw[i]);
+}
+
+void zip_zipcrypto_encrypt(zip_zipcrypto_keys_t *keys,
+                           unsigned char *buf, size_t len) {
+  size_t i;
+  for (i = 0; i < len; i++) {
+    unsigned char p = buf[i];
+    buf[i] = p ^ zipcrypto_ks_byte(keys);
+    zipcrypto_update_keys(keys, p);
+  }
+}
+
 int zip_winzip_aes_keys(const unsigned char *pw, size_t pwlen,
                         const unsigned char *salt, size_t saltlen,
                         int strength,

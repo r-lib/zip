@@ -503,6 +503,93 @@ static void zip_winzip_extra_field(unsigned char out[ZIP_WINZIP_EXTRA_LEN],
   out[10] = (unsigned char) ((real_method >> 8) & 0xFF);
 }
 
+#define ZIP_ZIPCRYPTO_HEADER_LEN 12
+
+/* Compress (raw deflate, falling back to stored), apply ZipCrypto (Traditional
+   PKWARE) encryption, and add `plain` to the open writer `wtr` as an entry
+   under `key`. On a miniz failure sets `*mz_err` and returns 2; on a crypto /
+   allocation failure returns 1; on success returns 0. */
+static int zip_writer_add_zipcrypto(mz_zip_archive *wtr, const char *key,
+                                    const unsigned char *plain, size_t plain_len,
+                                    MZ_TIME_T *cmtime, int level,
+                                    const unsigned char *pw, size_t pwlen,
+                                    const char **mz_err) {
+  unsigned char *comp = NULL, *payload = NULL;
+  const unsigned char *data;
+  size_t data_len, payload_len;
+  int real_method = 0, ret = 1;
+  unsigned char enc_header[ZIP_ZIPCRYPTO_HEADER_LEN];
+  zip_zipcrypto_keys_t keys;
+  mz_uint32 crc32;
+
+  *mz_err = NULL;
+
+  /* 1. Compress */
+  if (level > 0 && plain_len > 3) {
+    size_t out_len = 0;
+    void *p = tdefl_compress_mem_to_heap(
+      plain, plain_len, &out_len,
+      tdefl_create_comp_flags_from_zip_params(level, -15, MZ_DEFAULT_STRATEGY));
+    if (p != NULL && out_len < plain_len) {
+      comp = (unsigned char *) p;
+      data = comp;
+      data_len = out_len;
+      real_method = MZ_DEFLATED;
+    } else {
+      if (p != NULL) free(p);
+      data = plain;
+      data_len = plain_len;
+    }
+  } else {
+    data = plain;
+    data_len = plain_len;
+  }
+
+  /* 2. CRC-32 of the uncompressed data (stored unencrypted in the local header
+     per APPNOTE, and used as the 12th byte of the encryption header). */
+  crc32 = (mz_uint32) mz_crc32(mz_crc32(0, NULL, 0), plain, plain_len);
+
+  /* 3. 12-byte encryption header: 11 random bytes + check byte (CRC high byte) */
+  if (zip_rand_bytes(enc_header, ZIP_ZIPCRYPTO_HEADER_LEN - 1)) goto done;
+  enc_header[ZIP_ZIPCRYPTO_HEADER_LEN - 1] = (unsigned char)((crc32 >> 24) & 0xff);
+
+  /* 4. Encrypt the header and the compressed data with the same key stream.
+     Keys are re-initialised so the header and body share one continuous stream
+     (APPNOTE §6.1: "the last byte of the decrypted header is used for checking
+     the password"). */
+  zip_zipcrypto_init(&keys, pw, pwlen);
+  zip_zipcrypto_encrypt(&keys, enc_header, ZIP_ZIPCRYPTO_HEADER_LEN);
+
+  /* 5. payload = encrypted_header || encrypted_compressed_data */
+  payload_len = ZIP_ZIPCRYPTO_HEADER_LEN + data_len;
+  payload = malloc(payload_len);
+  if (payload == NULL) goto done;
+  memcpy(payload, enc_header, ZIP_ZIPCRYPTO_HEADER_LEN);
+  memcpy(payload + ZIP_ZIPCRYPTO_HEADER_LEN, data, data_len);
+  zip_zipcrypto_encrypt(&keys, payload + ZIP_ZIPCRYPTO_HEADER_LEN, data_len);
+
+  /* 6. Write entry: real method (0/8), encrypted (bit 0) + UTF-8 (bit 11),
+     real CRC-32, real uncompressed size. No AES extra field. */
+  if (!mz_zip_writer_add_mem_raw(
+        wtr, key, payload, payload_len,
+        (mz_uint16) real_method, (mz_uint16)(1u | (1u << 11)),
+        crc32, (mz_uint64) plain_len, cmtime,
+        /* ext_attributes= */ 0,
+        NULL, 0, NULL, 0)) {
+    *mz_err = mz_zip_get_error_string(mz_zip_get_last_error(wtr));
+    ret = 2;
+    goto done;
+  }
+  ret = 0;
+
+done:
+  memset(&keys, 0, sizeof(keys));
+  memset(enc_header, 0, sizeof(enc_header));
+  if (comp != NULL) free(comp);
+  if (payload != NULL) free(payload);
+  return ret;
+}
+
 /* Compress (raw deflate, falling back to stored), encrypt and add `plain`
    (`plain_len` bytes) to the open writer `wtr` as a WinZip AES entry under
    `key`. `strength` is 1/2/3 (AES-128/192/256). On a miniz writer failure the
@@ -779,9 +866,17 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
               ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
             }
             const char *mz_err = NULL;
-            int ret = zip_writer_add_aes(&wtr, key, plain, (size_t) uncomp_size,
-                                         &cmtime, ccompression_level, cpassword,
-                                         cpassword_len, cencryption, &mz_err);
+            int ret;
+            if (cencryption == ZIP_ENCRYPTION_ZIPCRYPTO) {
+              ret = zip_writer_add_zipcrypto(&wtr, key, plain,
+                                             (size_t) uncomp_size, &cmtime,
+                                             ccompression_level, cpassword,
+                                             cpassword_len, &mz_err);
+            } else {
+              ret = zip_writer_add_aes(&wtr, key, plain, (size_t) uncomp_size,
+                                       &cmtime, ccompression_level, cpassword,
+                                       cpassword_len, cencryption, &mz_err);
+            }
             free(plain);
             if (ret) {
               mz_zip_writer_end(&wtr);
@@ -929,10 +1024,18 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
           ZIP_ERROR(R_ZIP_EADDFILE, key, czipfile);
         }
         const char *mz_err = NULL;
-        int ret = zip_writer_add_aes(&zip_archive, key, plain,
-                                     (size_t) uncomp_size, &cmtime,
-                                     ccompression_level, cpassword,
-                                     cpassword_len, cencryption, &mz_err);
+        int ret;
+        if (cencryption == ZIP_ENCRYPTION_ZIPCRYPTO) {
+          ret = zip_writer_add_zipcrypto(&zip_archive, key, plain,
+                                         (size_t) uncomp_size, &cmtime,
+                                         ccompression_level, cpassword,
+                                         cpassword_len, &mz_err);
+        } else {
+          ret = zip_writer_add_aes(&zip_archive, key, plain,
+                                   (size_t) uncomp_size, &cmtime,
+                                   ccompression_level, cpassword,
+                                   cpassword_len, cencryption, &mz_err);
+        }
         free(plain);
         if (ret) {
           mz_zip_writer_end(&zip_archive);

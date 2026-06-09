@@ -3940,8 +3940,12 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
                 {
                     /* Allow STORED entries where comp_size=0 but decomp_size>0: some zip creators
                        (e.g. old Windows tools) write 0 for the compressed size of STORED entries.
-                       Use MZ_READ_LE16 (not LE32) to avoid reading the adjacent mod-time field. */
-                    if (((!MZ_READ_LE16(p + MZ_ZIP_CDH_METHOD_OFS)) && (decomp_size != comp_size) && comp_size) ||
+                       Use MZ_READ_LE16 (not LE32) to avoid reading the adjacent mod-time field.
+                       Skip the stored-size check for encrypted entries: ZipCrypto stores a
+                       12-byte header inside the payload, so comp_size legitimately exceeds
+                       decomp_size even for method-0 (STORED) entries. */
+                    if ((!(MZ_READ_LE16(p + MZ_ZIP_CDH_BIT_FLAG_OFS) & 1) &&
+                         (!MZ_READ_LE16(p + MZ_ZIP_CDH_METHOD_OFS)) && (decomp_size != comp_size) && comp_size) ||
                         (MZ_READ_LE16(p + MZ_ZIP_CDH_METHOD_OFS) && decomp_size && !comp_size))
                         return mz_zip_set_error(pZip, MZ_ZIP_INVALID_HEADER_OR_CORRUPTED);
                 }

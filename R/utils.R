@@ -281,9 +281,7 @@ encryption_code <- function(encryption) {
     encryption,
     aes256 = 3L,
     aes128 = 1L,
-    zipcrypto = stop(
-      "ZipCrypto encryption is not supported yet; use \"aes256\" or \"aes128\""
-    )
+    zipcrypto = 4L
   )
 }
 

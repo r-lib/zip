@@ -153,5 +153,35 @@ test_that("password / encryption arguments are validated", {
 
   expect_equal(encryption_code("aes256"), 3L)
   expect_equal(encryption_code("aes128"), 1L)
-  expect_error(encryption_code("zipcrypto"), "not supported")
+  expect_equal(encryption_code("zipcrypto"), 4L)
+})
+
+test_that("ZipCrypto write is extractable by 7-Zip", {
+  z <- seven_zip()
+  src <- withr::local_tempdir()
+  names <- make_fixture_files(src)
+  zipfile <- withr::local_tempfile(fileext = ".zip")
+  zip_enc(zipfile, file.path(src, names), src, "open sesame", "zipcrypto")
+
+  # zip_list can read the encrypted central directory
+  lst <- zip_list(zipfile)
+  expect_setequal(lst$filename, names)
+  # compressed_size includes the 12-byte ZipCrypto header so it is >= 12
+  expect_true(all(lst$compressed_size >= 12L))
+
+  exdir <- withr::local_tempdir()
+  status <- suppressWarnings(system2(
+    z,
+    c("x", "-y", "-p'open sesame'", paste0("-o", exdir), zipfile),
+    stdout = FALSE,
+    stderr = FALSE
+  ))
+  expect_equal(status, 0)
+  for (nm in names) {
+    expect_equal(
+      readBin(file.path(exdir, nm), "raw", n = 1e6),
+      readBin(file.path(src, nm), "raw", n = 1e6),
+      info = nm
+    )
+  }
 })

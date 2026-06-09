@@ -2,6 +2,7 @@
 #define ZIP_CRYPTO_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 /* Fill `buf` with `len` cryptographically random bytes from the operating
    system CSPRNG (/dev/urandom on Unix, BCryptGenRandom on Windows). Used to
@@ -49,5 +50,20 @@ int zip_winzip_aes_keys(const unsigned char *pw, size_t pwlen,
                         unsigned char *enc_key,
                         unsigned char *mac_key,
                         unsigned char verifier[2]);
+
+/* ZipCrypto (Traditional PKWARE) stream cipher.
+   Cryptographically weak — use only for legacy compatibility. */
+
+typedef struct {
+  uint32_t k0, k1, k2;
+} zip_zipcrypto_keys_t;
+
+/* Initialize key state from a password. */
+void zip_zipcrypto_init(zip_zipcrypto_keys_t *keys,
+                        const unsigned char *pw, size_t pwlen);
+
+/* Encrypt `len` bytes in-place (keystream XOR; key updated with plaintext). */
+void zip_zipcrypto_encrypt(zip_zipcrypto_keys_t *keys,
+                           unsigned char *buf, size_t len);
 
 #endif /* ZIP_CRYPTO_H */
