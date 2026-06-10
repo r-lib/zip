@@ -6509,7 +6509,7 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
 
         if (store_data_uncompressed)
         {
-            if (pZip->m_pWrite(pZip->m_pIO_opaque, cur_archive_file_ofs, pBuf, buf_size) != buf_size)
+            if (buf_size && pZip->m_pWrite(pZip->m_pIO_opaque, cur_archive_file_ofs, pBuf, buf_size) != buf_size)
             {
                 pZip->m_pFree(pZip->m_pAlloc_opaque, pComp);
                 return mz_zip_set_error(pZip, MZ_ZIP_FILE_WRITE_FAILED);
