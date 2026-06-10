@@ -8,7 +8,8 @@ unzip_process()
 }
 \value{
 An \code{unzip_process} R6 class object, a subclass of
-\link[processx:process]{processx::process}.
+\link[processx:process]{processx::process}, or a subclass of \link[callr:r_process]{callr::r_process} when the fallback
+is active (see the Fallback section below).
 }
 \description{
 \code{unzip_process()} returns an R6 class that represents an unzip process.
@@ -36,6 +37,20 @@ by default the standard error is written to a temporary file.
 This file can be used to diagnose errors if the process failed.
 \item \code{...} passed to the \code{initialize} method of \link[processx:process]{processx::process}.
 }
+}
+
+\section{Fallback}{
+
+\code{unzip_process()} normally runs the bundled \code{cmdunzip} native executable
+via \link[processx:process]{processx::process}. If the executable cannot be found or fails its
+self-test it falls back to running \code{\link[=unzip]{unzip()}} in a background R process
+via \link[callr:r_process]{callr::r_process}. This may happen when system policies do not
+allow starting the \code{cmdunzip} executable., The fallback class has the
+same interface but inherits from \link[callr:r_process]{callr::r_process} instead of
+\link[processx:process]{processx::process}.
+
+Set the environment variable \code{R_ZIP_PROCESS_FALLBACK=true} to force the
+fallback unconditionally.
 }
 
 \section{Encoding}{

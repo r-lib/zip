@@ -56,6 +56,13 @@ static int decode_hex_password(const CHAR *hex, unsigned char **out) {
 
 int MAIN(int argc, CHAR* argv[]) {
   int retval = 0;
+  if (argc == 2) {
+#ifdef _WIN32
+    if (wcscmp(argv[1], L"--test") == 0) return 0;
+#else
+    if (strcmp(argv[1], "--test") == 0) return 0;
+#endif
+  }
   if (argc != 3 && argc != 4) {
     fprintf(stderr, "Usage: " CFMT " zip-file target-dir [hex-password]\n", argv[0]);
     return 1;

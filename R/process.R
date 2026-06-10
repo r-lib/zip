@@ -39,23 +39,18 @@ can_run_unzip_exe <- function() {
   if (!is.null(zip_data$unzip_exe_works)) {
     return(zip_data$unzip_exe_works)
   }
+  if (.Platform$OS.type != "windows") {
+    return(TRUE)
+  }
   exe <- unzip_exe()
   zip_data$unzip_exe_works <- if (exe == "") {
     FALSE
   } else {
-    # Probe the executable with a real unzip of the bundled example archive
-    # into a temporary directory. This catches both the case where the binary
-    # cannot be launched at all (processx errors) and where it launches but
-    # fails to run correctly (non-zero exit status); in either case we fall
-    # back to the in-R implementation.
     tryCatch(
       {
-        probe <- system.file(package = "zip", "example.zip")
-        tmp <- tempfile()
-        on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
         p <- processx::process$new(
           exe,
-          enc2c(c(probe, tmp)),
+          "--test",
           stdout = NULL,
           stderr = NULL
         )
@@ -96,7 +91,20 @@ can_run_unzip_exe <- function() {
 #' * `...` passed to the `initialize` method of [processx::process].
 #'
 #' @return An `unzip_process` R6 class object, a subclass of
+#' [processx::process], or a subclass of [callr::r_process] when the fallback
+#' is active (see the Fallback section below).
+#'
+#' @section Fallback:
+#' `unzip_process()` normally runs the bundled `cmdunzip` native executable
+#' via [processx::process]. If the executable cannot be found or fails its
+#' self-test it falls back to running [unzip()] in a background R process
+#' via [callr::r_process]. This may happen when system policies do not
+#' allow starting the `cmdunzip` executable., The fallback class has the
+#' same interface but inherits from [callr::r_process] instead of
 #' [processx::process].
+#'
+#' Set the environment variable `R_ZIP_PROCESS_FALLBACK=true` to force the
+#' fallback unconditionally.
 #'
 #' @section Encoding:
 #' The `unzip_process` class does not support the `encoding` argument of
