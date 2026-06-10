@@ -42,7 +42,13 @@ threaded_unzip <- function(
       call. = FALSE
     )
   }
-  invisible(NULL)
+  results <- Map(function(zf, ed) {
+    lst <- zip_list(zf)
+    lst$path <- file.path(normalizePath(ed), lst$filename)
+    lst$encryption <- NULL
+    lst
+  }, zipfiles, exdirs)
+  invisible(do.call(rbind, results))
 }
 
 get_num_threads <- function() {
