@@ -7,6 +7,12 @@
 * `zip_list()` now reports an `encryption` column indicating the encryption
   scheme used for each entry.
 
+* `unzip()` is now vectorized. If all arguments apart from `zipfile`,
+  `exdir` and `password` are the default, then it unprocesses all files
+  concurrently, using a thread pool. The size of the thread pool can be
+  set with the `zip_threads` option or the `ZIP_THREADS` environment
+  variable.
+
 * `zip_list()` and `unzip()` now work directly on `http://` and `https://`
   URLs. They use HTTP range requests to download only the central directory
   and the requested entries, so listing or extracting a few files from a

@@ -446,6 +446,8 @@ encryption_types <- c(
 #' @param zipfile Path to the zip file to uncompress, or a character vector of
 #'   paths. When multiple paths are given and all other arguments are at their
 #'   defaults, the files are unzipped concurrently in a thread pool.
+#'   Set the `zip_threads` option or the `ZIP_THREADS` environment variable
+#'   to control the number of threads used. By default zip uses two threads.
 #' @param files Character vector of files to extract from the archive.
 #'   Files within directories can be specified, but they must use a forward
 #'   slash as path separator, as this is what zip files use internally.
