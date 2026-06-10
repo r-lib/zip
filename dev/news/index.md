@@ -10,27 +10,29 @@
   and [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) /
   [`unzip_process()`](https://r-lib.github.io/zip/dev/reference/unzip_process.md)
   now support password-protected archives using WinZIP AES-256, and
-  other encryption schemes.
+  other encryption schemes
+  ([\#38](https://github.com/r-lib/zip/issues/38)).
 
 - [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
   now reports an `encryption` column indicating the encryption scheme
-  used for each entry.
+  used for each entry ([\#38](https://github.com/r-lib/zip/issues/38)).
 
 - [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) is now
   vectorized. If all arguments apart from `zipfile`, `exdir` and
   `password` are the default, then it unprocesses all files
   concurrently, using a thread pool. The size of the thread pool can be
   set with the `zip_threads` option or the `ZIP_THREADS` environment
-  variable.
+  variable ([\#147](https://github.com/r-lib/zip/issues/147)).
 
 - [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
   and [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md)
   now work directly on `http://` and `https://` URLs. They use HTTP
   range requests to download only the central directory and the
   requested entries, so listing or extracting a few files from a large
-  remote archive no longer downloads the whole file. If the server does
+  remote archive does not downloads the whole file. If the server does
   not support range requests, they fall back to downloading the entire
-  archive (with a warning). This requires the curl package.
+  archive (with a warning). This requires the curl package
+  ([\#39](https://github.com/r-lib/zip/issues/39)).
 
 - [`zip_list()`](https://r-lib.github.io/zip/dev/reference/zip_list.md)
   and [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md)
@@ -97,6 +99,11 @@
   It allows specifying custom paths for entries inside the archive,
   independently of their paths on disk
   ([\#50](https://github.com/r-lib/zip/issues/50)).
+
+- [`unzip_process()`](https://r-lib.github.io/zip/dev/reference/unzip_process.md)
+  now probes falls back to using an R subprocess when the bundled
+  `cmdunzip` executable cannot be started
+  ([\#135](https://github.com/r-lib/zip/issues/135)).
 
 - Updated embedded miniz to version 3.1.1
   ([\#122](https://github.com/r-lib/zip/issues/122)).
