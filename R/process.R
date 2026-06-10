@@ -109,67 +109,78 @@ unzip_process <- function() {
   need_packages(c("processx", "R6"), "creating unzip processes")
   zip_data$unzip_class <- zip_data$unzip_class %||% {
     if (can_run_unzip_exe()) {
-      R6::R6Class(
-        "unzip_process",
-        inherit = processx::process,
-        public = list(
-          initialize = function(
-            zipfile,
-            exdir = ".",
-            poll_connection = TRUE,
-            stderr = tempfile(),
-            ...
-          ) {
-            stopifnot(
-              is_string(zipfile),
-              is_string(exdir)
-            )
-            exdir <- normalizePath(exdir, winslash = "\\", mustWork = FALSE)
-            super$initialize(
-              unzip_exe(),
-              enc2c(c(zipfile, exdir)),
-              poll_connection = poll_connection,
-              stderr = stderr,
-              ...
-            )
-          }
-        ),
-        private = list()
-      )
+      make_unzip_process_class()
     } else {
       need_packages("callr", "creating unzip processes (fallback)")
-      R6::R6Class(
-        "unzip_process",
-        inherit = callr::r_process,
-        public = list(
-          initialize = function(
-            zipfile,
-            exdir = ".",
-            poll_connection = TRUE,
-            stderr = tempfile(),
-            ...
-          ) {
-            stopifnot(
-              is_string(zipfile),
-              is_string(exdir)
-            )
-            exdir <- normalizePath(exdir, winslash = "\\", mustWork = FALSE)
-            zipfile <- enc2c(normalizePath(zipfile))
-            opts <- callr::r_process_options(
-              func = function(zipfile, exdir) zip::unzip(zipfile, exdir = exdir),
-              args = list(zipfile = zipfile, exdir = exdir),
-              poll_connection = poll_connection,
-              stderr = stderr
-            )
-            super$initialize(opts)
-          }
-        ),
-        private = list()
-      )
+      make_unzip_process_fallback_class()
     }
   }
 
   zip_data$unzip_class
+}
+
+# Subclass of processx::process that runs the bundled `cmdunzip` executable.
+make_unzip_process_class <- function() {
+  R6::R6Class(
+    "unzip_process",
+    inherit = processx::process,
+    public = list(
+      initialize = function(
+        zipfile,
+        exdir = ".",
+        poll_connection = TRUE,
+        stderr = tempfile(),
+        ...
+      ) {
+        stopifnot(
+          is_string(zipfile),
+          is_string(exdir)
+        )
+        exdir <- normalizePath(exdir, winslash = "\\", mustWork = FALSE)
+        super$initialize(
+          unzip_exe(),
+          enc2c(c(zipfile, exdir)),
+          poll_connection = poll_connection,
+          stderr = stderr,
+          ...
+        )
+      }
+    ),
+    private = list()
+  )
+}
+
+# Fallback subclass of callr::r_process that unzips in a background R process,
+# used when the `cmdunzip` executable is not available or does not run.
+make_unzip_process_fallback_class <- function() {
+  R6::R6Class(
+    "unzip_process",
+    inherit = callr::r_process,
+    public = list(
+      initialize = function(
+        zipfile,
+        exdir = ".",
+        poll_connection = TRUE,
+        stderr = tempfile(),
+        ...
+      ) {
+        stopifnot(
+          is_string(zipfile),
+          is_string(exdir)
+        )
+        exdir <- normalizePath(exdir, winslash = "\\", mustWork = FALSE)
+        zipfile <- enc2c(normalizePath(zipfile))
+        opts <- callr::r_process_options(
+          func = function(zipfile, exdir) zip::unzip(zipfile, exdir = exdir),
+          args = list(zipfile = zipfile, exdir = exdir),
+          poll_connection = poll_connection,
+          stderr = stderr
+        )
+        super$initialize(opts)
+      }
+    ),
+    private = list()
+  )
 }
 
 #' Class for an external zip process
