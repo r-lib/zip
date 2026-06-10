@@ -319,7 +319,7 @@ static void r_unzip_entry_fn(int n, int i,
   SET_STRING_ELT(VECTOR_ELT(result, 8), i, mkCharCE(path, CE_UTF8));
 #endif
 
-  cli_progress_update(d->bar, -1, 1, 0);
+  if (d->bar != R_NilValue) cli_progress_update(d->bar, -1, 1, 0);
 }
 
 SEXP R_zip_unzip(SEXP zipfile, SEXP files, SEXP overwrite, SEXP junkpaths,
