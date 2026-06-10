@@ -33,7 +33,9 @@ zip_data <- new.env(parent = emptyenv())
 super <- ""
 
 can_run_unzip_exe <- function() {
-  if (!is.null(zip_data$unzip_exe_works)) return(zip_data$unzip_exe_works)
+  if (!is.null(zip_data$unzip_exe_works)) {
+    return(zip_data$unzip_exe_works)
+  }
   exe <- unzip_exe()
   zip_data$unzip_exe_works <- if (exe == "") {
     FALSE
@@ -43,20 +45,23 @@ can_run_unzip_exe <- function() {
     # cannot be launched at all (processx errors) and where it launches but
     # fails to run correctly (non-zero exit status); in either case we fall
     # back to the in-R implementation.
-    tryCatch({
-      probe <- system.file(package = "zip", "example.zip")
-      tmp <- tempfile()
-      on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
-      p <- processx::process$new(
-        exe,
-        enc2c(c(probe, tmp)),
-        stdout = NULL,
-        stderr = NULL
-      )
-      p$wait(5000)
-      p$kill()
-      identical(p$get_exit_status(), 0L)
-    }, error = function(e) FALSE)
+    tryCatch(
+      {
+        probe <- system.file(package = "zip", "example.zip")
+        tmp <- tempfile()
+        on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+        p <- processx::process$new(
+          exe,
+          enc2c(c(probe, tmp)),
+          stdout = NULL,
+          stderr = NULL
+        )
+        p$wait(5000)
+        p$kill()
+        identical(p$get_exit_status(), 0L)
+      },
+      error = function(e) FALSE
+    )
   }
   zip_data$unzip_exe_works
 }
@@ -107,15 +112,15 @@ can_run_unzip_exe <- function() {
 
 unzip_process <- function() {
   need_packages(c("processx", "R6"), "creating unzip processes")
-  zip_data$unzip_class <- zip_data$unzip_class %||% {
-    if (can_run_unzip_exe()) {
-      make_unzip_process_class()
-    } else {
-      need_packages("callr", "creating unzip processes (fallback)")
-      make_unzip_process_fallback_class()
+  zip_data$unzip_class <- zip_data$unzip_class %||%
+    {
+      if (can_run_unzip_exe()) {
+        make_unzip_process_class()
+      } else {
+        need_packages("callr", "creating unzip processes (fallback)")
+        make_unzip_process_fallback_class()
+      }
     }
-  }
-
   zip_data$unzip_class
 }
 
@@ -128,6 +133,7 @@ make_unzip_process_class <- function() {
       initialize = function(
         zipfile,
         exdir = ".",
+        password = NULL,
         poll_connection = TRUE,
         stderr = tempfile(),
         ...
@@ -137,9 +143,14 @@ make_unzip_process_class <- function() {
           is_string(exdir)
         )
         exdir <- normalizePath(exdir, winslash = "\\", mustWork = FALSE)
+        pw <- resolve_password(password)
+        args <- enc2c(c(zipfile, exdir))
+        if (!is.null(pw)) {
+          args <- c(args, raw_to_hex(pw))
+        }
         super$initialize(
           unzip_exe(),
-          enc2c(c(zipfile, exdir)),
+          args,
           poll_connection = poll_connection,
           stderr = stderr,
           ...
@@ -200,8 +211,9 @@ make_unzip_process_fallback_class <- function() {
 #'
 #' Arguments:
 #' * `zipfile`: Path to the zip file to create.
-#' * `files`: Character vector of paths to files to add to the archive. Each specified file
-#'    or directory in is created as a top-level entry in the zip archive.
+#' * `files`: Character vector of paths to files to add to the archive.
+#'    Each specified file or directory in is created as a top-level entry
+#'    in the zip archive.
 #' * `recurse`: Whether to add the contents of directories recursively.
 #' * `include_directories`: Whether to explicitly include directories
 #'   in the archive. Including directories might confuse MS Office when
@@ -239,6 +251,8 @@ zip_process <- function() {
           files,
           recurse = TRUE,
           include_directories = TRUE,
+          password = NULL,
+          encryption = "aes256",
           poll_connection = TRUE,
           stderr = tempfile(),
           ...
@@ -254,9 +268,15 @@ zip_process <- function() {
             include_directories,
             private$params_file
           )
+          pw <- resolve_password(password)
+          enc <- if (is.null(pw)) NULL else encryption_code(encryption)
+          args <- enc2c(c(zipfile, private$params_file))
+          if (!is.null(pw)) {
+            args <- c(args, raw_to_hex(pw), as.character(enc))
+          }
           super$initialize(
             zip_exe(),
-            enc2c(c(zipfile, private$params_file)),
+            args,
             poll_connection = poll_connection,
             stderr = stderr,
             ...

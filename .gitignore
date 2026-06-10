@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 /src/*.o
+/src/mbedtls/library/*.o
 /src/zip.so
 /revdep
 /README.html

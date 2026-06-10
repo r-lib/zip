@@ -10,7 +10,8 @@ unzip(
   overwrite = TRUE,
   junkpaths = FALSE,
   exdir = ".",
-  encoding = NULL
+  encoding = NULL,
+  password = NULL
 )
 }
 \arguments{
@@ -36,6 +37,12 @@ UTF-8 regardless of \code{encoding}. For entries without that flag, \code{encodi
 is used; \code{NULL} (the default) falls back to IBM CP437, which is what the
 ZIP specification prescribes for legacy entries. The value is passed
 to \code{\link[=iconv]{iconv()}}.}
+
+\item{password}{Password for decrypting encrypted entries. It can be a
+string, a raw vector, or a function that returns one of these. If \code{NULL}
+(the default), the \code{zip_password} option is used, or no password if that
+is also \code{NULL}. The password is silently ignored for entries that are not
+encrypted.}
 }
 \value{
 A data frame with one row per extracted entry and columns,

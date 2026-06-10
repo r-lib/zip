@@ -1,5 +1,29 @@
 # zip (development version)
 
+* `zip()`, `zipr()`, `zip_append()`, `zipr_append()`, `zip_process()`, and
+  `unzip()` / `unzip_process()` now support password-protected archives
+  using WinZIP AES-256, and other encryption schemes.
+
+* `zip_list()` now reports an `encryption` column indicating the encryption
+  scheme used for each entry.
+
+* `zip_list()` and `unzip()` now work directly on `http://` and `https://`
+  URLs. They use HTTP range requests to download only the central directory
+  and the requested entries, so listing or extracting a few files from a
+  large remote archive no longer downloads the whole file. If the server
+  does not support range requests, they fall back to downloading the entire
+  archive (with a warning). This requires the curl package.
+
+* `zip_list()` and `unzip()` now report the Unix permission bits stored in an
+  archive on Windows as well. Previously they always reported `700`/`600` on
+  Windows, regardless of the permissions recorded in the ZIP file.
+
+* `zip_list()` and `unzip()` now report `type == "directory"` for directory
+  entries whose Unix mode bits lack `S_IFDIR` but that are marked as
+  directories by a trailing slash or the DOS directory attribute (e.g.
+  archives created by `zip()` itself). Previously these were reported as
+  `"file"`.
+
 * `zip()` and `unzip()` now show a progress bar when the `cli` package is
   installed. For `zip()`, progress is byte-level, so large single files are
   tracked smoothly. For `unzip()`, progress advances once per extracted

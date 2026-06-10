@@ -29,3 +29,5 @@
 ^\.cache$
 ^tools/extra/[.]*$
 ^CLAUDE\.md$
+^\.git$
+^\.covrignore$

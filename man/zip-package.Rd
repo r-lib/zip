@@ -28,6 +28,7 @@ Other contributors:
 \itemize{
   \item Kuba Podgórski [contributor]
   \item Rich Geldreich [contributor]
+  \item Arm Limited (bundled Mbed TLS crypto subset in src/mbedtls/ (Apache-2.0)) [contributor, copyright holder]
   \item Posit Software, PBC (\href{https://ror.org/03wc8by49}{ROR}) [copyright holder, funder]
 }
 

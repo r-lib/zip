@@ -250,6 +250,45 @@ enc2c <- function(x) {
   }
 }
 
+raw_to_hex <- function(x) {
+  paste0(sprintf("%02x", as.integer(x)), collapse = "")
+}
+
+resolve_password <- function(password) {
+  password <- password %||% getOption("zip_password")
+  if (is.null(password)) {
+    return(NULL)
+  }
+  if (is.function(password)) {
+    password <- password()
+  }
+  if (is.raw(password)) {
+    if (length(password) == 0) {
+      stop("`password` must not be empty")
+    }
+    return(password)
+  }
+  if (!is.character(password) || length(password) != 1 || is.na(password)) {
+    stop(
+      "`password` must be a string, a raw vector, or a function returning one"
+    )
+  }
+  if (!nzchar(password)) {
+    stop("`password` must not be empty")
+  }
+  charToRaw(enc2utf8(password))
+}
+
+encryption_code <- function(encryption) {
+  encryption <- match.arg(encryption, c("aes256", "aes128", "zipcrypto"))
+  switch(
+    encryption,
+    aes256 = 3L,
+    aes128 = 1L,
+    zipcrypto = 4L
+  )
+}
+
 is_true_option <- function(name) {
   opt <- getOption(name)
   if (is.null(opt)) {
