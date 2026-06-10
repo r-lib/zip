@@ -148,6 +148,8 @@ environment variable to `TRUE`.
   returning one.
 - `zip_progress`: If set to `TRUE`, progress bars are enabled. Takes
   precedence over the `ZIP_PROGRESS` environment variable.
+- `zip_threads`: The number of threads to use for threaded operations.
+  Takes precedence over the `ZIP_THREADS` environment variable.
 
 #### Environment variables
 
@@ -157,6 +159,9 @@ environment variable to `TRUE`.
   when `cmdunzip.exe` is blocked by system policies on Windows.
 - `ZIP_PROGRESS`: If set to `TRUE`, progress bars are enabled. The
   `zip_progress` option takes precedence over this environment variable.
+- `ZIP_THREADS`: The number of threads to use for threaded operations.
+  The `zip_threads` option takes precedence over this environment
+  variable.
 
 ## License
 

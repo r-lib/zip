@@ -72,7 +72,7 @@ char *zip_cp437_to_utf8(const char *src) {
 
 
 #define ZIP_ERROR_BUFFER_SIZE 1000
-static char zip_error_buffer[ZIP_ERROR_BUFFER_SIZE];
+static ZIP_THREAD_LOCAL char zip_error_buffer[ZIP_ERROR_BUFFER_SIZE];
 
 static const char *zip_error_strings[] = {
   /* 0 R_ZIP_ESUCCESS       */ "Success",
@@ -105,7 +105,7 @@ static const char *zip_error_strings[] = {
       "`%s` in `%s` is encrypted but no password was provided"
 };
 
-static zip_error_handler_t *zip_error_handler = 0;
+static ZIP_THREAD_LOCAL zip_error_handler_t *zip_error_handler = 0;
 
 void zip_set_error_handler(zip_error_handler_t *handler) {
   zip_error_handler = handler;

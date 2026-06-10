@@ -15,7 +15,9 @@ unzip(
 )
 }
 \arguments{
-\item{zipfile}{Path to the zip file to uncompress.}
+\item{zipfile}{Path to the zip file to uncompress, or a character vector of
+paths. When multiple paths are given and all other arguments are at their
+defaults, the files are unzipped concurrently in a thread pool.}
 
 \item{files}{Character vector of files to extract from the archive.
 Files within directories can be specified, but they must use a forward

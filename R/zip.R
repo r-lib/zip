@@ -443,7 +443,9 @@ encryption_types <- c(
 #' If the zip archive stores permissions and was created on Unix,
 #' the permissions will be restored.
 #'
-#' @param zipfile Path to the zip file to uncompress.
+#' @param zipfile Path to the zip file to uncompress, or a character vector of
+#'   paths. When multiple paths are given and all other arguments are at their
+#'   defaults, the files are unzipped concurrently in a thread pool.
 #' @param files Character vector of files to extract from the archive.
 #'   Files within directories can be specified, but they must use a forward
 #'   slash as path separator, as this is what zip files use internally.
@@ -495,16 +497,48 @@ unzip <- function(
   encoding = NULL,
   password = NULL
 ) {
-  if (startsWith(zipfile, "http://") || startsWith(zipfile, "https://")) {
+  if (
+    length(zipfile) == 1 &&
+      (startsWith(zipfile, "http://") || startsWith(zipfile, "https://"))
+  ) {
     return(unzip_url(zipfile, files, overwrite, junkpaths, exdir, encoding))
   }
   stopifnot(
-    is_string(zipfile),
+    is_character(zipfile),
+    length(zipfile) >= 1,
     is_character_or_null(files),
     is_flag(overwrite),
     is_flag(junkpaths),
     is_string(exdir)
   )
+
+  if (
+    length(zipfile) > 1 &&
+      is.null(files) &&
+      isTRUE(overwrite) &&
+      !isTRUE(junkpaths) &&
+      is.null(encoding) &&
+      !any(startsWith(zipfile, "http://") | startsWith(zipfile, "https://"))
+  ) {
+    pw <- resolve_password(password)
+    passwords <- if (!is.null(pw)) rawToChar(pw) else NULL
+    return(threaded_unzip(zipfile, exdirs = exdir, passwords = passwords))
+  }
+
+  if (length(zipfile) > 1) {
+    results <- lapply(zipfile, function(zf) {
+      unzip(
+        zf,
+        files = files,
+        overwrite = overwrite,
+        junkpaths = junkpaths,
+        exdir = exdir,
+        encoding = encoding,
+        password = password
+      )
+    })
+    return(invisible(do.call(rbind, results)))
+  }
 
   zipfile <- enc2c(normalizePath(zipfile))
   if (!is.null(files)) {

@@ -12,7 +12,7 @@ PKG_CPPFLAGS = $(MBEDTLS_CPPFLAGS)
 # -lbcrypt: BCryptGenRandom(), used for WinZip AES salts (see crypto.c).
 PKG_LIBS = -lbcrypt
 
-OBJECTS = init.o miniz.o rzip.o zip.o crypto.o winutils.o errors.o cleancall.o $(MBEDTLS_OBJ)
+OBJECTS = init.o miniz.o rzip.o zip.o crypto.o winutils.o errors.o cleancall.o cmdunzip_lib.o $(MBEDTLS_OBJ)
 
 .PHONY: all clean
 
