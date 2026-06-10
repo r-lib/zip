@@ -33,6 +33,9 @@ zip_data <- new.env(parent = emptyenv())
 super <- ""
 
 can_run_unzip_exe <- function() {
+  if (isTRUE(is_true_env_var("R_ZIP_PROCESS_FALLBACK"))) {
+    return(FALSE)
+  }
   if (!is.null(zip_data$unzip_exe_works)) {
     return(zip_data$unzip_exe_works)
   }
