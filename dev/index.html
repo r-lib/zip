@@ -177,6 +177,8 @@
 </h4>
 <ul>
 <li>
+<code>R_ZIP_PROCESS_FALLBACK</code>: If set to <code>TRUE</code>, <code><a href="reference/unzip_process.html">unzip_process()</a></code> functions will fall back to using an R subprocess, without trying to use the cmdunzip executable embedded into the package. This is useful when <code>cmdunzip.exe</code> is blocked by system policies on Windows.</li>
+<li>
 <code>ZIP_PROGRESS</code>: If set to <code>TRUE</code>, progress bars are enabled. The <code>zip_progress</code> option takes precedence over this environment variable.</li>
 </ul>
 </div>

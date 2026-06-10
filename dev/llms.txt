@@ -158,6 +158,11 @@ disabled by default (for now), but can be enabled by setting the
 
 #### Environment variables
 
+- `R_ZIP_PROCESS_FALLBACK`: If set to `TRUE`,
+  [`unzip_process()`](https://r-lib.github.io/zip/dev/reference/unzip_process.md)
+  functions will fall back to using an R subprocess, without trying to
+  use the cmdunzip executable embedded into the package. This is useful
+  when `cmdunzip.exe` is blocked by system policies on Windows.
 - `ZIP_PROGRESS`: If set to `TRUE`, progress bars are enabled. The
   `zip_progress` option takes precedence over this environment variable.
 
