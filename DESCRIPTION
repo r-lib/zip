@@ -20,7 +20,6 @@ LinkingTo: cli
 Suggests:
     callr,
     cli,
-    callr,
     curl,
     pillar,
     processx,
