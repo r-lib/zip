@@ -21,7 +21,9 @@ unzip(
 
 - zipfile:
 
-  Path to the zip file to uncompress.
+  Path to the zip file to uncompress, or a character vector of paths.
+  When multiple paths are given and all other arguments are at their
+  defaults, the files are unzipped concurrently in a thread pool.
 
 - files:
 
@@ -98,9 +100,9 @@ zip_list(zipfile)
 #> # A data frame: 3 × 9
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-10 10:29:02 755        
-#> 2 mydir/file1              15                10 2026-06-10 10:29:02 644        
-#> 3 mydir/file2              16                11 2026-06-10 10:29:02 644        
+#> 1 mydir/                    0                 0 2026-06-10 10:33:46 755        
+#> 2 mydir/file1              15                10 2026-06-10 10:33:46 644        
+#> 3 mydir/file2              16                11 2026-06-10 10:33:46 644        
 #> # ℹ 4 more variables: crc32 <hexmode>, offset <dbl>, type <chr>,
 #> #   encryption <chr>
 
@@ -111,7 +113,7 @@ result[, c("filename", "path")]
 #> # A data frame: 3 × 2
 #>   filename    path                                        
 #>   <chr>       <chr>                                       
-#> 1 mydir/      /tmp/RtmpEStOF4/file1b3c20885e48/mydir/     
-#> 2 mydir/file1 /tmp/RtmpEStOF4/file1b3c20885e48/mydir/file1
-#> 3 mydir/file2 /tmp/RtmpEStOF4/file1b3c20885e48/mydir/file2
+#> 1 mydir/      /tmp/RtmpDeG7N1/file1b6e2a21bd5a/mydir/     
+#> 2 mydir/file1 /tmp/RtmpDeG7N1/file1b6e2a21bd5a/mydir/file1
+#> 3 mydir/file2 /tmp/RtmpDeG7N1/file1b6e2a21bd5a/mydir/file2
 ```

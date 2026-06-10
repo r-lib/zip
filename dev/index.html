@@ -170,6 +170,8 @@
 <code>zip_password</code>: The default password for ZIP encryption and decryption. Can be set to a string, a raw vector, or a function returning one.</li>
 <li>
 <code>zip_progress</code>: If set to <code>TRUE</code>, progress bars are enabled. Takes precedence over the <code>ZIP_PROGRESS</code> environment variable.</li>
+<li>
+<code>zip_threads</code>: The number of threads to use for threaded operations. Takes precedence over the <code>ZIP_THREADS</code> environment variable.</li>
 </ul>
 </div>
 <div class="section level4">
@@ -180,6 +182,8 @@
 <code>R_ZIP_PROCESS_FALLBACK</code>: If set to <code>TRUE</code>, <code><a href="reference/unzip_process.html">unzip_process()</a></code> functions will fall back to using an R subprocess, without trying to use the cmdunzip executable embedded into the package. This is useful when <code>cmdunzip.exe</code> is blocked by system policies on Windows.</li>
 <li>
 <code>ZIP_PROGRESS</code>: If set to <code>TRUE</code>, progress bars are enabled. The <code>zip_progress</code> option takes precedence over this environment variable.</li>
+<li>
+<code>ZIP_THREADS</code>: The number of threads to use for threaded operations. The <code>zip_threads</code> option takes precedence over this environment variable.</li>
 </ul>
 </div>
 </div>
