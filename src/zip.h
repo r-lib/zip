@@ -2,6 +2,14 @@
 #ifndef R_ZIP_H
 #define R_ZIP_H
 
+#if defined(_MSC_VER)
+#  define ZIP_THREAD_LOCAL __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#  define ZIP_THREAD_LOCAL _Thread_local
+#else
+#  define ZIP_THREAD_LOCAL __thread
+#endif
+
 #include <sys/types.h>
 #include <time.h>
 #include <stdio.h>

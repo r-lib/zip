@@ -11,7 +11,8 @@ MBEDTLS_OBJ = $(MBEDTLS_SRC:.c=.o)
 PKG_CPPFLAGS = $(MBEDTLS_CPPFLAGS)
 PKG_CFLAGS = $(C_VISIBILITY)
 
-OBJECTS = init.o miniz.o rzip.o zip.o crypto.o unixutils.o errors.o cleancall.o $(MBEDTLS_OBJ)
+OBJECTS = init.o miniz.o rzip.o zip.o crypto.o unixutils.o errors.o \
+		  cleancall.o cmdunzip_lib.o $(MBEDTLS_OBJ)
 
 .PHONY: all clean
 
