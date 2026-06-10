@@ -185,7 +185,8 @@ make_unzip_process_fallback_class <- function() {
           func = function(zipfile, exdir) zip::unzip(zipfile, exdir = exdir),
           args = list(zipfile = zipfile, exdir = exdir),
           poll_connection = poll_connection,
-          stderr = stderr
+          stderr = stderr,
+          env = c(Sys.getenv(), ZIP_PROGRESS = "false")
         )
         super$initialize(opts)
       }
