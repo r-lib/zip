@@ -2,23 +2,23 @@
 
 * `zip()`, `zipr()`, `zip_append()`, `zipr_append()`, `zip_process()`, and
   `unzip()` / `unzip_process()` now support password-protected archives
-  using WinZIP AES-256, and other encryption schemes.
+  using WinZIP AES-256, and other encryption schemes (#38).
 
 * `zip_list()` now reports an `encryption` column indicating the encryption
-  scheme used for each entry.
+  scheme used for each entry (#38).
 
 * `unzip()` is now vectorized. If all arguments apart from `zipfile`,
   `exdir` and `password` are the default, then it unprocesses all files
   concurrently, using a thread pool. The size of the thread pool can be
   set with the `zip_threads` option or the `ZIP_THREADS` environment
-  variable.
+  variable (#147).
 
 * `zip_list()` and `unzip()` now work directly on `http://` and `https://`
   URLs. They use HTTP range requests to download only the central directory
   and the requested entries, so listing or extracting a few files from a
-  large remote archive no longer downloads the whole file. If the server
+  large remote archive does not downloads the whole file. If the server
   does not support range requests, they fall back to downloading the entire
-  archive (with a warning). This requires the curl package.
+  archive (with a warning). This requires the curl package (#39).
 
 * `zip_list()` and `unzip()` now report the Unix permission bits stored in an
   archive on Windows as well. Previously they always reported `700`/`600` on
@@ -60,6 +60,9 @@
 * New `keys` argument to `zip()`, `zipr()`, `zip_append()`, and
   `zipr_append()`. It allows specifying custom paths for entries inside
   the archive, independently of their paths on disk (#50).
+
+* `unzip_process()` now probes falls back to using an R subprocess when
+  the bundled `cmdunzip` executable cannot be started (#135).
 
 * Updated embedded miniz to version 3.1.1 (#122).
 

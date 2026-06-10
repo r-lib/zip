@@ -33,6 +33,8 @@ pak::pak("r-lib/zip")
 
 - For progress bars (see below), the [cli](https://cli.r-lib.org)
   package is needed.
+- The [curl](https://jeroen.r-universe.dev/curl) package is needed for
+  using `unzip()` on URLs.
 - Background processes, i.e. `zip_process()` and `unzip_process()`, need
   the [processx](https://processx.r-lib.org) package.
 
@@ -97,6 +99,26 @@ exdir <- tempfile()
 unzip("sources.zip", exdir = exdir)
 dir(exdir)
 #> [1] "R"   "src"
+```
+
+`unzip()` and `zip_list()` also work on HTTP(S) URLs, without
+downloading the whole file. This needs the curl package to be installed:
+
+``` r
+zip_list("https://raw.githubusercontent.com/r-lib/zip/main/inst/example.zip")
+#> # A data frame: 4 × 8
+#>   filename     compressed_size uncompressed_size timestamp           permissions
+#>   <chr>                  <dbl>             <dbl> <dttm>              <octmode>  
+#> 1 example/                   0                 0 2019-02-23 21:48:06 755        
+#> 2 example/dir/               0                 0 2019-02-23 21:49:36 755        
+#> 3 example/dir…              11                 6 2019-02-23 21:48:24 644        
+#> 4 example/fil…              11                 6 2019-02-23 21:48:28 644        
+#> # ℹ 3 more variables: crc32 <hexmode>, offset <dbl>, type <chr>
+unzip(
+  "https://raw.githubusercontent.com/r-lib/zip/main/inst/example.zip",
+  "example/file1",
+  exdir = exdir
+)
 ```
 
 ### Password-protected archives
