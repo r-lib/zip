@@ -499,7 +499,7 @@ unzip <- function(
 ) {
   if (
     length(zipfile) == 1 &&
-    (startsWith(zipfile, "http://") || startsWith(zipfile, "https://"))
+      (startsWith(zipfile, "http://") || startsWith(zipfile, "https://"))
   ) {
     return(unzip_url(zipfile, files, overwrite, junkpaths, exdir, encoding))
   }
@@ -514,11 +514,11 @@ unzip <- function(
 
   if (
     length(zipfile) > 1 &&
-    is.null(files) &&
-    isTRUE(overwrite) &&
-    !isTRUE(junkpaths) &&
-    is.null(encoding) &&
-    !any(startsWith(zipfile, "http://") | startsWith(zipfile, "https://"))
+      is.null(files) &&
+      isTRUE(overwrite) &&
+      !isTRUE(junkpaths) &&
+      is.null(encoding) &&
+      !any(startsWith(zipfile, "http://") | startsWith(zipfile, "https://"))
   ) {
     pw <- resolve_password(password)
     passwords <- if (!is.null(pw)) rawToChar(pw) else NULL
