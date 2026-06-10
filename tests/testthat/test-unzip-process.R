@@ -28,10 +28,13 @@ test_that("unzip_process fallback via callr", {
   old_class <- zip_data$unzip_class
   zip_data$unzip_exe_works <- FALSE
   zip_data$unzip_class <- NULL
-  on.exit({
-    zip_data$unzip_exe_works <- old_works
-    zip_data$unzip_class <- old_class
-  }, add = TRUE)
+  on.exit(
+    {
+      zip_data$unzip_exe_works <- old_works
+      zip_data$unzip_class <- old_class
+    },
+    add = TRUE
+  )
 
   p1 <- unzip_process()$new(z$zip, tmp2)
   p1$wait(10000)
