@@ -48,7 +48,8 @@ It is implemented as a subclass of <a href="http://processx.r-lib.org/reference/
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An <code>unzip_process</code> R6 class object, a subclass of
-<a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a>.</p>
+<a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a>, or a subclass of <a href="https://callr.r-lib.org/reference/r_process.html" class="external-link">callr::r_process</a> when the fallback
+is active (see the Fallback section below).</p>
     </div>
     <div class="section level2">
     <h2 id="using-the-unzip-process-class">Using the <code>unzip_process</code> class<a class="anchor" aria-label="anchor" href="#using-the-unzip-process-class"></a></h2>
@@ -69,6 +70,20 @@ by default the standard error is written to a temporary file.
 This file can be used to diagnose errors if the process failed.</p></li>
 <li><p><code>...</code> passed to the <code>initialize</code> method of <a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a>.</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="fallback">Fallback<a class="anchor" aria-label="anchor" href="#fallback"></a></h2>
+
+
+<p><code>unzip_process()</code> normally runs the bundled <code>cmdunzip</code> native executable
+via <a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a>. If the executable cannot be found or fails its
+self-test it falls back to running <code><a href="unzip.html">unzip()</a></code> in a background R process
+via <a href="https://callr.r-lib.org/reference/r_process.html" class="external-link">callr::r_process</a>. This may happen when system policies do not
+allow starting the <code>cmdunzip</code> executable., The fallback class has the
+same interface but inherits from <a href="https://callr.r-lib.org/reference/r_process.html" class="external-link">callr::r_process</a> instead of
+<a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a>.</p>
+<p>Set the environment variable <code>R_ZIP_PROCESS_FALLBACK=true</code> to force the
+fallback unconditionally.</p>
+    </div>
     <div class="section level2">
     <h2 id="encoding">Encoding<a class="anchor" aria-label="anchor" href="#encoding"></a></h2>
 

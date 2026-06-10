@@ -60,7 +60,9 @@ directories.</p>
 <dl><dt id="arg-zipfile">zipfile<a class="anchor" aria-label="anchor" href="#arg-zipfile"></a></dt>
 <dd><p>Path to the zip file to uncompress, or a character vector of
 paths. When multiple paths are given and all other arguments are at their
-defaults, the files are unzipped concurrently in a thread pool.</p></dd>
+defaults, the files are unzipped concurrently in a thread pool.
+Set the <code>zip_threads</code> option or the <code>ZIP_THREADS</code> environment variable
+to control the number of threads used. By default zip uses two threads.</p></dd>
 
 
 <dt id="arg-files">files<a class="anchor" aria-label="anchor" href="#arg-files"></a></dt>
@@ -140,9 +142,9 @@ the permissions will be restored.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 3 × 9</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    compressed_size uncompressed_size timestamp           permissions</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;octmode&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-10 <span style="color: #949494;">10:33:46</span> 755        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-10 <span style="color: #949494;">10:33:46</span> 644        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-10 <span style="color: #949494;">10:33:46</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/                    0                 0 2026-06-10 <span style="color: #949494;">10:54:26</span> 755        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1              15                10 2026-06-10 <span style="color: #949494;">10:54:26</span> 644        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2              16                11 2026-06-10 <span style="color: #949494;">10:54:26</span> 644        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   encryption &lt;chr&gt;</span></span>
 <span class="r-in"><span></span></span>
@@ -153,9 +155,9 @@ the permissions will be restored.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 3 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   filename    path                                        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/      /tmp/RtmpDeG7N1/file1b6e2a21bd5a/mydir/     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1 /tmp/RtmpDeG7N1/file1b6e2a21bd5a/mydir/file1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2 /tmp/RtmpDeG7N1/file1b6e2a21bd5a/mydir/file2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> mydir/      /tmp/RtmpSr7q7W/file1b621c09394c/mydir/     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mydir/file1 /tmp/RtmpSr7q7W/file1b621c09394c/mydir/file1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mydir/file2 /tmp/RtmpSr7q7W/file1b621c09394c/mydir/file2</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

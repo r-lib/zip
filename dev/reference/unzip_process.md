@@ -13,7 +13,10 @@ unzip_process()
 ## Value
 
 An `unzip_process` R6 class object, a subclass of
-[processx::process](http://processx.r-lib.org/reference/process.md).
+[processx::process](http://processx.r-lib.org/reference/process.md), or
+a subclass of
+[callr::r_process](https://callr.r-lib.org/reference/r_process.html)
+when the fallback is active (see the Fallback section below).
 
 ## Using the `unzip_process` class
 
@@ -43,6 +46,25 @@ Arguments:
 
 - `...` passed to the `initialize` method of
   [processx::process](http://processx.r-lib.org/reference/process.md).
+
+## Fallback
+
+`unzip_process()` normally runs the bundled `cmdunzip` native executable
+via [processx::process](http://processx.r-lib.org/reference/process.md).
+If the executable cannot be found or fails its self-test it falls back
+to running
+[`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) in a
+background R process via
+[callr::r_process](https://callr.r-lib.org/reference/r_process.html).
+This may happen when system policies do not allow starting the
+`cmdunzip` executable., The fallback class has the same interface but
+inherits from
+[callr::r_process](https://callr.r-lib.org/reference/r_process.html)
+instead of
+[processx::process](http://processx.r-lib.org/reference/process.md).
+
+Set the environment variable `R_ZIP_PROCESS_FALLBACK=true` to force the
+fallback unconditionally.
 
 ## Encoding
 
