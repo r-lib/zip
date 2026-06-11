@@ -168,7 +168,7 @@ class, so they are pollable.
 [`unzip()`](https://r-lib.github.io/zip/reference/unzip.md) (and co.)
 support progress bars if the `cli` package is installed. This is
 disabled by default (for now), but can be enabled by setting the
-`zip_progress` option or the `ZIP_PROGRESS` environment variable to
+`zip.progress` option or the `ZIP_PROGRESS` environment variable to
 `TRUE`.
 
 ### Configuration
@@ -178,7 +178,7 @@ disabled by default (for now), but can be enabled by setting the
 - `zip_password`: The default password for ZIP encryption and
   decryption. Can be set to a string, a raw vector, or a function
   returning one.
-- `zip_progress`: If set to `TRUE`, progress bars are enabled. Takes
+- `zip.progress`: If set to `TRUE`, progress bars are enabled. Takes
   precedence over the `ZIP_PROGRESS` environment variable.
 - `zip_threads`: The number of threads to use for threaded operations.
   Takes precedence over the `ZIP_THREADS` environment variable.
@@ -191,7 +191,7 @@ disabled by default (for now), but can be enabled by setting the
   use the cmdunzip executable embedded into the package. This is useful
   when `cmdunzip.exe` is blocked by system policies on Windows.
 - `ZIP_PROGRESS`: If set to `TRUE`, progress bars are enabled. The
-  `zip_progress` option takes precedence over this environment variable.
+  `zip.progress` option takes precedence over this environment variable.
 - `ZIP_THREADS`: The number of threads to use for threaded operations.
   The `zip_threads` option takes precedence over this environment
   variable.

@@ -17,7 +17,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/r-lib/zip/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/r-lib/zip/blob/cran-3-0-0/DESCRIPTION)
 
 Csárdi G (2026). *zip: Cross-Platform 'zip' Compression*. R package
 version 3.0.0, <https://github.com/r-lib/zip>.
