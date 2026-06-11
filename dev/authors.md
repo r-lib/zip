@@ -20,12 +20,12 @@ Source:
 [`DESCRIPTION`](https://github.com/r-lib/zip/blob/main/DESCRIPTION)
 
 Csárdi G (2026). *zip: Cross-Platform 'zip' Compression*. R package
-version 2.3.3.9000, <https://github.com/r-lib/zip>.
+version 3.0.0.9000, <https://github.com/r-lib/zip>.
 
     @Manual{,
       title = {zip: Cross-Platform 'zip' Compression},
       author = {Gábor Csárdi},
       year = {2026},
-      note = {R package version 2.3.3.9000},
+      note = {R package version 3.0.0.9000},
       url = {https://github.com/r-lib/zip},
     }

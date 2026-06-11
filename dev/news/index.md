@@ -2,6 +2,10 @@
 
 ## zip (development version)
 
+## zip 3.0.0
+
+CRAN release: 2026-06-10
+
 - [`zip()`](https://r-lib.github.io/zip/dev/reference/zip.md),
   [`zipr()`](https://r-lib.github.io/zip/dev/reference/zip.md),
   [`zip_append()`](https://r-lib.github.io/zip/dev/reference/zip.md),

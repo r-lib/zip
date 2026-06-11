@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">zip</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">2.3.3.9000</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">3.0.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="zip-development-version">zip (development version)<a class="anchor" aria-label="anchor" href="#zip-development-version"></a></h2>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="3.0.0" id="zip-300">zip 3.0.0<a class="anchor" aria-label="anchor" href="#zip-300"></a></h2><p class="text-muted">CRAN release: 2026-06-10</p>
 <ul><li><p><code><a href="../reference/zip.html">zip()</a></code>, <code><a href="../reference/zip.html">zipr()</a></code>, <code><a href="../reference/zip.html">zip_append()</a></code>, <code><a href="../reference/zip.html">zipr_append()</a></code>, <code><a href="../reference/zip_process.html">zip_process()</a></code>, and <code><a href="../reference/unzip.html">unzip()</a></code> / <code><a href="../reference/unzip_process.html">unzip_process()</a></code> now support password-protected archives using WinZIP AES-256, and other encryption schemes (<a href="https://github.com/r-lib/zip/issues/38" class="external-link">#38</a>).</p></li>
 <li><p><code><a href="../reference/zip_list.html">zip_list()</a></code> now reports an <code>encryption</code> column indicating the encryption scheme used for each entry (<a href="https://github.com/r-lib/zip/issues/38" class="external-link">#38</a>).</p></li>
 <li><p><code><a href="../reference/unzip.html">unzip()</a></code> is now vectorized. If all arguments apart from <code>zipfile</code>, <code>exdir</code> and <code>password</code> are the default, then it unprocesses all files concurrently, using a thread pool. The size of the thread pool can be set with the <code>zip_threads</code> option or the <code>ZIP_THREADS</code> environment variable (<a href="https://github.com/r-lib/zip/issues/147" class="external-link">#147</a>).</p></li>
