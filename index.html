@@ -7,13 +7,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Cross-Platform zip Compression • zip</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Cross-Platform zip Compression">
 <meta name="description" content="Cross-Platform zip Compression Library. A replacement for the zip function, that does not require any additional external tools on any platform.">
 <meta property="og:description" content="Cross-Platform zip Compression Library. A replacement for the zip function, that does not require any additional external tools on any platform.">
-<script defer data-domain="r-lib.github.io/zip,all.tidyverse.org" src="https://plausible.io/js/plausible.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/posit-dev/supported-by-posit/js/badge.min.js" data-max-height="43" data-light-bg="#666f76" data-light-fg="#f9f9f9"></script><script defer data-domain="r-lib.github.io/zip,all.tidyverse.org" src="https://plausible.io/js/plausible.js"></script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">zip</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">2.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,6 +64,15 @@
 <p>Development version:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"r-lib/zip"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="optional-dependencies">Optional dependencies<a class="anchor" aria-label="anchor" href="#optional-dependencies"></a>
+</h2>
+<ul>
+<li>For progress bars (see below), the <a href="https://cli.r-lib.org" class="external-link">cli</a> package is needed.</li>
+<li>The <a href="https://jeroen.r-universe.dev/curl" class="external-link">curl</a> package is needed for using <code><a href="reference/unzip.html">unzip()</a></code> on URLs.</li>
+<li>Background processes, i.e. <code><a href="reference/zip_process.html">zip_process()</a></code> and <code><a href="reference/unzip_process.html">unzip_process()</a></code>, need the <a href="https://processx.r-lib.org" class="external-link">processx</a> package.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
@@ -116,11 +125,83 @@
 <span><span class="fu"><a href="reference/unzip.html">unzip</a></span><span class="op">(</span><span class="st">"sources.zip"</span>, exdir <span class="op">=</span> <span class="va">exdir</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span><span class="va">exdir</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "R"   "src"</span></span></code></pre></div>
+<p><code><a href="reference/unzip.html">unzip()</a></code> and <code><a href="reference/zip_list.html">zip_list()</a></code> also work on HTTP(S) URLs, without downloading the whole file. This needs the curl package to be installed:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/zip_list.html">zip_list</a></span><span class="op">(</span><span class="st">"https://raw.githubusercontent.com/r-lib/zip/main/inst/example.zip"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A data frame: 4 × 8</span></span>
+<span><span class="co">#&gt;   filename     compressed_size uncompressed_size timestamp           permissions</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                  &lt;dbl&gt;             &lt;dbl&gt; &lt;dttm&gt;              &lt;octmode&gt;  </span></span>
+<span><span class="co">#&gt; 1 example/                   0                 0 2019-02-23 21:48:06 755        </span></span>
+<span><span class="co">#&gt; 2 example/dir/               0                 0 2019-02-23 21:49:36 755        </span></span>
+<span><span class="co">#&gt; 3 example/dir…              11                 6 2019-02-23 21:48:24 644        </span></span>
+<span><span class="co">#&gt; 4 example/fil…              11                 6 2019-02-23 21:48:28 644        </span></span>
+<span><span class="co">#&gt; # ℹ 3 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;</span></span>
+<span><span class="fu"><a href="reference/unzip.html">unzip</a></span><span class="op">(</span></span>
+<span>  <span class="st">"https://raw.githubusercontent.com/r-lib/zip/main/inst/example.zip"</span>,</span>
+<span>  <span class="st">"example/file1"</span>,</span>
+<span>  exdir <span class="op">=</span> <span class="va">exdir</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="password-protected-archives">Password-protected archives<a class="anchor" aria-label="anchor" href="#password-protected-archives"></a>
+</h3>
+<p>Pass a <code>password</code> argument to encrypt entries with WinZip AES-256 (the default), which is supported by 7-Zip, WinZip, and macOS Archive Utility:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/zip.html">zip</a></span><span class="op">(</span><span class="st">"secret.zip"</span>, <span class="st">"R"</span>, password <span class="op">=</span> <span class="st">"hunter2"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/zip_list.html">zip_list</a></span><span class="op">(</span><span class="st">"secret.zip"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A data frame: 9 × 9</span></span>
+<span><span class="co">#&gt;   filename     compressed_size uncompressed_size timestamp           permissions</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                  &lt;dbl&gt;             &lt;dbl&gt; &lt;dttm&gt;              &lt;octmode&gt;  </span></span>
+<span><span class="co">#&gt; 1 R/                         0                 0 2026-06-09 10:32:24 755        </span></span>
+<span><span class="co">#&gt; 2 R/assertion…             178               388 2026-06-08 09:00:44 644        </span></span>
+<span><span class="co">#&gt; 3 R/compat-vc…            3415             14344 2026-06-08 09:00:44 644        </span></span>
+<span><span class="co">#&gt; 4 R/http.R                4893             16515 2026-06-08 12:10:24 644        </span></span>
+<span><span class="co">#&gt; 5 R/inflate.R              769              2390 2026-06-08 12:10:24 644        </span></span>
+<span><span class="co">#&gt; 6 R/process.R             2140              7474 2026-06-09 10:42:48 644        </span></span>
+<span><span class="co">#&gt; 7 R/utils.R               2249              7483 2026-06-09 10:27:50 644        </span></span>
+<span><span class="co">#&gt; 8 R/zip-packa…             127               122 2026-06-08 09:00:44 644        </span></span>
+<span><span class="co">#&gt; 9 R/zip.R                 5218             16564 2026-06-09 10:32:24 644        </span></span>
+<span><span class="co">#&gt; # ℹ 4 more variables: crc32 &lt;hexmode&gt;, offset &lt;dbl&gt;, type &lt;chr&gt;,</span></span>
+<span><span class="co">#&gt; #   encryption &lt;chr&gt;</span></span>
+<span><span class="fu"><a href="reference/unzip.html">unzip</a></span><span class="op">(</span><span class="st">"secret.zip"</span>, exdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span>, password <span class="op">=</span> <span class="st">"hunter2"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="compressing-and-uncompressing-in-background-processes">Compressing and uncompressing in background processes<a class="anchor" aria-label="anchor" href="#compressing-and-uncompressing-in-background-processes"></a>
 </h3>
 <p>You can use the <code><a href="reference/zip_process.html">zip_process()</a></code> and <code><a href="reference/unzip_process.html">unzip_process()</a></code> functions to create background zip / unzip processes. These processes were implemented on top of the <code><a href="http://processx.r-lib.org/reference/process.html" class="external-link">processx::process</a></code> class, so they are pollable.</p>
+</div>
+<div class="section level3">
+<h3 id="progress-bars">Progress bars<a class="anchor" aria-label="anchor" href="#progress-bars"></a>
+</h3>
+<p><code><a href="reference/zip.html">zip()</a></code> and <code><a href="reference/unzip.html">unzip()</a></code> (and co.) support progress bars if the <code>cli</code> package is installed. This is disabled by default (for now), but can be enabled by setting the <code>zip_progress</code> option or the <code>ZIP_PROGRESS</code> environment variable to <code>TRUE</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="configuration">Configuration<a class="anchor" aria-label="anchor" href="#configuration"></a>
+</h3>
+<div class="section level4">
+<h4 id="options">Options<a class="anchor" aria-label="anchor" href="#options"></a>
+</h4>
+<ul>
+<li>
+<code>zip_password</code>: The default password for ZIP encryption and decryption. Can be set to a string, a raw vector, or a function returning one.</li>
+<li>
+<code>zip_progress</code>: If set to <code>TRUE</code>, progress bars are enabled. Takes precedence over the <code>ZIP_PROGRESS</code> environment variable.</li>
+<li>
+<code>zip_threads</code>: The number of threads to use for threaded operations. Takes precedence over the <code>ZIP_THREADS</code> environment variable.</li>
+</ul>
+</div>
+<div class="section level4">
+<h4 id="environment-variables">Environment variables<a class="anchor" aria-label="anchor" href="#environment-variables"></a>
+</h4>
+<ul>
+<li>
+<code>R_ZIP_PROCESS_FALLBACK</code>: If set to <code>TRUE</code>, <code><a href="reference/unzip_process.html">unzip_process()</a></code> functions will fall back to using an R subprocess, without trying to use the cmdunzip executable embedded into the package. This is useful when <code>cmdunzip.exe</code> is blocked by system policies on Windows.</li>
+<li>
+<code>ZIP_PROGRESS</code>: If set to <code>TRUE</code>, progress bars are enabled. The <code>zip_progress</code> option takes precedence over this environment variable.</li>
+<li>
+<code>ZIP_THREADS</code>: The number of threads to use for threaded operations. The <code>zip_threads</code> option takes precedence over this environment variable.</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="section level2">
@@ -180,7 +261,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
