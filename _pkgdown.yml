@@ -9,3 +9,8 @@ template:
 
 development:
   mode: auto
+
+news:
+  releases:
+  - text: "zip 3.0.0"
+    href: https://gaborcsardi.org/2026/zip-3-0-0-unzip-over-HTTP/
