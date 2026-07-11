@@ -77,5 +77,15 @@ get_num_threads <- function() {
     return(evval)
   }
 
+  ncpus <- getOption("Ncpus")
+  if (!is.null(ncpus)) {
+    if (!is.numeric(ncpus) || length(ncpus) != 1L || ncpus < 1L) {
+      stop(
+        "Invalid value for 'Ncpus' option, must be a positive integer."
+      )
+    }
+    return(as.integer(ncpus))
+  }
+
   2L
 }

@@ -33,6 +33,14 @@
       Error in `threaded_unzip()`:
       ! length(passwords) == 1L || length(passwords) == length(zipfiles) is not TRUE
 
+# get_num_threads errors on invalid Ncpus option
+
+    Code
+      get_num_threads()
+    Condition
+      Error in `get_num_threads()`:
+      ! Invalid value for 'Ncpus' option, must be a positive integer.
+
 # get_num_threads errors on invalid zip_threads option
 
     Code

@@ -4,6 +4,10 @@
   `ZIP_PROGRESS` currently) are now matched case-insensitively, so `TRUE`
   and `FALSE` are accepted as documented (#154).
 
+* The number of threads used by `unzip()` now respects the `Ncpus` option,
+  if neither the `zip_threads` option nor the `ZIP_THREADS` environment
+  variable is set (#151).
+
 # zip 3.0.0
 
 * `zip()`, `zipr()`, `zip_append()`, `zipr_append()`, `zip_process()`, and

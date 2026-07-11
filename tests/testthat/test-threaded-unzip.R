@@ -114,10 +114,34 @@ test_that("get_num_threads option takes precedence over env var", {
   })
 })
 
+test_that("get_num_threads uses Ncpus option", {
+  withr::with_envvar(c(ZIP_THREADS = NA), {
+    withr::local_options(zip_threads = NULL, Ncpus = 6L)
+    expect_equal(get_num_threads(), 6L)
+  })
+})
+
+test_that("get_num_threads: zip_threads and ZIP_THREADS take precedence over Ncpus", {
+  withr::local_options(zip_threads = 7L, Ncpus = 6L)
+  expect_equal(get_num_threads(), 7L)
+
+  withr::with_envvar(c(ZIP_THREADS = "5"), {
+    withr::local_options(zip_threads = NULL, Ncpus = 6L)
+    expect_equal(get_num_threads(), 5L)
+  })
+})
+
 test_that("get_num_threads defaults to 2", {
   withr::with_envvar(c(ZIP_THREADS = NA), {
-    withr::local_options(zip_threads = NULL)
+    withr::local_options(zip_threads = NULL, Ncpus = NULL)
     expect_equal(get_num_threads(), 2L)
+  })
+})
+
+test_that("get_num_threads errors on invalid Ncpus option", {
+  withr::with_envvar(c(ZIP_THREADS = NA), {
+    withr::local_options(zip_threads = NULL, Ncpus = 0L)
+    expect_snapshot(error = TRUE, get_num_threads())
   })
 })
 
