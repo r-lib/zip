@@ -17,6 +17,12 @@
   the `ZIP_THREADS` environment variable is set
   ([\#151](https://github.com/r-lib/zip/issues/151)).
 
+- Archives created by
+  [`zip()`](https://r-lib.github.io/zip/dev/reference/zip.md) can now
+  always be extracted with the Windows Explorer “Extract All” tool,
+  including archives that contain many small files
+  ([\#153](https://github.com/r-lib/zip/issues/153)).
+
 ## zip 3.0.0
 
 CRAN release: 2026-06-10
