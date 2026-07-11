@@ -989,6 +989,27 @@ extern "C"
 
         d->m_huff_count[0][256] = 1;
 
+        /* A distance Huffman tree with fewer than two codes is an incomplete
+           tree. RFC 1951 (3.2.7) permits it and lenient inflaters (zlib, .NET,
+           7-Zip) accept it, but strict ones -- notably the Windows Explorer
+           "Extract All" handler -- reject the whole entry with an "unspecified
+           error". zlib sidesteps this by forcing at least two distance codes of
+           non-zero frequency (see trees.c build_tree); do the same. This only
+           affects blocks that would otherwise use 0 or 1 distance codes (tiny or
+           match-free inputs); the extra reserved code is never emitted in the
+           payload. See https://github.com/r-lib/zip/issues/153. */
+        {
+            mz_uint num_dist_used = 0;
+            for (i = 0; i < TDEFL_MAX_HUFF_SYMBOLS_1; i++)
+                if (d->m_huff_count[1][i])
+                    num_dist_used++;
+            if (num_dist_used < 2)
+            {
+                if (!d->m_huff_count[1][0]) d->m_huff_count[1][0] = 1;
+                if (!d->m_huff_count[1][1]) d->m_huff_count[1][1] = 1;
+            }
+        }
+
         tdefl_optimize_huffman_table(d, 0, TDEFL_MAX_HUFF_SYMBOLS_0, 15, MZ_FALSE);
         tdefl_optimize_huffman_table(d, 1, TDEFL_MAX_HUFF_SYMBOLS_1, 15, MZ_FALSE);
 

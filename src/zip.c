@@ -1256,7 +1256,9 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
             rctx.progress_data = progress_data;
             int ret = mz_zip_writer_add_read_buf_callback(
                 &wtr, key, zip_read_with_progress, &rctx, uncomp_size,
-                &cmtime, NULL, 0, ccompression_level, NULL, 0, NULL, 0);
+                &cmtime, NULL, 0,
+                ccompression_level | MZ_ZIP_FLAG_WRITE_HEADER_SET_SIZE, NULL, 0,
+                NULL, 0);
             fclose(fh);
             if (!ret) {
               const char *mz_err =
@@ -1415,7 +1417,8 @@ int zip_zip(const char *czipfile, int num_files, const char **ckeys,
             &zip_archive, key, zip_read_with_progress, &rctx,
             /* max_size= */ uncomp_size, /* pFile_time= */ &cmtime,
             /* pComment= */ NULL, /* comment_size= */ 0,
-            /* level_and_flags= */ ccompression_level,
+            /* level_and_flags= */ ccompression_level |
+                MZ_ZIP_FLAG_WRITE_HEADER_SET_SIZE,
             /* user_extra_data_local= */ NULL, /* ...len= */ 0,
             /* user_extra_data_central= */ NULL, /* ...len= */ 0);
         fclose(fh);

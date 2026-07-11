@@ -1,5 +1,9 @@
 # zip (development version)
 
+* Archives created by `zip()` can now always be extracted with the Windows
+  Explorer "Extract All" tool, including archives that contain many small
+  files (#153).
+
 * `zip()`, `zipr()`, `zip_append()`, `zipr_append()`, `zip_process()`, and
   `unzip()` / `unzip_process()` now support password-protected archives
   using WinZIP AES-256, and other encryption schemes.
