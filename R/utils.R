@@ -306,7 +306,7 @@ true_values <- c("true", "on", "yes", "1", "yeah", "yep", "y")
 false_values <- c("false", "off", "no", "0", "nope", "nay", "n")
 
 is_true_env_var <- function(name) {
-  env <- Sys.getenv(name, unset = NA)
+  env <- tolower(Sys.getenv(name, unset = NA))
   if (is.na(env)) {
     NULL
   } else if (env %in% true_values) {

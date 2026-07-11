@@ -1,5 +1,9 @@
 # zip (development version)
 
+* Boolean environment variables (`R_ZIP_PROCESS_FALLBACK` and
+  `ZIP_PROGRESS` currently) are now matched case-insensitively, so `TRUE`
+  and `FALSE` are accepted as documented (#154).
+
 # zip 3.0.0
 
 * `zip()`, `zipr()`, `zip_append()`, `zipr_append()`, `zip_process()`, and
