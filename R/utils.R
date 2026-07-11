@@ -319,7 +319,8 @@ is_true_env_var <- function(name) {
 }
 
 is_progress_enabled <- function() {
-  enabled <- is_true_option("zip.progress") %||%
+  enabled <- is_true_option("zip_progress") %||%
+    is_true_option("zip.progress") %||%
     is_true_env_var("ZIP_PROGRESS") %||%
     FALSE
   enabled && requireNamespace("cli", quietly = TRUE)

@@ -1,5 +1,8 @@
 # zip (development version)
 
+* The progress bar option is now named `zip_progress`, to match the other
+  options. The old `zip.progress` name still works as a fallback (#150).
+
 * Boolean environment variables (`R_ZIP_PROCESS_FALLBACK` and
   `ZIP_PROGRESS` currently) are now matched case-insensitively, so `TRUE`
   and `FALSE` are accepted as documented (#154).

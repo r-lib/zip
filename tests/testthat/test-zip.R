@@ -642,7 +642,7 @@ test_that("unzip() with junkpaths returns correct paths", {
   expect_true(all(file.exists(result$path)))
 })
 
-test_that("zip() shows progress bar when zip.progress = TRUE", {
+test_that("zip() shows progress bar when zip_progress = TRUE", {
   skip_if_not_installed("cli")
 
   tmp <- test_temp_dir()
@@ -650,7 +650,7 @@ test_that("zip() shows progress bar when zip.progress = TRUE", {
   cat("more content", file = file.path(tmp, "file2"))
   zipfile <- test_temp_file(".zip", create = FALSE)
 
-  withr::local_options(zip.progress = TRUE, cli.progress_show_after = -1)
+  withr::local_options(zip_progress = TRUE, cli.progress_show_after = -1)
   withr::local_dir(dirname(tmp))
   output <- capture.output(
     asNamespace("cli")$cli_with_ticks(
@@ -661,4 +661,19 @@ test_that("zip() shows progress bar when zip.progress = TRUE", {
 
   expect_true(file.exists(zipfile))
   expect_match(output, "Zipping", all = FALSE)
+})
+
+test_that("is_progress_enabled() falls back to the old zip.progress option", {
+  skip_if_not_installed("cli")
+
+  withr::local_envvar(ZIP_PROGRESS = NA)
+  withr::local_options(zip_progress = NULL, zip.progress = NULL)
+  expect_false(is_progress_enabled())
+
+  withr::local_options(zip.progress = TRUE)
+  expect_true(is_progress_enabled())
+
+  # new option takes precedence
+  withr::local_options(zip_progress = FALSE)
+  expect_false(is_progress_enabled())
 })

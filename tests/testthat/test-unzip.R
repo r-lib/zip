@@ -251,14 +251,14 @@ test_that("unzip reads Info-ZIP forced ZIP64 (`zip -fz`)", {
   expect_equal(readLines(file.path(tmp, "src", "dir", "file2")), "file2")
 })
 
-test_that("unzip() shows progress bar when zip.progress = TRUE", {
+test_that("unzip() shows progress bar when zip_progress = TRUE", {
   skip_if_not_installed("cli")
-  withr::local_options(zip.progress = FALSE)
+  withr::local_options(zip_progress = FALSE)
 
   z <- make_a_zip()
   exdir <- test_temp_dir()
 
-  withr::local_options(zip.progress = TRUE, cli.progress_show_after = -1)
+  withr::local_options(zip_progress = TRUE, cli.progress_show_after = -1)
   output <- capture.output(
     asNamespace("cli")$cli_with_ticks(
       zip::unzip(z$zip, exdir = exdir)
