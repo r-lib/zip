@@ -11,6 +11,10 @@
   if neither the `zip_threads` option nor the `ZIP_THREADS` environment
   variable is set (#151).
 
+* Archives created by `zip()` can now always be extracted with the Windows
+  Explorer "Extract All" tool, including archives that contain many small
+  files (#153).
+
 # zip 3.0.0
 
 * `zip()`, `zipr()`, `zip_append()`, `zipr_append()`, `zip_process()`, and
