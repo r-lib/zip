@@ -2,6 +2,11 @@
 
 ## zip (development version)
 
+- Boolean environment variables (`R_ZIP_PROCESS_FALLBACK` and
+  `ZIP_PROGRESS` currently) are now matched case-insensitively, so
+  `TRUE` and `FALSE` are accepted as documented
+  ([\#154](https://github.com/r-lib/zip/issues/154)).
+
 ## zip 3.0.0
 
 CRAN release: 2026-06-10

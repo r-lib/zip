@@ -102,9 +102,9 @@ zip_list(zipfile)
 #> # A data frame: 3 × 9
 #>   filename    compressed_size uncompressed_size timestamp           permissions
 #>   <chr>                 <dbl>             <dbl> <dttm>              <octmode>  
-#> 1 mydir/                    0                 0 2026-06-11 08:00:28 755        
-#> 2 mydir/file1              15                10 2026-06-11 08:00:28 644        
-#> 3 mydir/file2              16                11 2026-06-11 08:00:28 644        
+#> 1 mydir/                    0                 0 2026-07-11 07:45:02 755        
+#> 2 mydir/file1              15                10 2026-07-11 07:45:02 644        
+#> 3 mydir/file2              16                11 2026-07-11 07:45:02 644        
 #> # ℹ 4 more variables: crc32 <hexmode>, offset <dbl>, type <chr>,
 #> #   encryption <chr>
 
@@ -115,7 +115,7 @@ result[, c("filename", "path")]
 #> # A data frame: 3 × 2
 #>   filename    path                                        
 #>   <chr>       <chr>                                       
-#> 1 mydir/      /tmp/RtmpCMfNY6/file1b8e1c3143f9/mydir/     
-#> 2 mydir/file1 /tmp/RtmpCMfNY6/file1b8e1c3143f9/mydir/file1
-#> 3 mydir/file2 /tmp/RtmpCMfNY6/file1b8e1c3143f9/mydir/file2
+#> 1 mydir/      /tmp/RtmpO5GaPU/file1ab5440dc1f8/mydir/     
+#> 2 mydir/file1 /tmp/RtmpO5GaPU/file1ab5440dc1f8/mydir/file1
+#> 3 mydir/file2 /tmp/RtmpO5GaPU/file1ab5440dc1f8/mydir/file2
 ```
