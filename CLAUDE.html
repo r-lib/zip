@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">zip</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>CLAUDE.md</h1>
-      <small class="dont-index">Source: <a href="https://github.com/r-lib/zip/blob/cran-3-0-0/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/r-lib/zip/blob/main/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
     </div>
 
 <div id="claudemd" class="section level1">
@@ -50,18 +50,18 @@
 <p><strong>Install/build for development:</strong></p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># In R:</span></span>
-<span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/uncovr/man/reload.html" class="external-link">reload</a></span><span class="op">(</span><span class="op">)</span>      <span class="co"># load package in-place (fastest for iteration)</span></span>
-<span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/uncovr/man/document.html" class="external-link">document</a></span><span class="op">(</span><span class="op">)</span>    <span class="co"># regenerate NAMESPACE and man/ from roxygen2 comments</span></span></code></pre></div>
+<span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu">reload</span><span class="op">(</span><span class="op">)</span>      <span class="co"># load package in-place (fastest for iteration)</span></span>
+<span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span>    <span class="co"># regenerate NAMESPACE and man/ from roxygen2 comments</span></span></code></pre></div>
 <p><strong>Run tests:</strong></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/uncovr/man/test.html" class="external-link">test</a></span><span class="op">(</span><span class="op">)</span>                                           <span class="co"># all tests</span></span>
-<span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/uncovr/man/test.html" class="external-link">test</a></span><span class="op">(</span>filter <span class="op">=</span> <span class="st">"zip"</span><span class="op">)</span>                             <span class="co"># filter by file name (no "test-" prefix)</span></span></code></pre></div>
-<p><strong>Install</strong> (prefer <code><a href="https://rdrr.io/pkg/uncovr/man/reload.html" class="external-link">uncovr::reload()</a></code> for iteration; only install when needed):</p>
+<code class="sourceCode R"><span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span><span class="op">)</span>                                           <span class="co"># all tests</span></span>
+<span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span>filter <span class="op">=</span> <span class="st">"zip"</span><span class="op">)</span>                             <span class="co"># filter by file name (no "test-" prefix)</span></span></code></pre></div>
+<p><strong>Install</strong> (prefer <code>uncovr::reload()</code> for iteration; only install when needed):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/uncovr/man/install.html" class="external-link">install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">uncovr</span><span class="fu">::</span><span class="fu">install</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><strong>R CMD check:</strong></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_envvar.html" class="external-link">with_envvar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>NOT_CRAN <span class="op">=</span> <span class="st">"true"</span><span class="op">)</span>, <span class="fu">rcmdcheck</span><span class="fu">::</span><span class="fu">rcmdcheck</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">withr</span><span class="fu">::</span><span class="fu"><a href="https://withr.r-lib.org/reference/with_envvar.html" class="external-link">with_envvar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>NOT_CRAN <span class="op">=</span> <span class="st">"true"</span><span class="op">)</span>, <span class="fu">rcmdcheck</span><span class="fu">::</span><span class="fu"><a href="http://r-lib.github.io/rcmdcheck/reference/rcmdcheck.html" class="external-link">rcmdcheck</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Format R code</strong> (uses <a href="https://github.com/posit-dev/air" class="external-link">air</a>):</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="ex">air</span> format .</span></code></pre></div>
 <p><strong>Regenerate README.md</strong> (from README.Rmd):</p>
@@ -105,7 +105,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

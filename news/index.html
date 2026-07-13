@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">zip</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,9 +35,16 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/r-lib/zip/blob/cran-3-0-0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/r-lib/zip/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="3.0.1" id="zip-301">zip 3.0.1<a class="anchor" aria-label="anchor" href="#zip-301"></a></h2><p class="text-muted">CRAN release: 2026-07-13</p>
+<ul><li><p>The progress bar option is now named <code>zip_progress</code>, to match the other options. The old <code>zip.progress</code> name still works as a fallback (<a href="https://github.com/r-lib/zip/issues/150" class="external-link">#150</a>).</p></li>
+<li><p>Boolean environment variables (<code>R_ZIP_PROCESS_FALLBACK</code> and <code>ZIP_PROGRESS</code> currently) are now matched case-insensitively, so <code>TRUE</code> and <code>FALSE</code> are accepted as documented (<a href="https://github.com/r-lib/zip/issues/154" class="external-link">#154</a>).</p></li>
+<li><p>The number of threads used by <code><a href="../reference/unzip.html">unzip()</a></code> now respects the <code>Ncpus</code> option, if neither the <code>zip_threads</code> option nor the <code>ZIP_THREADS</code> environment variable is set (<a href="https://github.com/r-lib/zip/issues/151" class="external-link">#151</a>).</p></li>
+<li><p>Archives created by <code><a href="../reference/zip.html">zip()</a></code> can now always be extracted with the Windows Explorer “Extract All” tool, including archives that contain many small files (<a href="https://github.com/r-lib/zip/issues/153" class="external-link">#153</a>).</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="3.0.0" id="zip-300">zip 3.0.0<a class="anchor" aria-label="anchor" href="#zip-300"></a></h2><p class="text-muted">CRAN release: 2026-06-10</p>
 <ul><li><p><code><a href="../reference/zip.html">zip()</a></code>, <code><a href="../reference/zip.html">zipr()</a></code>, <code><a href="../reference/zip.html">zip_append()</a></code>, <code><a href="../reference/zip.html">zipr_append()</a></code>, <code><a href="../reference/zip_process.html">zip_process()</a></code>, and <code><a href="../reference/unzip.html">unzip()</a></code> / <code><a href="../reference/unzip_process.html">unzip_process()</a></code> now support password-protected archives using WinZIP AES-256, and other encryption schemes (<a href="https://github.com/r-lib/zip/issues/38" class="external-link">#38</a>).</p></li>
@@ -95,7 +102,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
