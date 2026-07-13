@@ -1,3 +1,5 @@
+# zip (development version)
+
 # zip 3.0.1
 
 * The progress bar option is now named `zip_progress`, to match the other
