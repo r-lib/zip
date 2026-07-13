@@ -2,6 +2,10 @@
 
 ## zip (development version)
 
+## zip 3.0.1
+
+CRAN release: 2026-07-13
+
 - The progress bar option is now named `zip_progress`, to match the
   other options. The old `zip.progress` name still works as a fallback
   ([\#150](https://github.com/r-lib/zip/issues/150)).
