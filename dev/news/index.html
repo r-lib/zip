@@ -40,7 +40,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="zip-development-version">zip (development version)<a class="anchor" aria-label="anchor" href="#zip-development-version"></a></h2>
-</div>
+<ul><li>
+<code><a href="../reference/unzip.html">unzip()</a></code> no longer errors on Unix when extracting a symlink whose target is missing or is extracted later in the archive (<a href="https://github.com/r-lib/zip/issues/157" class="external-link">#157</a>).</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="3.0.1" id="zip-301">zip 3.0.1<a class="anchor" aria-label="anchor" href="#zip-301"></a></h2><p class="text-muted">CRAN release: 2026-07-13</p>
 <ul><li><p>The progress bar option is now named <code>zip_progress</code>, to match the other options. The old <code>zip.progress</code> name still works as a fallback (<a href="https://github.com/r-lib/zip/issues/150" class="external-link">#150</a>).</p></li>
