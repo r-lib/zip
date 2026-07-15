@@ -217,6 +217,24 @@ test_that("symlinks on Unix", {
   )
 })
 
+test_that("symlinks to later or missing targets on Unix", {
+  skip_on_os("windows")
+  # `dirlink` -> `later/target` points to a directory that is extracted
+  # *after* the symlink, and `brokenlink` -> `does-not-exist` never resolves.
+  # Both used to make chmod()/utimes() follow the link and fail (#157).
+  symlink <- test_path("fixtures/symlink-dir.zip")
+  dir.create(tmp <- tempfile("zip-test-symlink-dir"))
+  on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+
+  zip::unzip(symlink, exdir = tmp)
+
+  expect_equal(Sys.readlink(file.path(tmp, "dirlink")), "later/target")
+  expect_equal(Sys.readlink(file.path(tmp, "brokenlink")), "does-not-exist")
+  # The directory target is extracted and reachable through the symlink.
+  expect_true(file.exists(file.path(tmp, "later", "target", "file.txt")))
+  expect_true(file.exists(file.path(tmp, "dirlink", "file.txt")))
+})
+
 test_that("CP437-encoded filename is decoded on extraction", {
   cp437 <- test_path("fixtures/cp437.zip")
   tmp <- test_temp_dir()
