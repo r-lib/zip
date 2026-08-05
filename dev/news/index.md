@@ -2,6 +2,10 @@
 
 ## zip (development version)
 
+## zip 3.0.2
+
+CRAN release: 2026-08-04
+
 - [`unzip()`](https://r-lib.github.io/zip/dev/reference/unzip.md) no
   longer errors on Unix when extracting a symlink whose target is
   missing or is extracted later in the archive

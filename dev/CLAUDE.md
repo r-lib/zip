@@ -29,9 +29,8 @@ uncovr::test()                                           # all tests
 uncovr::test(filter = "zip")                             # filter by file name (no "test-" prefix)
 ```
 
-**Install** (prefer
-[`uncovr::reload()`](https://rdrr.io/pkg/uncovr/man/reload.html) for
-iteration; only install when needed):
+**Install** (prefer `uncovr::reload()` for iteration; only install when
+needed):
 
 ``` r
 
