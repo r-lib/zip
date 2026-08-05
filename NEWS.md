@@ -1,3 +1,5 @@
+# zip (development version)
+
 # zip 3.0.2
 
 * `unzip()` no longer errors on Unix when extracting a symlink whose target
